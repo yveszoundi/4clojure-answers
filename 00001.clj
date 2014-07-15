@@ -1,4 +1,0 @@
-;;(= __ true)
-
-
-(= true true)
