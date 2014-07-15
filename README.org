@@ -11,11 +11,17 @@
 
 #+begin_src clojure
   ;; 4Clojure Question 1
-  ;; This is a clojure form.  Enter a value which will make the form evaluate to true.  Don't over think it!  If you are confused, see the <a href='/directions'>getting started</a> page.  Hint: true is equal to true.
+  ;; This is a clojure form.  Enter a value which will make the form evaluate to true.  
+  ;; Don't over think it!  If you are confused, see the <a href='/directions'>getting started</a> page.
+  ;; Hint: true is equal to true.
   (= true true)
 
   ;; 4Clojure Question 2
-  ;; <p>If you are not familiar with <a href='http://en.wikipedia.org/wiki/Polish_notation'>polish notation</a>, simple arithmetic might seem confusing.</p><p><strong>Note:</strong> Enter only enough to fill in the blank (in this case, a single number) - do not retype the whole problem.</p>
+  ;; <p>If you are not familiar with <a href='http://en.wikipedia.org/wiki/Polish_notation'>
+  ;; polish notation</a>
+  ;; , simple arithmetic might seem confusing.</p><p><strong>Note:</strong>
+  ;; Enter only enough to fill in the blank
+  ;; (in this case, a single number) - do not retype the whole problem.</p>
   (= (- 10 (* 2 3)) 4)
 
   ;; 4Clojure Question 3
@@ -27,7 +33,8 @@
   (= (list :a :b :c) '(:a :b :c))
 
   ;; 4Clojure Question 5
-  ;; When operating on a list, the conj function will return a new list with one or more items "added" to the front.
+  ;; When operating on a list, the conj function will return a new list with one or more items
+  ;; "added" to the front.
   (= '(1 2 3 4) (conj '(2 3 4) 1))
 
   ;; 4Clojure Question 6
@@ -35,7 +42,8 @@
   (= [:a :b :c] (list :a :b :c) (vec '(:a :b :c)) (vector :a :b :c))
 
   ;; 4Clojure Question 7
-  ;; When operating on a Vector, the conj function will return a new vector with one or more items "added" to the end.
+  ;; When operating on a Vector, the conj function will return a new vector with one or
+  ;; more items "added" to the end.
   (= [ 1 2 3 4] (conj [1 2 3] 4))
 
   ;; 4Clojure Question 8
@@ -43,19 +51,23 @@
   (= #{:a :b :c :d} (set '(:a :a :b :c :c :c :c :d :d)))
 
   ;; 4Clojure Question 9
-  ;; When operating on a set, the conj function returns a new set with one or more keys "added".
+  ;; When operating on a set, the conj function returns a new set with one or more keys
+  ;; "added".
   (= #{1 2 3 4} (conj #{1 4 3} 2))
 
   ;; 4Clojure Question 10
-  ;; Maps store key-value pairs.  Both maps and keywords can be used as lookup functions. Commas can be used to make maps more readable, but they are not required.
+  ;; Maps store key-value pairs.  Both maps and keywords can be used as lookup functions.
+  ;; Commas can be used to make maps more readable, but they are not required.
   (= 20 ((hash-map :a 10, :b 20, :c 30) :b))
 
   ;; 4Clojure Question 11
-  ;; When operating on a map, the conj function returns a new map with one or more key-value pairs "added".
+  ;; When operating on a map, the conj function returns a new map with one or more
+  ;; key-value pairs "added".
   (= {:a 1, :b 2, :c 3} (conj {:a 1} {:b 2} [:c 3]))
 
   ;; 4Clojure Question 12
-  ;; All Clojure collections support sequencing.  You can operate on sequences with functions like first, second, and last.
+  ;; All Clojure collections support sequencing.  You can operate on sequences with
+  ;; functions like first, second, and last.
   (= 3 (first '(3 2 1)))
 
   ;; 4Clojure Question 13
@@ -75,11 +87,15 @@
   (= (format "Hello, %s!" "Dave") "Hello, Dave!")
 
   ;; 4Clojure Question 17
-  ;; The map function takes two arguments: a function (f) and a sequence (s).  Map returns a new sequence consisting of the result of applying f to each item of s.  Do not confuse the map function with the map data structure.
+  ;; The map function takes two arguments: a function (f) and a sequence (s).
+  ;; Map returns a new sequence consisting of the result of applying f to each item of s.
+  ;; Do not confuse the map function with the map data structure.
   (= '( 6 7 8) (map #(+ % 5) '(1 2 3)))
 
   ;; 4Clojure Question 18
-  ;; The filter function takes two arguments: a predicate function (f) and a sequence (s).  Filter returns a new sequence consisting of all the items of s for which (f item) returns true.
+  ;; The filter function takes two arguments: a predicate function (f) and a sequence (s).
+  ;; Filter returns a new sequence consisting of all the items of s for which (f item)
+  ;; returns true.
   (= '(6 7) (filter #(> % 5) '(3 4 5 6 7)))
 
   ;; 4Clojure Question 19
@@ -130,7 +146,9 @@
 
 
   ;; 4Clojure Question 29
-  ;; Write a function which takes a string and returns a new string containing only the capital letters.
+  ;; Write a function which takes a string and returns a new string containing only
+  the capital letters.
   ;; (= (__ "HeLlO, WoRlD!") "HLOWRD")
-  (= ((comp #(apply str %) (fn[x] (filter #(Character/isUpperCase %1) (seq x)))) "HeLlO, WoRlD!") "HLOWRD")
+  (= ((comp #(apply str %) (fn[x] (filter #(Character/isUpperCase %1) (seq x))))
+      "HeLlO, WoRlD!") "HLOWRD")
 #+end_src
