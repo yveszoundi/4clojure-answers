@@ -138,7 +138,16 @@
   ;; Write a function which returns the last element in a sequence.
   ;; Restrictions (please don't use these function(s)): last
   ;; (= (__ [1 2 3 4 5]) 5)
-  (= ((comp first reverse) [1 2 3 4 5]) 5)
+  (defn last-elem [xs]
+    ((comp first reverse) xs))
+
+  (clojure.test/testing
+      "Write a function which returns the second to last
+       element from a sequence."
+    (clojure.test/is (and
+                      (= (last-elem [1 2 3 4 5]) 5)
+                      (= (last-elem '(5 4 3)) 3)
+                      (= (last-elem ["b" "c" "d"]) "d"))))
 
   ;; 4Clojure Question 20
   ;; Write a function which returns the second to last element from a sequence.
