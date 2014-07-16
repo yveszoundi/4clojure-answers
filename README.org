@@ -10,8 +10,10 @@
   Answers to [[http://4clojure.com/][4clojure.com]] questions.
 
 #+begin_src clojure
+  (refer 'clojure.test :only '[is])
+
   ;; 4Clojure Question 1
-  ;; This is a clojure form.  Enter a value which will make the form evaluate to true.  
+  ;; This is a clojure form.  Enter a value which will make the form evaluate to true.
   ;; Don't over think it!  If you are confused, see the <a href='/directions'>getting started</a> page.
   ;; Hint: true is equal to true.
   ;; (= __ true)
@@ -154,27 +156,81 @@
   ;; 4Clojure Question 25
   ;; Write a function which returns only the odd numbers from a sequence.
   ;; (= (__ #{1 2 3 4 5}) '(1 3 5))
-  (= (filter odd? #{1 2 3 4 5}) '(1 3 5))
+  (defn odd-numbers [xs]
+    (filter odd? xs))
+
+  (clojure.test/testing
+      "Only odd numbers."
+    (clojure.test/is (= (odd-numbers #{1 2 3 4 5}) '(1 3 5))))
 
   ;; 4Clojure Question 26
   ;; Write a function which returns the first X fibonacci numbers.
   ;; (= (__ 3) '(1 1 2))
   (= (#(drop 1 (map (fn[x]
-             (cond
-              (= x 0) 0
-              (= x 1) 1
-              :else (loop [idx 2
-                           prev-idx 1
-                           before-prev-idx 0]                    
-                      (if (< idx x)
-                        (recur (inc idx) (+ prev-idx before-prev-idx) prev-idx)
-                        (+ prev-idx before-prev-idx))))) (range (inc %1)))) 3) '(1 1 2))
+                      (cond
+                       (= x 0) 0
+                       (= x 1) 1
+                       :else (loop [idx 2
+                                    prev-idx 1
+                                    before-prev-idx 0]
+                               (if (< idx x)
+                                 (recur (inc idx) (+ prev-idx before-prev-idx) prev-idx)
+                                 (+ prev-idx before-prev-idx))))) (range (inc %1)))) 3) '(1 1 2))
 
 
   ;; 4Clojure Question 29
   ;; Write a function which takes a string and returns a new string containing only
-  the capital letters.
+  ;; the capital letters.
   ;; (= (__ "HeLlO, WoRlD!") "HLOWRD")
   (= ((comp #(apply str %) (fn[x] (filter #(Character/isUpperCase %1) (seq x))))
       "HeLlO, WoRlD!") "HLOWRD")
+
+  ;; 4Clojure Question 34
+  ;; Write a function which creates a list of all integers in a given range.
+  ;; Restrictions (please don't use these function(s)): range
+  ;; (= (__ 1 4) '(1 2 3))
+  (defn find-range [start-idx end-idx]
+    (loop [xs []
+           start start-idx
+           end (dec end-idx)]
+      (if (= start end)
+        (conj xs start)
+        (recur (conj xs start) (inc start) end))))
+
+  (clojure.test/is (and (= (find-range 1 4) '(1 2 3))
+                        (= (find-range -2 2) '(-2 -1 0 1))
+                        (= (find-range 5 8) '(5 6 7))))
+
+
+  ;; 4Clojure Question 35;;
+  ;; Clojure lets you give local names to values using the special let-form.
+  ;; (= __ (let [x 5] (+ 2 x)))
+  ;; (= __ (let [x 3, y 10] (- y x)))
+  ;; (= __ (let [x 21] (let [y 3] (/ x y))))
+  (clojure.test/testing
+      "Clojure lets you give local names to values using the special let-form."
+    (clojure.test/is (and (= 7 (let [x 5] (+ 2 x)))
+                          (= 7 (let [x 3, y 10] (- y x)))
+                          (= 7 (let [x 21] (let [y 3] (/ x y)))))))
+
+
+  ;; 4Clojure Question 36
+  ;; Can you bind x, y, and z so that these are all true?
+  ;; (= 10 (let __ (+ x y)))
+  ;; (= 4 (let __ (+ y z)))
+  ;; (= 1 (let __ z))
+  (clojure.test/testing
+      "Can you bind x, y, and z so that these are all true?"
+    (clojure.test/is (and
+                      (= 10 (let [x 7 y 3 z 1] (+ x y)))
+                      (= 4 (let [x 7 y 3 z 1] (+ y z)))
+                      (= 1 (let [x 7 y 3 z 1] z)))))
+
+
+
+
+  ;; 4Clojure Question 38
+  ;; Write a function which takes a variable number of parameters and returns the maximum value.
+  ;; Restrictions (please don't use these function(s)): max, max-key
+
 #+end_src
