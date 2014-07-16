@@ -10,8 +10,6 @@
   Answers to [[http://4clojure.com/][4clojure.com]] questions.
 
 #+begin_src clojure
-  (refer 'clojure.test :only '[is])
-
   ;; 4Clojure Question 1
   ;; This is a clojure form.  Enter a value which will make the form evaluate to true.
   ;; Don't over think it!  If you are confused, see the <a href='/directions'>getting started</a> page.
@@ -98,12 +96,29 @@
   ;; 4Clojure Question 15
   ;; Write a function which doubles a number.
   ;; (= (__ 2) 4)
-  (= (* 2 2) 4)
+  (defn double-num [n]
+    (* n 2))
+
+  (clojure.test/testing
+      "Write a function which doubles a number."
+    (clojure.test/is (and
+                      (= (double-num 2)  4)
+                      (= (double-num 3)  6)
+                      (= (double-num 11) 22)
+                      (= (double-num 7)  14))))
 
   ;; 4Clojure Question 16
   ;; Write a function which returns a personalized greeting.
   ;; (= (__ "Dave") "Hello, Dave!")
-  (= (format "Hello, %s!" "Dave") "Hello, Dave!")
+  (defn greet [someone]
+    (format "Hello, %s!" someone))
+
+  (clojure.test/testing
+      "Write a function which returns a personalized greeting."
+    (clojure.test/is (and
+                      (= (greet "Dave") "Hello, Dave!")
+                      (= (greet "Jenn") "Hello, Jenn!")
+                      (= (greet "Rhea") "Hello, Rhea!"))))
 
   ;; 4Clojure Question 17
   ;; The map function takes two arguments: a function (f) and a sequence (s).
@@ -128,7 +143,15 @@
   ;; 4Clojure Question 20
   ;; Write a function which returns the second to last element from a sequence.
   ;; (= (__ (list 1 2 3 4 5)) 4)
-  (= ((comp last butlast) (list 1 2 3 4 5)) 4)
+  (defn second-to-last [xs]
+    ((comp last butlast) xs))
+
+  (clojure.test/testing
+      "Write a function which returns the second to last element from a sequence."
+    (clojure.test/is (and
+                      (= (second-to-last (list 1 2 3 4 5)) 4)
+                      (= (second-to-last ["a" "b" "c"]) "b")
+                      (= (second-to-last [[1 2] [3 4]]) [1 2]))))
 
   ;; 4Clojure Question 21
   ;; Write a function which returns the Nth element from a sequence.
@@ -140,18 +163,47 @@
   ;; Write a function which returns the total number of elements in a sequence.
   ;; Restrictions (please don't use these function(s)): count
   ;; (= (__ '(1 2 3 3 1)) 5)
-  (= ( (comp #(reduce + %) #(map (fn[x] 1) %))  '(1 2 3 3 1)) 5)
+  (defn count-seq [xs]
+    ((comp #(reduce + %) #(map (fn[x] 1) %)) xs))
+
+  (clojure.test/testing
+      "Write a function which reverses a sequence."
+    (clojure.test/is (and
+                      (= (count-seq '(1 2 3 3 1)) 5)
+                      (= (count-seq "Hello World") 11)
+                      (= (count-seq [[1 2] [3 4] [5 6]]) 3)
+                      (= (count-seq '(13)) 1)
+                      (= (count-seq '(:a :b :c)) 3))))
 
   ;; 4Clojure Question 23
   ;; Write a function which reverses a sequence.
   ;; Restrictions (please don't use these function(s)): reverse, rseq
   ;; (= (__ [1 2 3 4 5]) [5 4 3 2 1])
-  (= (into '() [1 2 3 4 5]) [5 4 3 2 1])
+  (defn reverse-seq [xs]
+    (into '() xs))
+
+  (clojure.test/testing
+      "Write a function which reverses a sequence."
+    (clojure.test/is (and
+                      (= (reverse-seq [1 2 3 4 5]) [5 4 3 2 1])
+                      (= (reverse-seq (sorted-set 5 7 2 7)) '(7 5 2))
+                      (= (reverse-seq [[1 2][3 4][5 6]]) [[5 6][3 4][1 2]]))))
 
   ;; 4Clojure Question 24
   ;; Write a function which returns the sum of a sequence of numbers.
   ;; (= (__ [1 2 3]) 6)
-  (= (apply + [1 2 3]) 6)
+
+  (defn sum-xs [xs]
+    (apply + xs))
+
+  (clojure.test/testing
+      "Write a function which returns the sum of a sequence of numbers."
+    (clojure.test/is (and
+                      (= (sum-xs [1 2 3]) 6)
+                      (= (sum-xs (list 0 -2 5 5)) 8)
+                      (= (sum-xs #{4 2 1}) 7)
+                      (= (sum-xs '(0 0 -1)) -1)
+                      (= (sum-xs '(1 10 3)) 14))))
 
   ;; 4Clojure Question 25
   ;; Write a function which returns only the odd numbers from a sequence.
@@ -166,24 +218,45 @@
   ;; 4Clojure Question 26
   ;; Write a function which returns the first X fibonacci numbers.
   ;; (= (__ 3) '(1 1 2))
-  (= (#(drop 1 (map (fn[x]
-                      (cond
-                       (= x 0) 0
-                       (= x 1) 1
-                       :else (loop [idx 2
-                                    prev-idx 1
-                                    before-prev-idx 0]
-                               (if (< idx x)
-                                 (recur (inc idx) (+ prev-idx before-prev-idx) prev-idx)
-                                 (+ prev-idx before-prev-idx))))) (range (inc %1)))) 3) '(1 1 2))
+  (defn fib [x]
+    (cond
+     (= x 0) 0
+     (= x 1) 1
+     :else (loop [idx 2
+                  prev-idx 1
+                  before-prev-idx 0]
+             (if (< idx x)
+               (recur (inc idx) (+ prev-idx before-prev-idx) prev-idx)
+               (+ prev-idx before-prev-idx)))))
 
+  (defn first-fib-nums [n]
+    (#(rest (map fib (range (inc %1)))) n))
+
+  (clojure.test/testing
+      "Write a function which returns the first X fibonacci numbers."
+    (clojure.test/is (and 
+                      (= (first-fib-nums 3) '(1 1 2))
+                      (= (first-fib-nums 6) '(1 1 2 3 5 8))
+                      (= (first-fib-nums 8) '(1 1 2 3 5 8 13 21)))))
 
   ;; 4Clojure Question 29
   ;; Write a function which takes a string and returns a new string containing only
   ;; the capital letters.
   ;; (= (__ "HeLlO, WoRlD!") "HLOWRD")
-  (= ((comp #(apply str %) (fn[x] (filter #(Character/isUpperCase %1) (seq x))))
-      "HeLlO, WoRlD!") "HLOWRD")
+  (defn only-caps [s]
+    ((comp #(apply str %)
+           (fn[x] (filter #(Character/isUpperCase %1) (seq x))))
+     s))
+
+  (clojure.test/testing
+      "Write a function which takes a string and returns
+       a new string containing only the capital letters."
+    (clojure.test/is (and
+                      (= (only-caps "HeLlO, WoRlD!") "HLOWRD")
+                      (empty? (only-caps "nothing"))
+                      (= (only-caps "$#A(*&987Zf") "AZ"))))
+
+
 
   ;; 4Clojure Question 34
   ;; Write a function which creates a list of all integers in a given range.
@@ -197,9 +270,11 @@
         (conj xs start)
         (recur (conj xs start) (inc start) end))))
 
-  (clojure.test/is (and (= (find-range 1 4) '(1 2 3))
-                        (= (find-range -2 2) '(-2 -1 0 1))
-                        (= (find-range 5 8) '(5 6 7))))
+  (clojure.test/testing
+      "Write a function which creates a list of all integers in a given range."
+    (clojure.test/is (and (= (find-range 1 4) '(1 2 3))
+                          (= (find-range -2 2) '(-2 -1 0 1))
+                          (= (find-range 5 8) '(5 6 7)))))
 
 
   ;; 4Clojure Question 35;;
@@ -210,7 +285,7 @@
   (clojure.test/testing
       "Clojure lets you give local names to values using the special let-form."
     (clojure.test/is (and (= 7 (let [x 5] (+ 2 x)))
-                          (= 7 (let [x 3, y 10] (- y x)))
+                          (= 7 (let [x 3 y 10] (- y x)))
                           (= 7 (let [x 21] (let [y 3] (/ x y)))))))
 
 
@@ -223,10 +298,8 @@
       "Can you bind x, y, and z so that these are all true?"
     (clojure.test/is (and
                       (= 10 (let [x 7 y 3 z 1] (+ x y)))
-                      (= 4 (let [x 7 y 3 z 1] (+ y z)))
-                      (= 1 (let [x 7 y 3 z 1] z)))))
-
-
+                      (= 4  (let [x 7 y 3 z 1] (+ y z)))
+                      (= 1  (let [x 7 y 3 z 1] z)))))
 
 
   ;; 4Clojure Question 38
