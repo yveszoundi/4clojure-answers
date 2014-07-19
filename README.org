@@ -201,7 +201,6 @@
   ;; 4Clojure Question 24
   ;; Write a function which returns the sum of a sequence of numbers.
   ;; (= (__ [1 2 3]) 6)
-
   (defn sum-xs [xs]
     (apply + xs))
 
@@ -239,7 +238,7 @@
                (+ prev-idx before-prev-idx)))))
 
   (defn first-fib-nums [n]
-    (#(rest (map fib (range (inc %1)))) n))
+    (#(map fib (range 1 (inc %1))) n))
 
   (clojure.test/testing
       "Write a function which returns the first X fibonacci numbers."
@@ -271,22 +270,14 @@
   ;; Write a function which creates a list of all integers in a given range.
   ;; Restrictions (please don't use these function(s)): range
   ;; (= (__ 1 4) '(1 2 3))
-  (defn find-range [start-idx end-idx]
-    (loop [xs []
-           start start-idx
-           end (dec end-idx)]
-      (if (= start end)
-        (conj xs start)
-        (recur (conj xs start) (inc start) end))))
-
-  (defn find-range-improved [start end]
+  (defn find-range [start end]
     (take (- end start) (iterate inc start)))
 
   (clojure.test/testing
       "Write a function which creates a list of all integers in a given range."
-    (clojure.test/is (and (= (find-range-improved 1 4) '(1 2 3))
-                          (= (find-range-improved -2 2) '(-2 -1 0 1))
-                          (= (find-range-improved 5 8) '(5 6 7)))))
+    (clojure.test/is (and (= (find-range 1 4) '(1 2 3))
+                          (= (find-range -2 2) '(-2 -1 0 1))
+                          (= (find-range 5 8) '(5 6 7)))))
 
 
   ;; 4Clojure Question 35;;
@@ -317,5 +308,48 @@
   ;; 4Clojure Question 38
   ;; Write a function which takes a variable number of parameters and returns the maximum value.
   ;; Restrictions (please don't use these function(s)): max, max-key
+  (defn find-max [& xs]
+    (last (sort xs)))
 
+  (clojure.test/testing
+      "Write a function which takes a variable number of
+       parameters and returns the maximum value."
+    (clojure.test/is (and
+                      (= (find-max 1 8 3 4) 8)
+                      (= (find-max 30 20) 30)
+                      (= (find-max 45 67 11) 67))))
+
+
+  ;; 4Clojure Question 39
+  ;; Write a function which takes two sequences and
+  ;; returns the first item from each, then the second item
+  ;;from each, then the third, etc.
+  ;; Restrictions (please don't use these function(s)): interleave
+  ;; (defn my-interleave [xs]
+
+  ;;   )
+
+  ;; (clojure.test/testing
+  ;;     "Write a function which takes a variable number of
+  ;;      parameters and returns the maximum value."
+  ;;   (clojure.test/is (and
+  ;;                     (= (my-interleave [1 2 3] [:a :b :c]) '(1 :a 2 :b 3 :c))
+  ;;                     (= (my-interleave [1 2] [3 4 5 6]) '(1 3 2 4))
+  ;;                     (= (my-interleave [1 2 3 4] [5]) [1 5])
+  ;;                     (= (my-interleave [30 20] [25 15]) [30 25 20 15]))))
+
+
+
+  ;; 4Clojure Question 42
+  ;; Write a function which calculates factorials.
+  (defn factorial [n]
+    (reduce * (range 1 (inc n))))
+
+  (clojure.test/testing
+      "Write a function which calculates factorials."
+    (clojure.test/is (and
+                      (= (factorial 1) 1)
+                      (= (factorial 3) 6)
+                      (= (factorial 5) 120)
+                      (= (factorial 8) 40320))))
 #+end_src
