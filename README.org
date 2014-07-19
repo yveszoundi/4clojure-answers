@@ -228,8 +228,7 @@
   ;; (= (__ 3) '(1 1 2))
   (defn fib [x]
     (cond
-     (= x 0) 0
-     (= x 1) 1
+     (< x 2) x
      :else (loop [idx 2
                   prev-idx 1
                   before-prev-idx 0]
