@@ -227,14 +227,19 @@
   ;; Write a function which returns the first X fibonacci numbers.
   ;; (= (__ 3) '(1 1 2))
   (defn fib [x]
-    (cond
-     (< x 2) x
-     :else (loop [idx 2
-                  prev-idx 1
-                  before-prev-idx 0]
-             (if (< idx x)
-               (recur (inc idx) (+ prev-idx before-prev-idx) prev-idx)
-               (+ prev-idx before-prev-idx)))))
+    (if (< x 2) x
+        (loop [idx 2
+               prev-idx 1
+               before-prev-idx 0]
+          (if (< idx x)
+            (recur (inc idx) (+ prev-idx before-prev-idx) prev-idx)
+            (+ prev-idx before-prev-idx)))))
+
+  (defn fib-slow-rec
+    "Recursive version whole lot slower."
+    [x]
+    (if (< x 2) x
+        (+ (fib-rec (- 1 x)) (fib-rec (- 2 x)))))
 
   (defn first-fib-nums [n]
     (#(map fib (range 1 (inc %1))) n))
@@ -310,6 +315,13 @@
   (defn find-max [& xs]
     (last (sort xs)))
 
+  (defn find-max-with-reduce-slower [x & y]
+    (reduce (fn [x y]
+              (if y
+                (if (> y x) y x)
+                x))
+            x y))
+
   (clojure.test/testing
       "Write a function which takes a variable number of
        parameters and returns the maximum value."
@@ -317,6 +329,7 @@
                       (= (find-max 1 8 3 4) 8)
                       (= (find-max 30 20) 30)
                       (= (find-max 45 67 11) 67))))
+
 
 
   ;; 4Clojure Question 39
