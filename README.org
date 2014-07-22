@@ -315,7 +315,7 @@
   (defn find-max [& xs]
     (last (sort xs)))
 
-  (defn find-max-with-reduce-slower [x & y]
+  (defn find-max-with-reduce [x & y]
     (reduce (fn [x y]
               (if y
                 (if (> y x) y x)
@@ -364,4 +364,26 @@
                       (= (factorial 3) 6)
                       (= (factorial 5) 120)
                       (= (factorial 8) 40320))))
+
+
+  ;; 4Clojure Question 45
+  ;; The iterate function can be used to produce an infinite lazy sequence.
+  ;; (= __ (take 5 (iterate #(+ 3 %) 1)))
+  (= '(1 4 7 10 13) (take 5 (iterate #(+ 3 %) 1)))
+
+  ;; 4Clojure Question 46
+  ;; Write a higher-order function which flips the order of the arguments of an input function.
+  ;; Use M-x 4clojure-check-answers when you're done!
+
+  ;; (defn flip-args [x & y]
+  ;;   true)
+
+  ;; (clojure.test/testing
+  ;;     "Write a higher-order function which flips the order of the arguments of an input function."
+  ;;   (clojure.test/is (and
+  ;;                     (= 3 ((flip-args nth) 2 [1 2 3 4 5]))
+  ;;                     (= true ((flip-args >) 7 8))
+  ;;                     (= 4 ((flip-args quot) 2 8))
+  ;;                     (= [1 2 3] ((flip-args take) [1 2 3 4 5] 3)))))
+
 #+end_src
