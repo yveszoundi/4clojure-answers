@@ -374,16 +374,47 @@
   ;; 4Clojure Question 46
   ;; Write a higher-order function which flips the order of the arguments of an input function.
   ;; Use M-x 4clojure-check-answers when you're done!
+  (defn flip-args [f]
+    (fn [& args]
+      (apply f (reverse args))))
 
-  ;; (defn flip-args [x & y]
-  ;;   true)
+  (clojure.test/testing
+      "Write a higher-order function which flips the order of the arguments of an input function."
+    (clojure.test/is (and
+                      (= 3 ((flip-args nth) 2 [1 2 3 4 5]))
+                      (= true ((flip-args >) 7 8))
+                      (= 4 ((flip-args quot) 2 8))
+                      (= [1 2 3] ((flip-args take) [1 2 3 4 5] 3)))))
 
-  ;; (clojure.test/testing
-  ;;     "Write a higher-order function which flips the order of the arguments of an input function."
-  ;;   (clojure.test/is (and
-  ;;                     (= 3 ((flip-args nth) 2 [1 2 3 4 5]))
-  ;;                     (= true ((flip-args >) 7 8))
-  ;;                     (= 4 ((flip-args quot) 2 8))
-  ;;                     (= [1 2 3] ((flip-args take) [1 2 3 4 5] 3)))))
+
+
+  ;; 4Clojure Question 47
+  ;; The contains? function checks if a KEY is present in a given collection.  This often leads beginner clojurians to use it incorrectly with numerically indexed collections like vectors and lists.
+  (contains? #{4 5 6} 4)
+  (contains? [1 1 1 1 1] 1)
+  (contains? {4 :a 2 :b} 2)
+
+  ;; http://dev.clojure.org/jira/browse/CLJ-932
+  ;; Will throw an exception
+  ;;(not (contains? '(1 2 4) __))
+
+  ;; 4Clojure Question 48
+  ;; The some function takes a predicate function and a collection.  It returns the first logical true value of (predicate x) where x is an item in the collection.
+  (= 6 (some #{2 7 6} [5 6 7 8]))
+  (= 6 (some #(when (even? %) %) [5 6 7 8]))
+
+  ;; 4Clojure Question 49;;
+  ;; Write a function which will split a sequence into two parts.;;
+  ;; Restrictions (please don't use these function(s)): split-at
+  (defn dosplit [n xs]
+    (vector (take n xs) (drop n xs)))
+
+  (clojure.test/testing
+      "Write a function which will split a sequence into two parts."
+    (clojure.test/is (and
+                      (= (dosplit 3 [1 2 3 4 5 6]) [[1 2 3] [4 5 6]])
+                      (= (dosplit 1 [:a :b :c :d]) [[:a] [:b :c :d]])
+                      (= (dosplit 2 [[1 2] [3 4] [5 6]]) [[[1 2] [3 4]] [[5 6]]]))))
+
 
 #+end_src
