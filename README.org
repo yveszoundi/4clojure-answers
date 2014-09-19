@@ -456,27 +456,32 @@
   ;; Find Distinct Items
   ;; Difficulty:  Medium
   ;; Topics:      seqs core-functions
-  (defn find-distinct-items
-    "Find distinct items.
-    TODO improve."
-    [xs]
-    (loop [xss xs, v []]
-      (if (empty? xss)
-        v)
-      (let [elem (first xss)]
-        (recur (rest xss)
-               (if (some (clojure.core/set (list elem)) v)
-                 v
-                 (conj v elem))))))
+  (defn find-distinct [xs]
+    (reduce (fn [v elem]          
+              (if (not (some (clojure.core/set (list elem)) v))
+                (conj v elem)
+                v))
+            [] xs))
 
   (clojure.test/testing
       "Write a function which removes the duplicates from a sequence.
          Order of the items must be maintained."
     (clojure.test/is
      (and
-      (= (find-distinct-items [1 2 1 3 1 2 4]) [1 2 3 4])
-      (= (find-distinct-items [:a :a :b :b :c :c]) [:a :b :c])
-      (= (find-distinct-items '([2 4] [1 2] [1 3] [1 3])) '([2 4] [1 2] [1 3]))
-      (= (find-distinct-items (range 50)) (range 50)))))
+      (= (find-distinct [1 2 1 3 1 2 4]) [1 2 3 4])
+      (= (find-distinct [:a :a :b :b :c :c]) [:a :b :c])
+      (= (find-distinct '([2 4] [1 2] [1 3] [1 3])) '([2 4] [1 2] [1 3]))
+      (= (find-distinct (range 50)) (range 50)))))
+
+  ;; Clojure problem 57
+  ;; Simple Recursion
+  ;; Difficulty:  Elementary
+  ;; Topics:      recursion
+  (clojure.test/testing
+      "A recursive function is a function which calls itself.
+       This is one of the fundamental techniques used in functional programming."
+    (clojure.test/is
+     (= '(5 4 3 2 1) ((fn foo [x] (when (> x 0) (conj (foo (dec x)) x))) 5))))
+
 
 #+end_src
