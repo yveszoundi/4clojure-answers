@@ -805,7 +805,7 @@
   ;; The special case f(1) equals 1.
   ;; Write a function which calculates Euler's totient function.
   (defn euler-totient [n]
-    {:pre [ (pos? 0)]}
+    {:pre [ (pos? n)]}
       (if (= 1 n) n
       (count (filter #(= 1 (gcd n %1)) (range n)))))
 
