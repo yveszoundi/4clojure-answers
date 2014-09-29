@@ -1169,10 +1169,14 @@
     (letfn [(inverted-digits-seq [x]
               (if-not (pos? x)
                 nil
-                (cons (mod x 10) (inverted-digits-seq (long (/ x 10))))))]
+                (cons (mod x 10) (inverted-digits-seq (long (/ x 10))))))
+            (digits-seq [x]
+              ((comp reverse inverted-digits-seq) x))
+            (square-sum [xs]
+              (long (reduce  #(+ %1 (Math/pow %2 2)) 0 xs)))]
       (loop [loop-detection #{}, current-n n]
-        (let [digits-seq ((comp reverse inverted-digits-seq) current-n)
-              sum (long (reduce  #(+ %1 (Math/pow %2 2)) 0 digits-seq))]
+        (let [digits-xs (digits-seq current-n)
+              sum (square-sum digits-xs)]
           (cond
            (= 1 sum) true
            (contains? loop-detection sum) false
