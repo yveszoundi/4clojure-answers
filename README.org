@@ -1225,18 +1225,46 @@
   (defn graph-tour? [edges]
     {:pre [(and (sequential? edges) (not-empty edges))]}
 
-    (let [self-loop? (fn [edge] (= (edge 0) (edge 1)))
-          edges-set-count (count (set edges))
-          num-edges (count edges)]
+    (letfn [;; detect duplicate paths
+            (dup-paths? [lines]
+              (not= (count (set lines)) (count lines)))
 
+            ;; Detect self loop
+            (self-loop? [line]
+              (= (line 0) (line 1)))
+
+            ;; Detect self loops
+            (self-loops? [edges]
+              (not (nil? (some #(self-loop? %1) edges))))
+
+            ;; Possible routes for a given path of a set of edges.
+            (routes [edge edges]
+              (cons (cons (edge 1) (cons (edge 0) nil))
+                    (filter #(= (edge 1) (% 0)))))
+
+            ;; walk a given edge
+            (walk-edge [edge vertices-collector]
+              (let [alternate-paths (routes edge edges)]
+                (map #(walk-edge %1 vertices-collector) alternate-paths)))
+
+            ;; walk a set of edges
+            (walk-edges [edges]
+              (reduce #(walk-edge %1 #{}) edges))
+
+            (vertices [edges]
+              (set (flatten edges)))
+            
+            (all-visited? [edges node-list]
+              (contains)(vertices edges))]
+
+      ;; (if (seq? alternate-paths)
+      ;;   (let [picked-edge (first alternate-paths)]
+      ;;     (walk-edge picked-edge (conj vertices-collector (last edge)))))))
+      
       (and
-       ;; no self-loop
-       (not (some #(self-loop? %1) edges))
-       ;; no duplicate path
-       (= num-edges edges-set-count)
-
-       ;; real work to happen here...
-       )))
+       (not (dup-paths? edges))
+       (not (self-loops? edges))
+       (walk-edges edges))))
 
 
   (and (= true (graph-tour? [[:a :b]]))
@@ -1257,4 +1285,28 @@
                              [:c :f]
                              [:d :f]]))
        (= false (graph-tour? [[1 2] [2 3] [2 4] [2 5]])))
+#+end_src
+
+* 4Clojure Question 90
+
+*Cartesian product*
+
+#+begin_src clojure
+  ;; Write a function which calculates the Cartesian product of two sets.
+  ;; http://en.wikipedia.org/wiki/Cartesian_product
+
+  (defn cartesian-product [s1 s2]
+    (set (for [x-s1 s1, x-s2 s2]
+           [x-s1 x-s2])))
+
+  (and
+   (= (cartesian-product #{"ace" "king" "queen"} #{"&#9824;" "&#9829;" "&#9830;" "&#9827;"})
+      #{["ace"   "&#9824;"] ["ace"   "&#9829;"] ["ace"   "&#9830;"] ["ace"   "&#9827;"]
+        ["king"  "&#9824;"] ["king"  "&#9829;"] ["king"  "&#9830;"] ["king"  "&#9827;"]
+        ["queen" "&#9824;"] ["queen" "&#9829;"] ["queen" "&#9830;"] ["queen" "&#9827;"]})
+   (= (cartesian-product #{1 2 3} #{4 5})
+      #{[1 4] [2 4] [3 4] [1 5] [2 5] [3 5]})
+   (= 300 (count (cartesian-product (into #{} (range 10))
+                                    (into #{} (range 30))))))
+
 #+end_src
