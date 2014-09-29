@@ -1308,3 +1308,124 @@
                                     (into #{} (range 30))))))
 
 #+end_src
+
+* 4Clojure Question 91
+
+*Check if a graph is connected*
+
+#+begin_src clojure
+  ;; Given a graph, determine whether the graph is connected.
+  ;; A connected graph is such that a path exists between any two given nodes.
+  ;; - Your function must return true if the graph is connected and false otherwise.
+  ;; - You will be given a set of tuples representing the edges of a graph.
+  ;; - Each member of a tuple being a vertex/node in the graph.
+  ;; - Each edge is undirected (can be traversed either direction).
+
+  (defn connected-graph? [edges]
+
+    (let [vertices (fn [edges]
+                     (set ((comp flatten seq) edges)))
+
+          pick-edge (fn [vertex edges]
+                      (first (filter #(= vertex (%1 0)))))
+
+          pick-edges (fn [pred vertex edges]
+                       (filter pred edges))
+
+          (vertex-links (fn [vertex edges visited-nodes]
+
+                          (if-let [first-edge (pick-edge vertex)]
+
+                            (assoc {} vertex #{(last first-edge)})
+
+                            (assoc {} vertex  #{}))))
+          ]
+
+      ;; for each vertice
+
+      current vertex
+
+      ;; find one matching edge
+      (when-let [current-edge (pick-edge current-vertex edges)]
+        (let [assumed-paths (set (cons current-vertex
+                                 (last current-edge)
+                                 nil
+                                 (pick-edges (fn [v]
+                                               (= current-vertex (last v)))
+                                             current-vertex
+                                             edges)))
+              current-vertex-links (assoc {} assumed-paths)
+
+                                   
+
+              (reduce #(conj %1 %2)
+                      (current-edge-map current-vertex)
+
+
+                      ;; find a link to ALL other vertices
+                      ;; which is (n -1) unique paths for n nodes
+
+                      ( = (* num-edges (dec num-edges))
+                          (reduce #(count (num-paths %1))
+                                  (vertices edges)))
+                      )
+              )
+
+          (and
+           (= true (connected-graph? #{[:a :a]}))
+           (= true (connected-graph? #{[:a :b]}))
+           (= false (connected-graph? #{[1 2] [2 3] [3 1]
+                                        [4 5] [5 6] [6 4]}))
+           (= true (connected-graph? #{[1 2] [2 3] [3 1]
+                                       [4 5] [5 6] [6 4] [3 4]}))
+           (= false (connected-graph? #{[:a :b] [:b :c] [:c :d]
+                                        [:x :y] [:d :a] [:b :e]}))
+           (= true (connected-graph? #{[:a :b] [:b :c] [:c :d]
+                                       [:x :y] [:d :a] [:b :e] [:x :a]})))
+
+#+end_src
+
+* 4Clojure Question 92
+
+*Roman numerals to decimal parser*
+Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtractive_principle][substractive principle]] on Wikipedia.
+
+#+begin_src clojure
+  ;; Roman numerals are easy to recognize,
+  ;; but not everyone knows all the rules necessary to work with them.
+  ;; Write a function to parse a Roman-numeral string and return the number it represents.
+  ;;
+  ;; You can assume that the input will be well-formed, in upper-case,
+  ;; and follow the subtractive principle.
+  ;;
+  ;; You don't need to handle any numbers greater than MMMCMXCIX (3999),
+  ;; the largest number representable with ordinary letters.
+
+  (defn roman-numeral-to-number
+    "For each numeral the operation is + if nothing greater on the right.
+    Otherwise we need to negate the number while accumulating the sum."
+    [roman-num-str]
+    (let [sym-table {\I 1, \V 5, \X 10, \L 50, \C 100, \D 500, \M 1000}
+          roman-num-xs (seq roman-num-str)
+          signed-num (fn [num remaining-nums]
+                       (if (seq remaining-nums)
+                         (if (> (apply max remaining-nums) num)
+                           ( - 0 num)
+                           num)
+                         num))]
+
+      ;; map each numeral to its number
+      (loop [nums (map #(sym-table %1) roman-num-xs), sum 0]
+        (if-not (seq nums)                ; return if nothing on the right
+          sum
+          (recur (rest nums)              ; loop and add the signed number
+                 (+ sum (signed-num (first nums) (rest nums))))))))
+
+
+
+  (and (= 14 (roman-numeral-to-number "XIV"))
+       (= 827 (roman-numeral-to-number "DCCCXXVII"))
+       (= 3999 (roman-numeral-to-number "MMMCMXCIX"))
+       (= 48 (roman-numeral-to-number "XLVIII")))
+
+#+end_src
