@@ -1012,8 +1012,6 @@
       (= (perfect-num? 8128) true))))
 #+end_src
 
-
-
 * 4Clojure Question 81
 *Write a function which returns the intersection of two sets.*
 
@@ -1111,4 +1109,78 @@
     (= (__ progeny)
        #{["father" "son"] ["father" "grandson"]
          ["uncle" "cousin"] ["son" "grandson"]}))
+#+end_src
+
+* 4Clojure Question 85
+
+#+begin_src clojure
+  ;; http://en.wikipedia.org/wiki/Power_set
+  ;; Write a function which generates the power set of a given set.
+  ;;
+  ;; The power set of a set x is the set of all subsets of x,
+  ;; including the empty set and x itself.
+  ;;
+  ;; http://www.mathsisfun.com/sets/power-set.html
+
+  ;; Poor man solution - too slow and not idiomatic Clojure...
+  (defn power-set [xs]
+    (let [xs-count (count xs)
+          seq-xs (into [] xs)
+          to-binary-seq (fn [n padding]
+                          (clojure.pprint/cl-format nil (str "~" padding ",'0',B") n))
+          bin-seq (map #(to-binary-seq %1 xs-count) (range 0 (Math/pow 2 xs-count)))
+          map-bitset-to-set (fn [set-seq str-bin-seq]
+                              (into #{}
+                                    (for [i (range (count str-bin-seq))
+                                          :when (= \1 (nth str-bin-seq i))]
+                                      (nth set-seq i))))]
+
+      (into #{}
+            (map (fn [bin-str]
+                   (map-bitset-to-set seq-xs (seq bin-str)))
+                 bin-seq))
+      )
+    )
+
+  (time
+   (and
+    (= (power-set #{1 :a}) #{#{1 :a} #{:a} #{} #{1}})
+    (= (power-set #{}) #{#{}})
+    (= (power-set #{1 2 3})
+       #{#{} #{1} #{2} #{3} #{1 2} #{1 3} #{2 3} #{1 2 3}})
+    (= (count (power-set (into #{} (range 10)))) 1024)))
+
+#+end_src
+
+* 4Clojure Question 86
+*Test happy numbers*
+
+#+begin_src clojure
+  ;; Happy numbers are positive integers that follow a particular formula:
+  ;; - take each individual digit, square it, and then sum the squares to get a new number.
+  ;; - Repeat with the new number and eventually, you might get to a number whose squared sum is 1.
+  ;; - This is a happy number.
+  ;;
+  ;; An unhappy number (or sad number) is one that loops endlessly.
+  ;; Write a function that determines if a number is happy or not.
+
+  (defn happy-num? [n]
+    {:pre [(pos? n)]}
+    (letfn [(inverted-digits-seq [x]
+              (if-not (pos? x)
+                nil
+                (cons (mod x 10) (inverted-digits-seq (long (/ x 10))))))]
+      (loop [loop-detection #{}, current-n n]
+        (let [digits-seq ((comp reverse inverted-digits-seq) current-n)
+              sum (long (reduce  #(+ %1 (Math/pow %2 2)) 0 digits-seq))]
+          (cond
+           (= 1 sum) true
+           (contains? loop-detection sum) false
+           :else (recur (conj loop-detection sum) sum))))))
+
+  (and
+   (= (happy-num? 7) true)
+   (= (happy-num? 986543210) true)
+   (= (happy-num? 2) false)
+   (= (happy-num? 3) false))
 #+end_src
