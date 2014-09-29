@@ -1072,9 +1072,7 @@
   ;; Otherwise your function should return false.
 
   (defn some-true? [& coll]
-    (let [true-vals (filter #(= true %) coll)
-          coll-count (count coll)
-          true-vals-count (count true-vals)]
+    (let [true-vals (filter #(= true %) coll)]
       (and (not (empty? true-vals))
            (not= (count true-vals) (count coll)))))
 
