@@ -1467,3 +1467,35 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
    (= "MMMCMXCIX" (number-to-roman-numeral 3999))
    (= "XLVIII" (number-to-roman-numeral 48)))
 #+end_src
+
+* 4Clojure Question 105
+
+#+begin_src clojure
+  ;; Given an input sequence of keywords and numbers,
+  ;; create a map such that each key in the map is a keyword,
+  ;; and the value is a sequence of all the numbers (if any)
+  ;; between it and the next keyword in the sequence.
+
+  (defn keyword-set[xs]
+    (loop [input-xs xs, result {}]
+      (let [split-xs (split-with keyword? input-xs)
+            remaining-vals (rest split-xs)
+            k (first (first split-xs))]
+        (if (nil? k)
+          result
+          (let [v (cond
+                   (= 1 (count (first split-xs))) (for [x (first remaining-vals)
+                                                        :while (not (keyword? x))] x)
+                   :else [])]
+            (recur (cond
+                    (zero? (count v)) (rest input-xs)
+                    :else (drop (count v) (first remaining-vals)))
+                   (assoc result k (reduce conj [] v))))))))
+
+  (and
+   (= {} (keyword-set []))
+   (= {:a [1]} (keyword-set [:a 1]))
+   (= {:a [1], :b [2]} (keyword-set [:a 1, :b 2]))
+   (= {:a [1 2 3], :b [], :c [4]} (keyword-set [:a 1 2 3 :b :c 4])))
+
+#+end_src
