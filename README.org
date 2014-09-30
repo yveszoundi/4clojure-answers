@@ -1422,10 +1422,48 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                  (+ sum (signed-num (first nums) (rest nums))))))))
 
 
-
   (and (= 14 (roman-numeral-to-number "XIV"))
        (= 827 (roman-numeral-to-number "DCCCXXVII"))
        (= 3999 (roman-numeral-to-number "MMMCMXCIX"))
        (= 48 (roman-numeral-to-number "XLVIII")))
 
+
+#+end_src
+
+* 4Clojure Question 104
+
+*Write roman numerals*
+
+#+begin_src clojure
+  ;; This is the inverse of Problem 92, but much easier.
+  ;; Given an integer smaller than 4000, return the corresponding roman numeral in uppercase,
+  ;; adhering to the subtractive principle.
+
+  ;; The trick here is to select carefully
+  ;; the symbol table so that you don't need to check for repetition
+  ;; 4 = IV vs XXXX (without storing such cases, it is more difficult for the recursion...)
+  ;; I couldn't make it work with a basic table as in problem 92.
+  (defn number-to-roman-numeral [n]
+    (let [sym-table { 1    "I", 4    "IV", 5   "V", 9   "IX",
+                     10   "X", 40   "XL", 50  "L", 90  "XC",
+                     100  "C", 400  "CD", 500 "D", 900 "CM"
+                     1000 "M"}
+          sym-keys (keys sym-table)]
+
+      (loop [remainder n, result []]
+        (if (zero? remainder)
+          (apply str result)
+          (let [min-num-sym (reduce max (filter #(<= %1 remainder) sym-keys))
+                min-sym (sym-table min-num-sym)]
+            (recur (- remainder min-num-sym) (conj result min-sym)))))))
+
+
+  (and
+   (= "I" (number-to-roman-numeral 1))
+   (= "XXX" (number-to-roman-numeral 30))
+   (= "IV" (number-to-roman-numeral 4))
+   (= "CXL" (number-to-roman-numeral 140))
+   (= "DCCCXXVII" (number-to-roman-numeral 827))
+   (= "MMMCMXCIX" (number-to-roman-numeral 3999))
+   (= "XLVIII" (number-to-roman-numeral 48)))
 #+end_src
