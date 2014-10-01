@@ -1537,6 +1537,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 #+end_src
 * 4Clojure Question 113
 
+*Data types*
+
 #+begin_src clojure
   ;; Write a function that takes a variable number of integer arguments.
   ;; If the output is coerced into a string, it should return a comma
@@ -1552,7 +1554,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
         (toString [this]
           (clojure.string/join ", " (sort input)))
         (seq [this]
-          (seq (into [] (java.util.LinkedHashSet. input)))))))
+          (seq (distinct input))))))
 
   (and (= "1, 2, 3" (str (seqable-proxy 2 1 3)))
        (= '(2 1 3) (seq (seqable-proxy 2 1 3)))
@@ -1562,10 +1564,53 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
        (and (= nil (seq (seqable-proxy)))
             (=  "" (str (seqable-proxy)))))
 #+end_src
+
 * 4Clojure Question 114
 
-#+begin_src clojure
+*Take up to N matches of a predicate function*
 
+#+begin_src clojure
+  ;; take-while is great for filtering sequences,
+  ;; but it limited: you can only examine
+  ;; a single item of the sequence at a time. What if you need to keep
+  ;; track of some state as you go over the sequence?
+  ;;
+  ;; Write a function which accepts an integer <code>n</code>, a predicate <code>p</code>, and a sequence. It should return a lazy sequence of items in the list up to, but not including, the <code>n</code>th item that satisfies the predicate.
+  ;;
+
+  (defn take-up-to
+    "Take all elements of xs until
+    n matches satisfy a predicate pred"
+    [n pred xs]  
+    (lazy-seq
+     (letfn [(pick-first-when-pred [condition x1 x2]
+               (if condition x1 x2))]
+       (loop [col xs, match-count 0, result []]
+         (if (or (= n match-count)
+                 (empty? col))
+           result
+           (let [x (first col)
+                 matched? (pred (first col))
+                 new-match-count (pick-first-when-pred matched?
+                                                       (inc match-count)
+                                                       match-count)]
+             (recur (rest col)
+                    new-match-count
+                    (pick-first-when-pred (< new-match-count n)
+                                          (conj result x)
+                                          result))))))))
+
+  (and (= [2 3 5 7 11 13]
+          (take-up-to 4 #(= 2 (mod % 3))
+                          [2 3 5 7 11 13 17 19 23]))
+
+       (= ["this" "is" "a" "sentence"]
+          (take-up-to 3 #(some #{\i} %)
+                          ["this" "is" "a" "sentence" "i" "wrote"]))
+
+       (= ["this" "is"]
+          (take-up-to 1 #{"a"}
+                          ["this" "is" "a" "sentence" "i" "wrote"])))
 #+end_src
 
 * 4Clojure Question 128
