@@ -1499,3 +1499,191 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
    (= {:a [1 2 3], :b [], :c [4]} (keyword-set [:a 1 2 3 :b :c 4])))
 
 #+end_src
+
+* 4Clojure Question 106
+
+#+begin_src clojure
+
+#+end_src
+* 4Clojure Question 107
+
+#+begin_src clojure
+
+#+end_src
+* 4Clojure Question 108
+
+#+begin_src clojure
+
+#+end_src
+* 4Clojure Question 109
+
+#+begin_src clojure
+
+#+end_src
+* 4Clojure Question 110
+
+#+begin_src clojure
+
+#+end_src
+* 4Clojure Question 111
+
+#+begin_src clojure
+
+#+end_src
+* 4Clojure Question 112
+
+#+begin_src clojure
+
+#+end_src
+* 4Clojure Question 113
+
+#+begin_src clojure
+  ;; Write a function that takes a variable number of integer arguments.
+  ;; If the output is coerced into a string, it should return a comma
+  ;; (and space) separated list of the inputs sorted smallest to largest.
+  ;; If the output is coerced into a sequence, it should return a seq of
+  ;; unique input elements in the same order as they were entered.
+  ;;
+  ;; Restrictions (please don't use these function(s)): proxy
+
+  (defn seqable-proxy [& xs]
+    (let [input (apply list xs)]
+      (reify clojure.lang.Seqable
+        (toString [this]
+          (clojure.string/join ", " (sort input)))
+        (seq [this]
+          (seq (into [] (java.util.LinkedHashSet. input)))))))
+
+  (and (= "1, 2, 3" (str (seqable-proxy 2 1 3)))
+       (= '(2 1 3) (seq (seqable-proxy 2 1 3)))
+       (= '(2 1 3) (seq (seqable-proxy 2 1 3 3 1 2)))
+       (= '(1) (seq (apply seqable-proxy (repeat 5 1))))
+       (= "1, 1, 1, 1, 1" (str (apply seqable-proxy (repeat 5 1))))
+       (and (= nil (seq (seqable-proxy)))
+            (=  "" (str (seqable-proxy)))))
+#+end_src
+* 4Clojure Question 114
+
+#+begin_src clojure
+
+#+end_src
+
+* 4Clojure Question 128
+
+#+begin_src clojure
+  ;; A standard American deck of playing cards has four suits
+  ;; - spades, hearts, diamonds, and clubs - and thirteen cards in each suit.
+  ;; Two is the lowest rank, followed by other integers up to ten; then the jack, queen, king, and ace.
+  ;;
+  ;; It's convenient for humans to represent these cards as suit/rank pairs,
+  ;; such as H5 or DQ: the heart five and diamond queen respectively.
+  ;; But these forms are not convenient for programmers,
+  ;; so to write a card game you need some way to parse an input string
+  ;; into meaningful components. For purposes of determining rank,
+  ;; we will define the cards to be valued from 0 (the two) to 12 (the ace).
+  ;;
+  ;; Write a function which converts (for example) the string "SJ" into a map
+  ;; of <code>{:suit :spade, :rank 9}</code>. A ten will always be represented
+  ;; with the single character "T", rather than the two characters "10".
+
+  (= {:suit :diamond :rank 10} (__ "DQ"))
+
+  (= {:suit :heart :rank 3} (__ "H5"))
+
+  (= {:suit :club :rank 12} (__ "CA"))
+
+  (= (range 13) (map (comp :rank __ str)
+                     '[S2 S3 S4 S5 S6 S7
+                       S8 S9 ST SJ SQ SK SA]))
+#+end_src
+
+* 4Clojure Question 132
+
+#+begin_src clojure
+  ;; 4Clojure Question 132
+  ;; Write a function that takes a two-argument predicate,
+  ;; a value, and a collection; and returns a new collection
+  ;; where the <code>value</code> is inserted between every
+  ;; two items that satisfy the predicate.
+
+  (= '(1 :less 6 :less 7 4 3) (__ < :less [1 6 7 4 3]))
+
+  (= '(2) (__ > :more [2]))
+
+  (= [0 1 :x 2 :x 3 :x 4]  (__ #(and (pos? %) (< % %2)) :x (range 5)))
+
+  (empty? (__ > :more ()))
+
+  (and (= [0 1 :same 1 2 3 :same 5 8 13 :same 21]
+     (take 12 (->> [0 1]
+                   (iterate (fn [[a b]] [b (+ a b)]))
+                   (map first) ; fibonacci numbers
+                   (__ (fn [a b] ; both even or both odd
+                         (= (mod a 2) (mod b 2)))
+                       :same)))))
+
+
+#+end_src
+
+* 4Clojure Question 150
+
+#+begin_src clojure
+  ;; A palindromic number is a number that is the same
+  ;; when written forwards or backwards (e.g., 3, 99, 14341).
+  ;; Write a function which takes an integer n, as its only argument,
+  ;; and returns an increasing lazy sequence of all palindromic numbers
+  ;; that are not less than n.
+  ;; The most simple solution will exceed the time limit!
+
+  (defn palindromic-seq [n]
+    {:pre [(pos? n)]}
+    (lazy-seq)
+    (let [start (inc n)
+          
+          mirror-num (fn [n digits]
+                       (for [i (range 10) :let [v (make-array Long/TYPE digits)]]
+                         (map (fn [x] (identity i)) v)))                     
+          make-digits-seq (fn[x]
+                            (when (pos? x)
+                              (cons (mod x 10) (make-digits-seq (long (/ x 10))))))]
+
+      (cond (< start 10) (reduce conj
+                                 (range start 10)
+                                 (palindromic-seq 10))
+            :else (let [digits-seq ((comp reverse make-digits-seq) start)]
+                    (when (= (first digits-seq) (last digits-seq))
+                      
+                    
+
+            (lazy-seq (palindromic-seq start))
+
+            )))
+
+  (and
+   (= (take 26 (palindromic-seq 0))
+      [0 1 2 3 4 5 6 7 8 9
+       11 22 33 44 55 66 77 88 99
+       101 111 121 131 141 151 161])
+
+   (= (take 16 (palindromic-seq 162))
+      [171 181 191 202
+       212 222 232 242
+       252 262 272 282
+       292 303 313 323])
+
+   (= (take 6 (palindromic-seq 1234550000))
+      [1234554321 1234664321 1234774321
+       1234884321 1234994321 1235005321])
+
+   (= (first (palindromic-seq (* 111111111 111111111)))
+      (* 111111111 111111111))
+
+   (= (set (take 199 (palindromic-seq 0)))
+      (set (map #(first (palindromic-seq %)) (range 0 10000))))
+
+   (= true
+      (apply < (take 6666 (palindromic-seq 9999999))))
+
+   (= (nth (palindromic-seq 0) 10101)
+      9102019))
+#+end_src
