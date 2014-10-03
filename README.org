@@ -1220,69 +1220,46 @@
   ;; - You must visit each edge exactly once.
   ;; - All edges are undirected.
 
-  (defn graph-tour? [edges]
-    {:pre [(and (sequential? edges) (not-empty edges))]}
+  (defn eulerian-path? [g]
+    {:pre [(and (sequential? g) (not-empty g))]}
 
-    (letfn [;; detect duplicate paths
-            (dup-paths? [lines]
-              (not= (count (set lines)) (count lines)))
+    (println "\n*****START")
+    (= g
+       ((fn step [p [a b]]
+          (println "\ncurrent p:" p "a,b" a b)
+          (if (or (nil? a) (some #{[a b]} p))
+            p
+            (step (conj p [a b])
+                  (-> (filter (fn [[c d]]
+                                (and (not
+                                      (and
+                                       (= a c)
+                                       (= b d)))
+                                     (some #{b} [c d])))
+                              g)
+                      first))
 
-            ;; Detect self loop
-            (self-loop? [line]
-              (= (line 0) (line 1)))
+            ))
+        []
+          (first g))))
 
-            ;; Detect self loops
-            (self-loops? [edges]
-              (not (nil? (some #(self-loop? %1) edges))))
-
-            ;; Possible routes for a given path of a set of edges.
-            (routes [edge edges]
-              (cons (cons (edge 1) (cons (edge 0) nil))
-                    (filter #(= (edge 1) (% 0)))))
-
-            ;; walk a given edge
-            (walk-edge [edge vertices-collector]
-              (let [alternate-paths (routes edge edges)]
-                (map #(walk-edge %1 vertices-collector) alternate-paths)))
-
-            ;; walk a set of edges
-            (walk-edges [edges]
-              (reduce #(walk-edge %1 #{}) edges))
-
-            (vertices [edges]
-              (set (flatten edges)))
-            
-            (all-visited? [edges node-list]
-              (contains)(vertices edges))]
-
-      ;; (if (seq? alternate-paths)
-      ;;   (let [picked-edge (first alternate-paths)]
-      ;;     (walk-edge picked-edge (conj vertices-collector (last edge)))))))
-      
-      (and
-       (not (dup-paths? edges))
-       (not (self-loops? edges))
-       (walk-edges edges))))
-
-
-  (and (= true (graph-tour? [[:a :b]]))
-       (= false (graph-tour? [[:a :a] [:b :b]]))
-       (= false (graph-tour? [[:a :b] [:a :b] [:a :c] [:c :a]
-                              [:a :d] [:b :d] [:c :d]]))
-       (= true (graph-tour? [[1 2] [2 3] [3 4] [4 1]]))
-       (= true (graph-tour? [
-                             [:a :b]
-                             [:a :c]
-                             [:c :b]
-                             [:a :e]
-                             [:b :e]
-                             [:a :d]
-                             [:b :d]
-                             [:c :e]
-                             [:d :e]
-                             [:c :f]
-                             [:d :f]]))
-       (= false (graph-tour? [[1 2] [2 3] [2 4] [2 5]])))
+  (and (= true (eulerian-path? [[:a :b]]))
+       (= false (eulerian-path? [[:a :a] [:b :b]]))
+       (= false (eulerian-path? [[:a :b] [:a :b] [:a :c] [:c :a]
+                                 [:a :d] [:b :d] [:c :d]]))
+       (= true (eulerian-path? [[1 2] [2 3] [3 4] [4 1]]))
+       (= true (eulerian-path? [[:a :b]
+                                [:a :c]
+                                [:c :b]
+                                [:a :e]
+                                [:b :e]
+                                [:a :d]
+                                [:b :d]
+                                [:c :e]
+                                [:d :e]
+                                [:c :f]
+                                [:d :f]]))
+       (= false (eulerian-path? [[1 2] [2 3] [2 4] [2 5]])))
 #+end_src
 
 * 4Clojure Question 90
@@ -1321,67 +1298,54 @@
   ;; - Each member of a tuple being a vertex/node in the graph.
   ;; - Each edge is undirected (can be traversed either direction).
 
-  (defn connected-graph? [edges]
+  (defn graph-connected? [s]
+    (apply = (vals (reduce 
+                    (fn [g [a b]]
+                      (println "a" a "b" b)
+                      (let [r (reduce conj (g a #{a}) (g b #{b}))]
+                        (println "r is" r)
+                        (println "s is" s)
+                        (reduce #(assoc % %2 r) g r)))
+                    {} s))))
 
-    (let [vertices (fn [edges]
-                     (set ((comp flatten seq) edges)))
+  (defn graph-connected? [edges]
+    (let [vertices (fn [e] ((comp set flatten seq) e))
+          narrow-vertices (fn [v e]
+                            (filter #(not= (first v) (first %1)) e))
+          neighbours (fn [v e]
+                       (reduce (fn [s x]
+                                 (if (= e (last x))
+                                   (conj s (first x))
+                                   s))
+                               #{} v))
+          build-connections (fn [v l r]
+                              (println "v" v "l" l "r" r)
+                              (if (empty? r)
+                                l
+                                (let [new-l (reduce  #(set (neighbours v %1)) r)]
+                                  (recur v
+                                         (reduce conj l new-l)
+                                         (narrow-vertices new-l r)))))
+          edge-connected? (fn [v e]
+                            (let [l (set (neighbours v e))
+                                  r (narrow-vertices l v)
+                                  connections (build-connections v l r)]
+                              (println "node:" e "neighbours:" l "connections:" connections)
+                              (>= (count connections) (dec (count (vertices v))) )))]
+      (println "vertices:" (vertices edges))
+      (every? #(edge-connected? edges %1) (vertices edges))))
 
-          pick-edge (fn [vertex edges]
-                      (first (filter #(= vertex (%1 0)))))
-
-          pick-edges (fn [pred vertex edges]
-                       (filter pred edges))
-
-          (vertex-links (fn [vertex edges visited-nodes]
-
-                          (if-let [first-edge (pick-edge vertex)]
-
-                            (assoc {} vertex #{(last first-edge)})
-
-                            (assoc {} vertex  #{}))))
-          ]
-
-      ;; for each vertice
-
-      current vertex
-
-      ;; find one matching edge
-      (when-let [current-edge (pick-edge current-vertex edges)]
-        (let [assumed-paths (set (cons current-vertex
-                                 (last current-edge)
-                                 nil
-                                 (pick-edges (fn [v]
-                                               (= current-vertex (last v)))
-                                             current-vertex
-                                             edges)))
-              current-vertex-links (assoc {} assumed-paths)
-
-                                   
-
-              (reduce #(conj %1 %2)
-                      (current-edge-map current-vertex)
-
-
-                      ;; find a link to ALL other vertices
-                      ;; which is (n -1) unique paths for n nodes
-
-                      ( = (* num-edges (dec num-edges))
-                          (reduce #(count (num-paths %1))
-                                  (vertices edges)))
-                      )
-              )
-
-          (and
-           (= true (connected-graph? #{[:a :a]}))
-           (= true (connected-graph? #{[:a :b]}))
-           (= false (connected-graph? #{[1 2] [2 3] [3 1]
-                                        [4 5] [5 6] [6 4]}))
-           (= true (connected-graph? #{[1 2] [2 3] [3 1]
-                                       [4 5] [5 6] [6 4] [3 4]}))
-           (= false (connected-graph? #{[:a :b] [:b :c] [:c :d]
-                                        [:x :y] [:d :a] [:b :e]}))
-           (= true (connected-graph? #{[:a :b] [:b :c] [:c :d]
-                                       [:x :y] [:d :a] [:b :e] [:x :a]})))
+  (and
+   (= true (graph-connected? #{[:a :a]}))
+   (= true (graph-connected? #{[:a :b]}))
+   (= false (graph-connected? #{[1 2] [2 3] [3 1]
+                                [4 5] [5 6] [6 4]}))
+   (= true (graph-connected? #{[1 2] [2 3] [3 1]
+                               [4 5] [5 6] [6 4] [3 4]}))
+   (= false (graph-connected? #{[:a :b] [:b :c] [:c :d]
+                                [:x :y] [:d :a] [:b :e]}))
+   (= true (graph-connected? #{[:a :b] [:b :c] [:c :d]
+                               [:x :y] [:d :a] [:b :e] [:x :a]})))
 
 #+end_src
 
@@ -1429,6 +1393,18 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 
 #+end_src
+
+* 4Clojure Question 93
+
+  #+BEGIN_SRC clojure
+
+  #+END_SRC
+
+* 4Clojure Question 94
+
+  #+BEGIN_SRC clojure
+
+  #+END_SRC
 
 * 4Clojure Question 104
 
@@ -1533,7 +1509,35 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * 4Clojure Question 112
 
 #+begin_src clojure
+  ;; Create a function which takes an integer
+  ;; and a nested collection of integers as arguments.
+  ;;
+  ;; Analyze the elements of the input collection and
+  ;; return a sequence which maintains the nested
+  ;; structure, and which includes all elements starting
+  ;; from the head whose sum is less than or equal to
+  ;; the input integer.
 
+  (=  (__ 10 [1 2 [3 [4 5] 6] 7])
+     '(1 2 (3 (4))))
+
+  (=  (__ 30 [1 2 [3 [4 [5 [6 [7 8]] 9]] 10] 11])
+     '(1 2 (3 (4 (5 (6 (7)))))))
+
+  (=  (__ 9 (range))
+     '(0 1 2 3))
+
+  (=  (__ 1 [[[[[1]]]]])
+     '(((((1))))))
+
+  (=  (__ 0 [1 2 [3 [4 5] 6] 7])
+     '())
+
+  (=  (__ 0 [0 0 [0 [0]]])
+     '(0 0 (0 (0))))
+
+  (=  (__ 1 [-10 [1 [2 3 [4 5 [6 7 [8]]]]]])
+     '(-10 (1 (2 3 (4)))))
 #+end_src
 * 4Clojure Question 113
 
@@ -1612,6 +1616,12 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
           (take-up-to 1 #{"a"}
                           ["this" "is" "a" "sentence" "i" "wrote"])))
 #+end_src
+
+* 4Clojure Question 115
+
+  #+BEGIN_SRC clojure
+
+  #+END_SRC
 
 * 4Clojure Question 128
 
