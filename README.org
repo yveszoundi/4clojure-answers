@@ -403,6 +403,120 @@
 
 #+end_src
 
+* 4Clojure Question 30
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 30
+    ;;
+    ;; Write a function which removes consecutive duplicates from a sequence.
+
+    (defn del-consecutive-dups [col]
+      (reduce (fn [xs b]
+                (if (or (empty? xs)
+                        (not= (last xs) b))
+                  (conj xs b)
+                  xs))
+              []
+              col))
+
+    ;; Cannot seem to make it both simpler and faster...
+    ;; (defn del-consecutive-dups [col]
+    ;;   (reduce (fn [xs item]
+    ;;             (apply conj xs (set item)))
+    ;;           []
+    ;;           (partition-by identity col)))
+
+
+    (and (= (apply str (del-consecutive-dups "Leeeeeerrroyyy")) "Leroy")
+         (= (del-consecutive-dups [1 1 2 3 3 2 2 3]) '(1 2 3 2 3))
+         (= (del-consecutive-dups [[1 2] [1 2] [3 4] [1 2]]) '([1 2] [3 4] [1 2])))
+  #+END_SRC
+
+* 4Clojure Question 31
+
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 31
+    ;;
+    ;; Write a function which packs consecutive duplicates into sub-lists.
+
+    ;; Took more than few mins for something so simple
+    ;; I'm not fluent yet with group-by vs split-width vs partition
+
+    (defn partition-dups [col]
+      (partition-by identity col))
+
+    (and
+     (= (partition-dups [1 1 2 1 1 1 3 3]) '((1 1) (2) (1 1 1) (3 3)))
+     (= (partition-dups [:a :a :b :b :c]) '((:a :a) (:b :b) (:c)))
+     (= (partition-dups [[1 2] [1 2] [3 4]]) '(([1 2] [1 2]) ([3 4]))))
+
+    ;; (defn true-partition [col]
+    ;;   (->> (map-indexed (fn [idx item]
+    ;;                       (if-not (pos? idx)
+    ;;                         false
+    ;;                         (or (= (col (dec idx)) item)
+    ;;                             (= (nth col (inc idx) (dec idx)) item))))
+    ;;                     col)
+    ;;        (partition-by (fn [x] (true? x)))))
+
+    ;; (defn walk-dups [truth-table col]
+    ;;   (loop [i 0, result [], xs truth-table]
+    ;;     (if (empty? xs)
+    ;;       result
+    ;;       (let [grp (first xs)
+    ;;             split-all? (false? (first (first grp)))]
+    ;;         (if split-all?
+    ;;           (recur (+ i (Math/max 1 (count grp)))
+                     
+    ;;           )
+            
+        
+
+    ;;     )
+
+  #+END_SRC
+
+* 4Clojure Question 32
+
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 32
+    ;;
+    ;; Write a function which duplicates each element of a sequence.
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (defn dup-each-item [xs]
+      (reduce #(apply conj %1 (list %2 %2)) [] xs))
+
+    (and
+     (= (dup-each-item [1 2 3]) '(1 1 2 2 3 3))
+     (= (dup-each-item [:a :a :b :b]) '(:a :a :a :a :b :b :b :b))
+     (= (dup-each-item [[1 2] [3 4]]) '([1 2] [1 2] [3 4] [3 4]))
+     (= (dup-each-item [[1 2] [3 4]]) '([1 2] [1 2] [3 4] [3 4])))
+  #+END_SRC
+
+* 4Clojure Question 33
+
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 33
+    ;;
+    ;; Write a function which replicates each element
+    ;; of a sequence a variable number of times.
+    (defn replicate-each-item [col n-times]
+      (reduce (fn [xs item]
+                (apply conj xs (for [i (range n-times)] item)))
+              []
+              col))
+
+    (and (= (replicate-each-item [1 2 3] 2) '(1 1 2 2 3 3))
+         (= (replicate-each-item [:a :b] 4) '(:a :a :a :a :b :b :b :b))
+         (= (replicate-each-item [4 5 6] 1) '(4 5 6))
+         (= (replicate-each-item [[1 2] [3 4]] 2) '([1 2] [1 2] [3 4] [3 4]))
+         (= (replicate-each-item [44 33] 2) [44 44 33 33]))
+  #+END_SRC
 
 * 4Clojure Question 34
 
