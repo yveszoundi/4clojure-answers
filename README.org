@@ -551,11 +551,16 @@
     ;;
     ;; Write a function which replicates each element
     ;; of a sequence a variable number of times.
+
     (defn replicate-each-item [col n-times]
-      (reduce (fn [xs item]
-                (apply conj xs (for [i (range n-times)] item)))
-              []
-              col))
+      (mapcat #(repeat n-times %1) col))
+
+
+    ;; (defn replicate-each-item [col n-times]
+    ;;   (reduce (fn [xs item]
+    ;;             (apply conj xs (for [i (range n-times)] item)))
+    ;;           []
+    ;;           col))
 
     (and (= (replicate-each-item [1 2 3] 2) '(1 1 2 2 3 3))
          (= (replicate-each-item [:a :b] 4) '(:a :a :a :a :b :b :b :b))
