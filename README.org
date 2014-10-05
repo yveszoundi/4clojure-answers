@@ -410,14 +410,19 @@
     ;;
     ;; Write a function which removes consecutive duplicates from a sequence.
 
+    ;; maybe more elegant and idiomatic, do not thing it is faster than
+    ;; the first reduce version though but did not time it.
     (defn del-consecutive-dups [col]
-      (reduce (fn [xs b]
-                (if (or (empty? xs)
-                        (not= (last xs) b))
-                  (conj xs b)
-                  xs))
-              []
-              col))
+      (mapcat set (#(partition-by identity %1) col)))
+
+    ;; (defn del-consecutive-dups [col]
+    ;;   (reduce (fn [xs b]
+    ;;             (if (or (empty? xs)
+    ;;                     (not= (last xs) b))
+    ;;               (conj xs b)
+    ;;               xs))
+    ;;           []
+    ;;           col))
 
     ;; Cannot seem to make it both simpler and faster...
     ;; (defn del-consecutive-dups [col]
