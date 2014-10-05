@@ -718,7 +718,6 @@
      (= (my-drop-every [1 2 3 4 5 6] 4) [1 2 3 5 6]))
   #+END_SRC
 
-
 * 4Clojure Question 42
 
 #+begin_src clojure
@@ -735,6 +734,51 @@
                       (= (factorial 8) 40320))))
 
 #+end_src
+
+* 4Clojure Question 43
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 43
+    ;;
+    ;; Write a function which reverses the interleave
+    ;; process into x number of subsequences.
+
+    (defn reverse-interleave [xs cnt]
+      (loop [result []
+             col xs
+             counter cnt]
+        (if (zero? counter)
+          result
+          (recur
+           (conj result (take-nth cnt col))
+           (rest col)
+           (dec counter)))))
+
+    (and (= (reverse-interleave [1 2 3 4 5 6] 2) '((1 3 5) (2 4 6)))
+         (= (reverse-interleave (range 9) 3) '((0 3 6) (1 4 7) (2 5 8)))
+         (= (reverse-interleave (range 10) 5) '((0 5) (1 6) (2 7) (3 8) (4 9))))
+  #+END_SRC
+
+* 4Clojure Question 44
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 44
+    ;;
+    ;; Write a function which can rotate a sequence in either direction.
+
+    ;; a bit of luck and trial/error here (negation)
+    (defn rotate-xs [dir col]
+      (if (pos? dir)
+        (take (count col) (drop dir (cycle col)))
+        (take (count col)
+              (drop (inc (* dir -1)) (cycle col)))))
+
+    (and (= (rotate-xs 2 [1 2 3 4 5]) '(3 4 5 1 2))
+         (= (rotate-xs -2 [1 2 3 4 5]) '(4 5 1 2 3))
+         (= (rotate-xs 6 [1 2 3 4 5]) '(2 3 4 5 1))
+         (= (rotate-xs 1 '(:a :b :c)) '(:b :c :a))
+         (= (rotate-xs -4 '(:a :b :c)) '(:c :a :b)))
+  #+END_SRC
 
 * 4Clojure Question 45
 
@@ -761,7 +805,6 @@
                       (= 4 ((flip-args quot) 2 8))
                       (= [1 2 3] ((flip-args take) [1 2 3 4 5] 3)))))
 #+end_src
-
 
 * 4Clojure Question 47
 
@@ -848,7 +891,6 @@
 
     (= [1 2 [3 4 5] [1 2 3 4 5]] (let [[a b & c :as d] [1 2 3 4 5]] [a b c d]))
   #+END_SRC
-
 
 * 4Clojure Question 52
 
