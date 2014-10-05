@@ -207,8 +207,25 @@
 #+begin_src clojure
   ;; Write a function which returns the second to last element from a sequence.
   ;; (= (__ (list 1 2 3 4 5)) 4)
-  (defn second-to-last [xs]
-    ((comp last butlast) xs))
+  ;; (defn second-to-last [xs]
+  ;;   ((comp last butlast) xs))
+
+  ;; (defn second-to-last [xs]
+  ;;   (nth xs (- (count xs) 2)))
+
+  ;; seems faster
+  (defn second-to-last [[x & xs]]
+    (if (= 1 (count xs)) x
+        (recur xs)))
+
+
+  ;; (time
+  ;;  (and
+  ;;   (= (second-to-last (list 1 2 3 4 5)) 4)
+  ;;   (= (second-to-last ["a" "b" "c"]) "b")
+  ;;   (= (second-to-last [[1 2] [3 4]]) [1 2])))
+
+
 
   (clojure.test/testing
       "Write a function which returns the second to last element from a sequence."
@@ -224,7 +241,15 @@
   ;; Write a function which returns the Nth element from a sequence.
   ;; Restrictions (please don't use these function(s)): nth
   ;; (= (__ '(4 5 6 7) 2) 6)
-  (= (.get '(4 5 6 7) 2) 6)
+
+  (defn nth-element [[x & xs] idx]
+    (if (= idx 0) x
+        (recur xs (dec idx))))
+
+  ;; (time
+  ;; (= (.get '(4 5 6 7) 2) 6))
+
+  (= (nth-element '(4 5 6 7) 2) 6)
 #+end_src 
 
 * 4Clojure Question 22
@@ -233,17 +258,29 @@
   ;; Write a function which returns the total number of elements in a sequence.
   ;; Restrictions (please don't use these function(s)): count
   ;; (= (__ '(1 2 3 3 1)) 5)
-  (defn count-seq [xs]
-    ((comp #(reduce + %) #(map (fn[x] 1) %)) xs))
+  ;; (defn count-seq [xs]
+  ;;   ((comp #(reduce + %) #(map (fn[x] 1) %)) xs))
 
-  (clojure.test/testing
-      "Write a function which reverses a sequence."
-    (clojure.test/is (and
-                      (= (count-seq '(1 2 3 3 1)) 5)
-                      (= (count-seq "Hello World") 11)
-                      (= (count-seq [[1 2] [3 4] [5 6]]) 3)
-                      (= (count-seq '(13)) 1)
-                      (= (count-seq '(:a :b :c)) 3))))
+  ;; v2 seems faster and maybe more idiomatic
+  (defn count-seq [xs]
+    (reduce (fn [sum _] (inc sum)) 0 xs))
+
+
+  ;; (time
+  ;;  (and
+  ;;                     (= (count-seq '(1 2 3 3 1)) 5)
+  ;;                     (= (count-seq "Hello World") 11)
+  ;;                     (= (count-seq [[1 2] [3 4] [5 6]]) 3)
+  ;;                     (= (count-seq '(13)) 1)
+  ;;                     (= (count-seq '(:a :b :c)) 3)))
+
+
+  (and
+   (= (count-seq '(1 2 3 3 1)) 5)
+   (= (count-seq "Hello World") 11)
+   (= (count-seq [[1 2] [3 4] [5 6]]) 3)
+   (= (count-seq '(13)) 1)
+   (= (count-seq '(:a :b :c)) 3))
 #+end_src
 
 * 4Clojure Question 23
@@ -269,7 +306,7 @@
   ;; Write a function which returns the sum of a sequence of numbers.
   ;; (= (__ [1 2 3]) 6)
   (defn sum-xs [xs]
-    (apply + xs))
+    (reduce + xs))
 
   (clojure.test/testing
       "Write a function which returns the sum of a sequence of numbers."
@@ -308,11 +345,33 @@
             (recur (inc idx) (+ prev-idx before-prev-idx) prev-idx)
             (+ prev-idx before-prev-idx)))))
 
+  ;; Tried to be idiomatic and to keep it simple here
   (defn fib-rec
     "Recursive version whole lot slower."
-    [x]
+    [^BigInteger x]
     (if (< x 2) x
         (+ (fib-rec (- x 1)) (fib-rec (- x 2)))))
+
+
+  ;; Just translated from sample code
+  ;; more comfortable with my initial attempt
+  (defn fib-fast-doubling[x]
+    (if (< x 2)
+      x
+      (((fn fib-fast-doubling [n]
+          (if (<= n 0N)
+            [0N 1N]
+            (let [ab (fib-fast-doubling (Math/floor (/ n 2N)))
+                  a (ab 0)
+                  b (ab 1)
+                  c (* a (- (* b 2N) a))
+                  d ( + (* b b) (* a a))]
+
+              (if (zero? (mod n 2N))
+                [c d]
+                [d (+ c d)])))) (- x 1N)) 1 )))
+
+
 
   (defn first-fib-nums [n]
     (#(map fib (range 1 (inc %1))) n))
@@ -331,18 +390,16 @@
   ;; Write a function which takes a string and returns a new string containing only
   ;; the capital letters.
   ;; (= (__ "HeLlO, WoRlD!") "HLOWRD")
-  (defn only-caps [s]
-    ((comp #(apply str %)
-           (fn[x] (filter #(Character/isUpperCase %1) (seq x))))
-     s))
+  (defn caps-letter? [s]
+    (reduce str (filter #(Character/isUpperCase %1) s)))
 
   (clojure.test/testing
       "Write a function which takes a string and returns
            a new string containing only the capital letters."
     (clojure.test/is (and
-                      (= (only-caps "HeLlO, WoRlD!") "HLOWRD")
-                      (empty? (only-caps "nothing"))
-                      (= (only-caps "$#A(*&987Zf") "AZ"))))
+                      (= (caps-letter? "HeLlO, WoRlD!") "HLOWRD")
+                      (empty? (caps-letter? "nothing"))
+                      (= (caps-letter? "$#A(*&987Zf") "AZ"))))
 
 #+end_src
 
@@ -393,6 +450,14 @@
                       (= 1  (let [x 7 y 3 z 1] z)))))
 #+end_src
 
+* 4Clojure Question 37
+
+
+  #+BEGIN_SRC clojure
+    ;; Regex patterns are supported with a special reader macro.
+    (= "ABC" (apply str (re-seq #"[A-Z]+" "bA1B3Ce ")))
+  #+END_SRC
+
 * 4Clojure Question 38
 
 #+begin_src clojure
@@ -401,6 +466,7 @@
   (defn find-max [& xs]
     (last (sort xs)))
 
+  ;; default impl used
   (defn find-max-with-reduce [x & y]
     (reduce (fn [x y]
               (if y
@@ -412,9 +478,9 @@
       "Write a function which takes a variable number of
            parameters and returns the maximum value."
     (clojure.test/is (and
-                      (= (find-max 1 8 3 4) 8)
-                      (= (find-max 30 20) 30)
-                      (= (find-max 45 67 11) 67))))
+                      (= (find-max-with-reduce 1 8 3 4) 8)
+                      (= (find-max-with-reduce 30 20) 30)
+                      (= (find-max-with-reduce 45 67 11) 67))))
 
 #+end_src
 
@@ -423,22 +489,70 @@
 #+begin_src clojure
   ;; Write a function which takes two sequences and
   ;; returns the first item from each, then the second item
-  ;;from each, then the third, etc.
+  ;; from each, then the third, etc.
   ;; Restrictions (please don't use these function(s)): interleave
-  ;; (defn my-interleave [xs]
 
-  ;;   )
+  (defn my-interleave [x1 x2]
+    (if (or (empty? x1)
+            (empty? x2))
+      nil
+      (cons (first x1) (cons (first x2)
+                             (my-interleave (rest x1) (rest x2))))))
 
-  ;; (clojure.test/testing
-  ;;     "Write a function which takes a variable number of
-  ;;      parameters and returns the maximum value."
-  ;;   (clojure.test/is (and
-  ;;                     (= (my-interleave [1 2 3] [:a :b :c]) '(1 :a 2 :b 3 :c))
-  ;;                     (= (my-interleave [1 2] [3 4 5 6]) '(1 3 2 4))
-  ;;                     (= (my-interleave [1 2 3 4] [5]) [1 5])
-  ;;                     (= (my-interleave [30 20] [25 15]) [30 25 20 15]))))
+  (clojure.test/testing
+      "Write a function which takes a variable number of
+       parameters and returns the maximum value."
+    (clojure.test/is (and
+                      (= (my-interleave [1 2 3] [:a :b :c]) '(1 :a 2 :b 3 :c))
+                      (= (my-interleave [1 2] [3 4 5 6]) '(1 3 2 4))
+                      (= (my-interleave [1 2 3 4] [5]) [1 5])
+                      (= (my-interleave [30 20] [25 15]) [30 25 20 15]))))
 
 #+end_src
+
+* 4Clojure Question 40
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 40
+    ;; Write a function which separates the items
+    ;; of a sequence by an arbitrary value.
+    ;;
+    ;; Restrictions (please don't use these function(s)):
+    ;; interpose
+
+    (defn my-interpose [delimiter col]
+      (butlast (reduce (fn[col item]
+                         (conj col item delimiter))
+                       []
+                       col)))
+
+    (and
+     (= (my-interpose 0 [1 2 3]) [1 0 2 0 3])
+     (= (apply str (my-interpose ", " ["one" "two" "three"])) "one, two, three")
+     (= (my-interpose :z [:a :b :c :d]) [:a :z :b :z :c :z :d]))
+  #+END_SRC
+
+* 4Clojure Question 41
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 41
+    ;;
+    ;; Write a function which drops every Nth item from a sequence.
+
+    ;; simplistic approach no accumulator in a loop or similar
+    ;; try to write more idiomatic code first.
+    (defn my-drop-every [col n]
+      (->> (partition-all n col)
+           (reduce (fn [x1 x2]
+                     (concat
+                      x1
+                      (take (dec n) x2))) [])))
+    (and
+     (= (my-drop-every [1 2 3 4 5 6 7 8] 3) [1 2 4 5 7 8])
+     (= (my-drop-every [:a :b :c :d :e :f] 2) [:a :c :e])
+     (= (my-drop-every [1 2 3 4 5 6] 4) [1 2 3 5 6]))
+  #+END_SRC
+
 
 * 4Clojure Question 42
 
@@ -521,23 +635,85 @@
                       (= (dosplit 2 [[1 2] [3 4] [5 6]]) [[[1 2] [3 4]] [[5 6]]]))))
 #+end_src
 
+* 4Clojure Question 50
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 50
+    ;;
+    ;; Write a function which takes a sequence consisting of items
+    ;; with different types and splits them up into a set of
+    ;; homogeneous sub-sequences. The internal order of each
+    ;; sub-sequence should be maintained, but the sub-sequences
+    ;; themselves can be returned in any order (this is why
+    ;; 'set' is used in the test cases).
+
+    (defn type-partition [col]
+      (let [xx (map type col)
+            m (group-by #(type %1) col)]
+        (reduce (fn [s k]
+                  (conj s (m k)))
+                []
+                (keys m))))
+
+    (and
+     (= (set (type-partition [1 :a 2 :b 3 :c])) #{[1 2 3] [:a :b :c]})
+     (= (set (type-partition [:a "foo"  "bar" :b])) #{[:a :b] ["foo" "bar"]})
+     (= (set (type-partition [[1 2] :a [3 4] 5 6 :b])) #{[[1 2] [3 4]] [:a :b] [5 6]}))
+  #+END_SRC
+
+* 4Clojure Question 51
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 51
+    ;;
+    ;; Here is an example of some more sophisticated destructuring.
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (= [1 2 [3 4 5] [1 2 3 4 5]] (let [[a b & c :as d] [1 2 3 4 5]] [a b c d]))
+  #+END_SRC
+
 
 * 4Clojure Question 52
 
 #+begin_src clojure
+  ;; 4Clojure Question 52
+  ;;
   ;; Let bindings and function parameter lists support destructuring.
+  ;;
+  ;; Use M-x 4clojure-check-answers when you're done!
 
-  ;; (defn split-xs [xs]
-
-  ;;   )
-
-  ;; (clojure.test/testing
-  ;;     "Write a function which will split a sequence into two parts."
-  ;;   (clojure.test/is (and
-  ;;                     (= [2 4] (let [[a b c d e f g] (range)] __))
-
-  ;;                     )))
+  (= [2 4] 
+     (let [[a b c d e f g] (range)]
+       [c e]))
 #+end_src
+
+* 4Clojure Question 53
+
+  #+BEGIN_SRC clojure
+    ;; Given a vector of integers, find the longest consecutive sub-sequence
+    ;; of increasing numbers. If two sub-sequences have the same length,
+    ;; use the one that occurs first.
+    ;; An increasing sub-sequence must have a length of 2 or greater to qualify.
+    ;;
+    ;; wip
+
+    (= (__ [1 0 1 2 3 0 4 5]) [0 1 2 3])
+
+    (= (__ [5 6 1 3 2 7]) [5 6])
+
+    (= (__ [2 3 3 4 5]) [3 4 5])
+
+    (= (__ [7 6 5 4]) [])
+  #+END_SRC
+
+* 4Clojure Question 54
+
+
+  #+BEGIN_SRC clojure
+
+  #+END_SRC
+
 
 * 4Clojure Question 55
 
@@ -1020,8 +1196,7 @@
   ;; Restrictions (please don't use these function(s)): intersection
 
   (defn set-intersection [x1 x2]
-    ;; better answer (set (filter x1 x2)))
-    (into #{} (for [x x1, :when (contains? x2 x)] x)))
+    (set (filter x1 x2)))
 
   (clojure.test/testing
       "Intersection of two sets."
@@ -1052,7 +1227,7 @@
 
 
   (clojure.test/testing
-      "Intersection of two sets."
+      "Word chain"
     (clojure.test/is
      (and
       (= true (cont-word-chain? #{"hat" "coat" "dog" "cat" "oat" "cot" "hot" "hog"}))
@@ -1071,10 +1246,8 @@
   ;; are true, but not all of the parameters are true.
   ;; Otherwise your function should return false.
 
-  (defn some-true? [& coll]
-    (let [true-vals (filter #(= true %) coll)]
-      (and (not (empty? true-vals))
-           (not= (count true-vals) (count coll)))))
+  (defn some-true? [& cols]
+    (= (set cols) #{true false}))
 
   (and (= false (some-true? false false))
        (= true (some-true? true false))
@@ -1222,26 +1395,65 @@
 
   (defn eulerian-path? [g]
     {:pre [(and (sequential? g) (not-empty g))]}
-
     (println "\n*****START")
-    (= g
-       ((fn step [p [a b]]
-          (println "\ncurrent p:" p "a,b" a b)
-          (if (or (nil? a) (some #{[a b]} p))
-            p
-            (step (conj p [a b])
-                  (-> (filter (fn [[c d]]
-                                (and (not
-                                      (and
-                                       (= a c)
-                                       (= b d)))
-                                     (some #{b} [c d])))
-                              g)
-                      first))
+    ;; (println "graph" g)
 
-            ))
-        []
-          (first g))))
+    (let [vertices (fn [g]
+                     ((comp set flatten) g))
+
+          remove-first (fn [target col]
+                         (let [[n m] (split-with (partial not= target) col)]
+                           (concat n (rest m))))
+          lowest-freq (fn [x1 x2 g src]
+                        (frequencies g)
+
+                        )
+          ]
+      (= g
+         ((fn step [p [a b] src visited start]
+            (println "grapH:" p "visits:" visited "start" start)
+            (if (nil? a)
+              visited
+              (let [r (filter (fn [[c d]]
+                                (and
+                                 (or (= src c) (= src d))
+                                 (not (and (= a c) (= d b)))
+                                 ))
+                              p)
+                    z (first (filter (fn [[x y]]
+                                       (println "filter:p count" (count p))
+
+                                       (if (> (count p) 1)
+                                         (not (or (= x start)
+                                                  (= y start)))
+                                         true)
+
+                                       )
+
+                                     r))]
+                (println "r:" r ",z:" z)
+                (step (remove-first z p)
+                      z
+                      (if-not (empty? z)
+                        (first (disj (set z) src))
+                        [])
+                      (reduce conj visited (if (empty? z)
+                                             []
+                                             [z]))
+                      start)
+                )
+              ))
+          (rest g)
+          (first g)
+          (last (first g))
+          [(first g)]
+            (first (first g))
+            )
+
+         )
+      )
+    )
+
 
   (and (= true (eulerian-path? [[:a :b]]))
        (= false (eulerian-path? [[:a :a] [:b :b]]))
