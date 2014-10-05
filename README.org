@@ -813,12 +813,23 @@
     ;; 'set' is used in the test cases).
 
     (defn type-partition [col]
-      (let [xx (map type col)
-            m (group-by #(type %1) col)]
-        (reduce (fn [s k]
-                  (conj s (m k)))
-                []
-                (keys m))))
+      (vals (group-by #(type %1) col)))
+
+    ;; (defn type-partition [col]
+    ;;   (let [xx (map type col)
+    ;;         m (group-by #(type %1) col)]
+    ;;     (reduce (fn [s k]
+    ;;               (conj s (m k)))
+    ;;             []
+    ;;             (keys m))))
+
+    ;; (defn type-partition [col]
+    ;;   (let [xx (map type col)
+    ;;         m (group-by #(type %1) col)]
+    ;;     (reduce (fn [s k]
+    ;;               (conj s (m k)))
+    ;;             []
+    ;;             (keys m))))
 
     (and
      (= (set (type-partition [1 :a 2 :b 3 :c])) #{[1 2 3] [:a :b :c]})
