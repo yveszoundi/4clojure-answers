@@ -5,7 +5,6 @@
 #+STYLE: <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.0.4/css/bootstrap.min.css" />
 #+INFOJS_OPT: view:nil toc:t ltoc:t mouse:underline buttons:0 path:http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.0.3/bootstrap.min.js
 
-
 * Overview
   Answers to [[http://4clojure.com/][4clojure.com]] questions.
 
@@ -370,8 +369,6 @@
               (if (zero? (mod n 2N))
                 [c d]
                 [d (+ c d)])))) (- x 1N)) 1 )))
-
-
 
   (defn first-fib-nums [n]
     (#(map fib (range 1 (inc %1))) n))
@@ -932,7 +929,6 @@
 
   #+END_SRC
 
-
 * 4Clojure Question 55
 
 #+begin_src clojure
@@ -1219,7 +1215,6 @@
 
 #+end_src
 
-
 * 4Clojure Question 70
 #+begin_src clojure
   (defn split-sentence [xs]
@@ -1356,7 +1351,6 @@
       (= (euler-totient 99) 60))))
 #+end_src
 
-
 * 4Clojure Question 76
 #+begin_src clojure
   ;;
@@ -1378,7 +1372,6 @@
                      #(foo x (+ 2 y))))]
        (trampoline foo [] 1)))
 #+end_src
-
 
 * 4Clojure Question 80
 *Test perfect numbers*
@@ -1425,7 +1418,6 @@
       (= (set-intersection #{:a :b :c :d} #{:c :e :a :f :d}) #{:a :c :d}))))
 #+end_src
 
-
 * 4Clojure Question 82
 *Test continuous word chain*
 
@@ -1440,9 +1432,8 @@
   ;; and returns true if they can be arranged into one continous word chain, and false if they cannot.
 
   (defn cont-word-chain? [xs]
-
-)
-
+    
+    )
 
   (clojure.test/testing
       "Word chain"
@@ -1795,32 +1786,39 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; You don't need to handle any numbers greater than MMMCMXCIX (3999),
   ;; the largest number representable with ordinary letters.
 
-  (defn roman-numeral-to-number
-    "For each numeral the operation is + if nothing greater on the right.
-    Otherwise we need to negate the number while accumulating the sum."
-    [roman-num-str]
+  ;; (defn roman-numeral-to-number
+  ;;   "For each numeral the operation is + if nothing greater on the right.
+  ;;   Otherwise we need to negate the number while accumulating the sum."
+  ;;   [roman-num-str]
+  ;;   (let [sym-table {\I 1, \V 5, \X 10, \L 50, \C 100, \D 500, \M 1000}
+  ;;         roman-num-xs (seq roman-num-str)
+  ;;         signed-num (fn [num remaining-nums]
+  ;;                      (if (seq remaining-nums)
+  ;;                        (if (> (apply max remaining-nums) num)
+  ;;                          ( - 0 num)
+  ;;                          num)
+  ;;                        num))]
+
+  ;;     ;; map each numeral to its number
+  ;;     (loop [nums (map #(sym-table %1) roman-num-xs), sum 0]
+  ;;       (if-not (seq nums)                ; return if nothing on the right
+  ;;         sum
+  ;;         (recur (rest nums)              ; loop and add the signed number
+  ;;                (+ sum (signed-num (first nums) (rest nums))))))))
+
+  (defn roman-numeral-to-number [str]
     (let [sym-table {\I 1, \V 5, \X 10, \L 50, \C 100, \D 500, \M 1000}
-          roman-num-xs (seq roman-num-str)
-          signed-num (fn [num remaining-nums]
-                       (if (seq remaining-nums)
-                         (if (> (apply max remaining-nums) num)
-                           ( - 0 num)
-                           num)
-                         num))]
-
-      ;; map each numeral to its number
-      (loop [nums (map #(sym-table %1) roman-num-xs), sum 0]
-        (if-not (seq nums)                ; return if nothing on the right
-          sum
-          (recur (rest nums)              ; loop and add the signed number
-                 (+ sum (signed-num (first nums) (rest nums))))))))
-
+          nums (mapv #(sym-table %1) str)]
+      (reduce + (map-indexed (fn [idx item]
+                               (let [max-right-item (reduce max (subvec nums idx))
+                                     num-x (if (> max-right-item item) -1 1)]
+                                 (* item num-x)))
+                             nums))))
 
   (and (= 14 (roman-numeral-to-number "XIV"))
        (= 827 (roman-numeral-to-number "DCCCXXVII"))
        (= 3999 (roman-numeral-to-number "MMMCMXCIX"))
        (= 48 (roman-numeral-to-number "XLVIII")))
-
 
 #+end_src
 
