@@ -1217,15 +1217,18 @@
 
 * 4Clojure Question 70
 #+begin_src clojure
-  (defn split-sentence [xs]
-    (-> xs
-        (.split " ")
-        concat      
-        (->> (map (fn [x]
-                    ((comp #(apply str %1) filter)
-                     #(Character/isJavaLetterOrDigit %1) x))))
-        (->> (sort-by #(.toLowerCase %)))))
+  ;; (defn split-sentence [xs]
+  ;;   (-> xs
+  ;;       (.split " ")
+  ;;       concat
+  ;;       (->> (map (fn [x]
+  ;;                   ((comp #(apply str %1) filter)
+  ;;                    #(Character/isJavaLetterOrDigit %1) x))))
+  ;;       (->> (sort-by #(.toLowerCase %)))))
 
+  (defn split-sentence [xs]
+    (->> (re-seq #"\w+|\d+" xs)
+         (sort-by #(.toLowerCase %))))
 
   (clojure.test/testing
       "Write a function that splits a sentence up
