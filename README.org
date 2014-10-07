@@ -1036,8 +1036,8 @@
 * Problem 61
 
 #+begin_src clojure
-  (defn do-zipmap [& xs]
-    (apply assoc {} (apply interleave xs)))
+  (defn do-zipmap [ks vs]
+    (apply hash-map (interleave ks vs)))
 
   (clojure.test/testing
       "Problem 61.
@@ -1170,48 +1170,45 @@
 
 * TODO Problem 67
 #+begin_src clojure
-  ;; just testing stuff here
-  ;; the bounded-prime-sieve function is inefficient...
+  ;; Write a function which returns the first x
+  ;; number of prime numbers.
   ;;
-  ;; (defn bounded-prime-sieve
-  ;;   "Finding all prime numbers up to any given limit."
-  ;;   [limit]
-  ;;      (let [start 2
-  ;;            rng (range start (inc limit))]       
-  ;;        (loop [n 0
-  ;;               result []
-  ;;               boundaries rng]
-  ;;          (if (or (>= n (- limit start))
-  ;;                  (empty? boundaries))
-  ;;            result
-  ;;            (let [divider (first boundaries)]
-  ;;              (recur (inc n)
-  ;;                     (conj result divider)             
-  ;;                     (filter #(and (not= 0 (mod %1 divider))
-  ;;                                   (> %1 n))  boundaries)))))))
+  ;; Not really fast but maybe "ok" for small numbers below 100000
+
+  (defn prime-sieve [n]
+    {:pre [(pos? n)]}
+    (let [add-prime? (fn [x xs limit]
+                       (let [max-val (inc (long (Math/ceil (Math/sqrt x))))]
+
+                         (if (not-any? (fn [a]
+                                         (zero? (mod x a)))
+                                       (for [j xs :while (< j max-val)] j))
+                           [(conj xs x) (dec limit)]
+                           [xs limit])))]
+      (loop [i 3 , prime-xs [2], limit (dec n)]
+        (if-not (pos? limit)
+          prime-xs
+          (let [prime-op-ctx (add-prime? i prime-xs limit)]
+            (recur (+ i 2)
+                   (prime-op-ctx 0)
+                   (prime-op-ctx 1)))))))
+
+  (and
+   (= (prime-sieve 2) [2 3])
+   (= (prime-sieve 5) [2 3 5 7 11])
+   (= (last (prime-sieve 100)) 541))
 
 
-
-  ;; (defn prime? [n]
-    
-  ;;   )
-
-
-  ;; (def n-primes [n]
-    
-
-    
-  ;;   )
-
-  ;; (clojure.test/testing
-  ;;     "Write a function which returns the first x
-  ;;      number of prime numbers."
-  ;;   (clojure.test/is
-  ;;    (and
-  ;;     (= (n-primes 2) [2 3])
-  ;;     (= (n-primes 5) [2 3 5 7 11])
-  ;;     (= (last (n-primes 100)) 541))))
-
+  (defn prime-sieve [n]
+      (let [primes
+            (fn c-primes
+              ([] (cons 2 (c-primes (iterate inc 3) [2])))
+              ([coll acc]
+               (lazy-seq
+                 (if (not-any? #(zero? (mod (first coll) %)) acc)
+                   (cons (first coll) (c-primes (rest coll) (conj acc (first coll))))
+                   (c-primes (rest coll) acc)))))]
+        (take n (primes))))
 #+end_src
 
 * Problem 70
@@ -1378,6 +1375,7 @@
 #+end_src
 
 * Problem 80
+
 *Test perfect numbers*
 
 #+begin_src clojure
@@ -1895,18 +1893,17 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; between it and the next keyword in the sequence.
 
   (defn keyword-set[xs]
-    (loop [input-xs xs, result {}]
-      (let [split-xs (split-with keyword? input-xs)
+    (loop [col xs, result {}]
+      (let [split-xs (split-with keyword? col)
             remaining-vals (rest split-xs)
             k (first (first split-xs))]
         (if (nil? k)
           result
-          (let [v (cond
-                   (= 1 (count (first split-xs))) (for [x (first remaining-vals)
-                                                        :while (not (keyword? x))] x)
-                   :else [])]
+          (let [v (case (count (first split-xs))
+                    1 (take-while #(not (keyword? %1)) (first remaining-vals))
+                    [])]
             (recur (cond
-                    (zero? (count v)) (rest input-xs)
+                    (zero? (count v)) (rest col)
                     :else (drop (count v) (first remaining-vals)))
                    (assoc result k (reduce conj [] v))))))))
 
