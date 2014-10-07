@@ -947,7 +947,7 @@
          (= (lcs [7 6 5 4]) []))
   #+END_SRC
 
-* TODO Problem 54
+* Problem 54
 
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 54
@@ -1052,6 +1052,26 @@
          (= true ((compclj zero? #(mod % 8) +) 3 5 7 9))
          (= "HELLO" ((compclj #(.toUpperCase %) #(apply str %) take) 5 "hello world"))))))
 #+end_src
+
+* Problem 59
+
+  #+BEGIN_SRC clojure
+    ;; Take a set of functions and return a new function
+    ;; that takes a variable number of arguments and
+    ;; returns a sequence containing the result of
+    ;; applying each function left-to-right to the argument list.
+    ;;
+    ;; Restrictions (please don't use these function(s)): juxt
+
+    (defn map-apply [& fs]
+      (fn [& args]
+        (map #(apply %1 args) fs)))
+
+    (and (= [21 6 1] ((map-apply + max min) 2 3 5 1 6 4))
+         (= ["HELLO" 5] ((map-apply #(.toUpperCase %) count) "hello"))
+         (= [2 6 4] ((map-apply :a :c :b) {:a 2, :b 4, :c 6, :d 8 :e 10})))
+  #+END_SRC
+
 
 * Problem 60
 
