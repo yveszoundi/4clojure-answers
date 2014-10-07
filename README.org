@@ -8,7 +8,7 @@
 * Overview
   Answers to [[http://4clojure.com/][4clojure.com]] questions.
 
-* 4Clojure Question 1
+* Problem 1
 
 #+begin_src clojure  
   ;; This is a clojure form.  Enter a value which will make the form evaluate to true.
@@ -18,7 +18,7 @@
   (= true true)
 #+end_src
 
-* 4Clojure Question 2
+* Problem 2
 
 #+begin_src clojure
   ;; <p>If you are not familiar with <a href='http://en.wikipedia.org/wiki/Polish_notation'>
@@ -30,7 +30,7 @@
   (= (- 10 (* 2 3)) 4)
 #+end_src
 
-* 4Clojure Question 3
+* Problem 3
 #+begin_src clojure
   ;; Clojure strings are Java strings.  This means that you can use any of the Java string methods
   ;; on Clojure strings.
@@ -38,7 +38,7 @@
   (= "HELLO WORLD" (.toUpperCase "hello world"))
 #+end_src
 
-* 4Clojure Question 4
+* Problem 4
 #+begin_src clojure
   ;; Lists can be constructed with either a function or a quoted form.
   ;; (= (list __) '(:a :b :c))
@@ -46,14 +46,14 @@
 #+end_src
 
 #+begin_src clojure
-  ;; 4Clojure Question 5
+  ;; Problem 5
   ;; When operating on a list, the conj function will return a new list with one or more items
   ;; "added" to the front.
   ;; (= __ (conj '(2 3 4) 1))
   (= '(1 2 3 4) (conj '(2 3 4) 1))
 #+end_src
 
-* 4Clojure Question 6
+* Problem 6
 
 #+begin_src clojure
   ;; Vectors can be constructed several ways.  You can compare them with lists.
@@ -61,7 +61,7 @@
   (= [:a :b :c] (list :a :b :c) (vec '(:a :b :c)) (vector :a :b :c))
 #+end_src
 
-* 4Clojure Question 7
+* Problem 7
 
 #+begin_src clojure
   ;; When operating on a Vector, the conj function will return a new vector with one or
@@ -70,7 +70,7 @@
   (= [ 1 2 3 4] (conj [1 2 3] 4))
 #+end_src
 
-* 4Clojure Question 8
+* Problem 8
 
 #+begin_src clojure
   ;; Sets are collections of unique values.
@@ -78,7 +78,7 @@
   (= #{:a :b :c :d} (set '(:a :a :b :c :c :c :c :d :d)))
 #+end_src
 
-* 4Clojure Question 9
+* Problem 9
 
 #+begin_src clojure
   ;; When operating on a set, the conj function returns a new set with one or more keys
@@ -87,7 +87,7 @@
   (= #{1 2 3 4} (conj #{1 4 3} 2))
 #+end_src
 
-* 4Clojure Question 10
+* Problem 10
 
 #+begin_src clojure
   ;; Maps store key-value pairs.  Both maps and keywords can be used as lookup functions.
@@ -96,7 +96,7 @@
   (= 20 ((hash-map :a 10, :b 20, :c 30) :b))
 #+end_src
 
-* 4Clojure Question 11
+* Problem 11
 
 #+begin_src clojure
   ;; When operating on a map, the conj function returns a new map with one or more
@@ -105,7 +105,7 @@
   (= {:a 1, :b 2, :c 3} (conj {:a 1} {:b 2} [:c 3]))
 #+end_src
 
-* 4Clojure Question 12
+* Problem 12
 
 #+begin_src clojure
   ;; All Clojure collections support sequencing.  You can operate on sequences with
@@ -114,7 +114,7 @@
   (= 3 (first '(3 2 1)))
 #+end_src
 
-* 4Clojure Question 13
+* Problem 13
 
 #+begin_src clojure
   ;; The rest function will return all the items of a sequence except the first.
@@ -122,7 +122,7 @@
   (= [20 30 40] (rest [10 20 30 40]))
 #+end_src
 
-* 4Clojure Question 14
+* Problem 14
 
 #+begin_src clojure
   ;; Clojure has many different ways to create functions.
@@ -130,7 +130,7 @@
   (= 8 ((fn add-five [x] (+ x 5)) 3))
 #+end_src
 
-* 4Clojure Question 15
+* Problem 15
 
 #+begin_src clojure
   ;; Write a function which doubles a number.
@@ -147,7 +147,7 @@
                       (= (double-num 7)  14))))
 #+end_src
 
-* 4Clojure Question 16
+* Problem 16
 
 #+begin_src clojure
   ;; Write a function which returns a personalized greeting.
@@ -163,7 +163,7 @@
                       (= (greet "Rhea") "Hello, Rhea!"))))
 #+end_src
 
-* 4Clojure Question 17
+* Problem 17
 
 #+begin_src clojure
   ;; The map function takes two arguments: a function (f) and a sequence (s).
@@ -173,7 +173,7 @@
   (= '( 6 7 8) (map #(+ % 5) '(1 2 3)))
 #+end_src
 
-* 4Clojure Question 18
+* Problem 18
 
 #+begin_src clojure
   ;; The filter function takes two arguments: a predicate function (f) and a sequence (s).
@@ -183,7 +183,7 @@
   (= '(6 7) (filter #(> % 5) '(3 4 5 6 7)))
 #+end_src
 
-* 4Clojure Question 19
+* Problem 19
 
 #+begin_src clojure
   ;; Write a function which returns the last element in a sequence.
@@ -201,7 +201,7 @@
                       (= (last-elem ["b" "c" "d"]) "d"))))
 #+end_src
 
-* 4Clojure Question 20
+* Problem 20
 
 #+begin_src clojure
   ;; Write a function which returns the second to last element from a sequence.
@@ -234,7 +234,7 @@
                       (= (second-to-last [[1 2] [3 4]]) [1 2]))))
 #+end_src
 
-* 4Clojure Question 21
+* Problem 21
 
 #+begin_src clojure
   ;; Write a function which returns the Nth element from a sequence.
@@ -251,7 +251,7 @@
   (= (nth-element '(4 5 6 7) 2) 6)
 #+end_src 
 
-* 4Clojure Question 22
+* Problem 22
 
 #+begin_src clojure
   ;; Write a function which returns the total number of elements in a sequence.
@@ -282,7 +282,7 @@
    (= (count-seq '(:a :b :c)) 3))
 #+end_src
 
-* 4Clojure Question 23
+* Problem 23
 
 #+begin_src clojure
   ;; Write a function which reverses a sequence.
@@ -299,7 +299,7 @@
                       (= (reverse-seq [[1 2][3 4][5 6]]) [[5 6][3 4][1 2]]))))
 #+end_src
 
-* 4Clojure Question 24
+* Problem 24
 
 #+begin_src clojure
   ;; Write a function which returns the sum of a sequence of numbers.
@@ -317,7 +317,7 @@
                       (= (sum-xs '(1 10 3)) 14))))
 #+end_src
 
-* 4Clojure Question 25
+* Problem 25
 
 #+begin_src clojure
   ;; Write a function which returns only the odd numbers from a sequence.
@@ -330,7 +330,7 @@
     (clojure.test/is (= (odd-numbers #{1 2 3 4 5}) '(1 3 5))))
 #+end_src
 
-* 4Clojure Question 26
+* Problem 26
 
 #+begin_src clojure
   ;; Write a function which returns the first X fibonacci numbers.
@@ -381,7 +381,7 @@
                       (= (first-fib-nums 8) '(1 1 2 3 5 8 13 21)))))
 #+end_src
 
-* 4Clojure Question 27
+* Problem 27
 
   #+BEGIN_SRC clojure
     ;; Write a function which returns true if the given sequence is a palindrome.
@@ -399,11 +399,11 @@
 
   #+END_SRC
 
-* 4Clojure Question 28
+* Problem 28
 
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 28
+    ;; Problem 28
     ;; Write a function which flattens a sequence.
     ;; Restrictions (please don't use these function(s)): flatten
 
@@ -422,29 +422,29 @@
          (= (my-flatten '((((:a))))) '(:a)))
   #+END_SRC
 
-* 4Clojure Question 29
+* Problem 29
 
 #+begin_src clojure
   ;; Write a function which takes a string and returns a new string containing only
   ;; the capital letters.
   ;; (= (__ "HeLlO, WoRlD!") "HLOWRD")
-  (defn caps-letter? [s]
+  (defn only-caps [s]
     (reduce str (filter #(Character/isUpperCase %1) s)))
 
   (clojure.test/testing
       "Write a function which takes a string and returns
            a new string containing only the capital letters."
     (clojure.test/is (and
-                      (= (caps-letter? "HeLlO, WoRlD!") "HLOWRD")
-                      (empty? (caps-letter? "nothing"))
-                      (= (caps-letter? "$#A(*&987Zf") "AZ"))))
+                      (= (only-caps "HeLlO, WoRlD!") "HLOWRD")
+                      (empty? (only-caps "nothing"))
+                      (= (only-caps "$#A(*&987Zf") "AZ"))))
 
 #+end_src
 
-* 4Clojure Question 30
+* Problem 30
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 30
+    ;; Problem 30
     ;;
     ;; Write a function which removes consecutive duplicates from a sequence.
 
@@ -475,11 +475,11 @@
          (= (del-consecutive-dups [[1 2] [1 2] [3 4] [1 2]]) '([1 2] [3 4] [1 2])))
   #+END_SRC
 
-* 4Clojure Question 31
+* Problem 31
 
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 31
+    ;; Problem 31
     ;;
     ;; Write a function which packs consecutive duplicates into sub-lists.
 
@@ -520,11 +520,11 @@
 
   #+END_SRC
 
-* 4Clojure Question 32
+* Problem 32
 
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 32
+    ;; Problem 32
     ;;
     ;; Write a function which duplicates each element of a sequence.
     ;;
@@ -540,11 +540,11 @@
      (= (dup-each-item [[1 2] [3 4]]) '([1 2] [1 2] [3 4] [3 4])))
   #+END_SRC
 
-* 4Clojure Question 33
+* Problem 33
 
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 33
+    ;; Problem 33
     ;;
     ;; Write a function which replicates each element
     ;; of a sequence a variable number of times.
@@ -566,7 +566,7 @@
          (= (replicate-each-item [44 33] 2) [44 44 33 33]))
   #+END_SRC
 
-* 4Clojure Question 34
+* Problem 34
 
 #+begin_src clojure
   ;; Write a function which creates a list of all integers in a given range.
@@ -582,7 +582,7 @@
                           (= (find-range 5 8) '(5 6 7)))))
 #+end_src
 
-* 4Clojure Question 35
+* Problem 35
 
 #+begin_src clojure
   ;; Clojure lets you give local names to values using the special let-form.
@@ -597,7 +597,7 @@
 
 #+end_src
 
-* 4Clojure Question 36
+* Problem 36
 
 #+begin_src clojure
   ;; Can you bind x, y, and z so that these are all true?
@@ -612,7 +612,7 @@
                       (= 1  (let [x 7 y 3 z 1] z)))))
 #+end_src
 
-* 4Clojure Question 37
+* Problem 37
 
 
   #+BEGIN_SRC clojure
@@ -620,7 +620,7 @@
     (= "ABC" (apply str (re-seq #"[A-Z]+" "bA1B3Ce ")))
   #+END_SRC
 
-* 4Clojure Question 38
+* Problem 38
 
 #+begin_src clojure
   ;; Write a function which takes a variable number of parameters and returns the maximum value.
@@ -646,7 +646,7 @@
 
 #+end_src
 
-* 4Clojure Question 39
+* Problem 39
 
 #+begin_src clojure
   ;; Write a function which takes two sequences and
@@ -668,10 +668,10 @@
 
 #+end_src
 
-* 4Clojure Question 40
+* Problem 40
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 40
+    ;; Problem 40
     ;; Write a function which separates the items
     ;; of a sequence by an arbitrary value.
     ;;
@@ -690,10 +690,10 @@
      (= (my-interpose :z [:a :b :c :d]) [:a :z :b :z :c :z :d]))
   #+END_SRC
 
-* 4Clojure Question 41
+* Problem 41
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 41
+    ;; Problem 41
     ;;
     ;; Write a function which drops every Nth item from a sequence.
 
@@ -711,7 +711,7 @@
      (= (my-drop-every [1 2 3 4 5 6] 4) [1 2 3 5 6]))
   #+END_SRC
 
-* 4Clojure Question 42
+* Problem 42
 
 #+begin_src clojure
   ;; Write a function which calculates factorials.
@@ -728,10 +728,10 @@
 
 #+end_src
 
-* 4Clojure Question 43
+* Problem 43
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 43
+    ;; Problem 43
     ;;
     ;; Write a function which reverses the interleave
     ;; process into x number of subsequences.
@@ -750,10 +750,10 @@
          (= (reverse-interleave (range 10) 5) '((0 5) (1 6) (2 7) (3 8) (4 9))))
   #+END_SRC
 
-* 4Clojure Question 44
+* Problem 44
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 44
+    ;; Problem 44
     ;;
     ;; Write a function which can rotate a sequence in either direction.
 
@@ -771,7 +771,7 @@
          (= (rotate-xs -4 '(:a :b :c)) '(:c :a :b)))
   #+END_SRC
 
-* 4Clojure Question 45
+* Problem 45
 
 #+begin_src clojure
   ;; The iterate function can be used to produce an infinite lazy sequence.
@@ -779,7 +779,7 @@
   (= '(1 4 7 10 13) (take 5 (iterate #(+ 3 %) 1)))
 #+end_src
 
-* 4Clojure Question 46
+* Problem 46
 
 #+begin_src clojure
   ;; Write a higher-order function which flips the order of the arguments of an input function.
@@ -797,7 +797,7 @@
                       (= [1 2 3] ((flip-args take) [1 2 3 4 5] 3)))))
 #+end_src
 
-* 4Clojure Question 47
+* Problem 47
 
 #+begin_src clojure
   ;; The contains? function checks if a KEY is present in a given collection.  This often leads beginner clojurians to use it incorrectly with numerically indexed collections like vectors and lists.
@@ -810,7 +810,7 @@
   ;;(not (contains? '(1 2 4) __))
 #+end_src
 
-* 4Clojure Question 48
+* Problem 48
 
 #+begin_src clojure
   ;; The some function takes a predicate function and a collection.  It returns the first logical true value of (predicate x) where x is an item in the collection.
@@ -818,7 +818,7 @@
   (= 6 (some #(when (even? %) %) [5 6 7 8]))
 #+end_src
 
-* 4Clojure Question 49
+* Problem 49
 
 #+begin_src clojure
   ;; Write a function which will split a sequence into two parts.;;
@@ -834,10 +834,10 @@
                       (= (dosplit 2 [[1 2] [3 4] [5 6]]) [[[1 2] [3 4]] [[5 6]]]))))
 #+end_src
 
-* 4Clojure Question 50
+* Problem 50
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 50
+    ;; Problem 50
     ;;
     ;; Write a function which takes a sequence consisting of items
     ;; with different types and splits them up into a set of
@@ -871,10 +871,10 @@
      (= (set (type-partition [[1 2] :a [3 4] 5 6 :b])) #{[[1 2] [3 4]] [:a :b] [5 6]}))
   #+END_SRC
 
-* 4Clojure Question 51
+* Problem 51
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 51
+    ;; Problem 51
     ;;
     ;; Here is an example of some more sophisticated destructuring.
     ;;
@@ -883,10 +883,10 @@
     (= [1 2 [3 4 5] [1 2 3 4 5]] (let [[a b & c :as d] [1 2 3 4 5]] [a b c d]))
   #+END_SRC
 
-* 4Clojure Question 52
+* Problem 52
 
 #+begin_src clojure
-  ;; 4Clojure Question 52
+  ;; Problem 52
   ;;
   ;; Let bindings and function parameter lists support destructuring.
   ;;
@@ -897,7 +897,7 @@
        [c e]))
 #+end_src
 
-* 4Clojure Question 53
+* TODO Problem 53
 
   #+BEGIN_SRC clojure
     ;; Given a vector of integers, find the longest consecutive sub-sequence
@@ -905,7 +905,6 @@
     ;; use the one that occurs first.
     ;; An increasing sub-sequence must have a length of 2 or greater to qualify.
     ;;
-    ;; wip
 
     (= (__ [1 0 1 2 3 0 4 5]) [0 1 2 3])
 
@@ -916,14 +915,13 @@
     (= (__ [7 6 5 4]) [])
   #+END_SRC
 
-* 4Clojure Question 54
-
+* TODO Problem 54
 
   #+BEGIN_SRC clojure
 
   #+END_SRC
 
-* 4Clojure Question 55
+* Problem 55
 
 #+begin_src clojure
   (defn map-frequencies
@@ -945,31 +943,32 @@
       (= (map-frequencies '([1 2] [1 3] [1 3])) {[1 2] 1, [1 3] 2}))))
 #+end_src
 
-* 4Clojure Question 56
+* Problem 56
 
 #+begin_src clojure
   ;; Find Distinct Items
   ;; Difficulty:  Medium
   ;; Topics:      seqs core-functions
-  (defn find-distinct [xs]
-    (reduce (fn [v elem]
-              (if (not (some (clojure.core/set (list elem)) v))
-                (conj v elem)
-                v))
-            [] xs))
+  (defn only-distinct [col]
+    (reduce (fn [xs item]
+              (if (some #(= item %1) xs)
+                xs
+                (conj xs item)))
+            []
+            col))
 
   (clojure.test/testing
       "Write a function which removes the duplicates from a sequence.
          Order of the items must be maintained."
     (clojure.test/is
      (and
-      (= (find-distinct [1 2 1 3 1 2 4]) [1 2 3 4])
-      (= (find-distinct [:a :a :b :b :c :c]) [:a :b :c])
-      (= (find-distinct '([2 4] [1 2] [1 3] [1 3])) '([2 4] [1 2] [1 3]))
-      (= (find-distinct (range 50)) (range 50)))))
+      (= (only-distinct [1 2 1 3 1 2 4]) [1 2 3 4])
+      (= (only-distinct [:a :a :b :b :c :c]) [:a :b :c])
+      (= (only-distinct '([2 4] [1 2] [1 3] [1 3])) '([2 4] [1 2] [1 3]))
+      (= (only-distinct (range 50)) (range 50)))))
 #+end_src
 
-* 4Clojure Question 57
+* Problem 57
 
 #+begin_src clojure
   ;; Simple Recursion
@@ -982,7 +981,7 @@
      (= '(5 4 3 2 1) ((fn foo [x] (when (> x 0) (conj (foo (dec x)) x))) 5))))
 #+end_src
 
-* 4Clojure Question 58
+* Problem 58
 
 #+begin_src clojure
   ;; Write a function which allows you to create function compositions.
@@ -1006,42 +1005,42 @@
          (= "HELLO" ((compclj #(.toUpperCase %) #(apply str %) take) 5 "hello world"))))))
 #+end_src
 
-* 4Clojure Question 60
+* Problem 60
 
 #+begin_src clojure
-  (defn do-reduce
+  (defn my-reductions
     ([f col]
-       (do-reduce f (first col) (rest col)))
-    ([f final col]
+       (my-reductions f (first col) (rest col)))
+    ([f init col]
        (cons
-        final
+        init
         (lazy-seq
          (if (empty? col)
            nil
-           (do-reduce f
-                      (apply f (list final (first col)))
+           (my-reductions f
+                      (apply f (list init (first col)))
                       (rest col)))))))
 
   (clojure.test/testing
-      "4Clojure Question 60.
+      "Problem 60.
        Write a function which behaves like reduce,
        but returns each intermediate value of the reduction.
        Your function must accept either two or three arguments,
        and the return sequence must be lazy."
     (clojure.test/is
-     (and (= (take 5 (do-reduce + (range))) [0 1 3 6 10])
-          (= (do-reduce conj [1] [2 3 4]) [[1] [1 2] [1 2 3] [1 2 3 4]])
-          (= (last (do-reduce * 2 [3 4 5])) (reduce * 2 [3 4 5]) 120))))
+     (and (= (take 5 (my-reductions + (range))) [0 1 3 6 10])
+          (= (my-reductions conj [1] [2 3 4]) [[1] [1 2] [1 2 3] [1 2 3 4]])
+          (= (last (my-reductions * 2 [3 4 5])) (reduce * 2 [3 4 5]) 120))))
 #+end_src
 
-* 4Clojure Question 61
+* Problem 61
 
 #+begin_src clojure
   (defn do-zipmap [& xs]
     (apply assoc {} (apply interleave xs)))
 
   (clojure.test/testing
-      "4Clojure Question 61.
+      "Problem 61.
        Write a function which takes a vector of keys and
        a vector of values and constructs a map from them.
        Restrictions (please don't use these function(s)): zipmap."
@@ -1051,7 +1050,7 @@
           (= (do-zipmap [:foo :bar] ["foo" "bar" "baz"]) {:foo "foo", :bar "bar"}))))
 #+end_src
 
-* 4Clojure Question 62
+* Problem 62
 
 #+begin_src clojure
   ;; Given a side-effect free function f and an initial
@@ -1073,7 +1072,7 @@
         (= (take 9 (do-iterate #(inc (mod % 3)) 1)) (take 9 (cycle [1 2 3]))))))
 #+end_src
 
-* 4Clojure Question 63
+* Problem 63
 #+begin_src clojure
   ;; Given a function f and a sequence s, write a function which returns a map.
   ;; The keys should be the values of f applied to each item in s.
@@ -1100,7 +1099,7 @@
            {1 [[1] [3]], 2 [[1 2] [2 3]], 3 [[1 2 3]]}))))
 #+end_src
 
-* 4Clojure Question 64
+* Problem 64
 #+begin_src clojure
   (clojure.test/testing
       "Reduce takes a 2 argument function and an optional starting value.
@@ -1117,8 +1116,10 @@
       (=  6 (reduce #'+ 1 [2 3])))))
 #+end_src
 
+* TODO Problem 65
+
 #+begin_src clojure
-  ;; 4Clojure Question 65
+
   ;; (defn lookup-type [xs]
   ;;   )
 
@@ -1144,7 +1145,7 @@
   ;;     (= [:map :set :vector :list] (map lookup-type [{} #{} [] ()])))))
 #+end_src
 
-* 4Clojure Question 66
+* Problem 66
 #+begin_src clojure
   (defn gcd
     "Greatest common dividor of 2 numbers.
@@ -1167,26 +1168,30 @@
       (= (gcd 1023 858) 33))))
 #+end_src
 
+* TODO Problem 67
 #+begin_src clojure
-  (defn bounded-prime-sieve
-    "Finding all prime numbers up to any given limit."
-    [limit]
-       (let [start 2
-             rng (range start (inc limit))]       
-         (loop [n 0
-                result []
-                boundaries rng]
-           (if (or (>= n (- limit start))
-                   (empty? boundaries))
-             result
-             (let [divider (first boundaries)]
-               (recur (inc n)
-                      (conj result divider)             
-                      (filter #(and (not= 0 (mod %1 divider))
-                                    (> %1 n))  boundaries)))))))
+  ;; just testing stuff here
+  ;; the bounded-prime-sieve function is inefficient...
+  ;;
+  ;; (defn bounded-prime-sieve
+  ;;   "Finding all prime numbers up to any given limit."
+  ;;   [limit]
+  ;;      (let [start 2
+  ;;            rng (range start (inc limit))]       
+  ;;        (loop [n 0
+  ;;               result []
+  ;;               boundaries rng]
+  ;;          (if (or (>= n (- limit start))
+  ;;                  (empty? boundaries))
+  ;;            result
+  ;;            (let [divider (first boundaries)]
+  ;;              (recur (inc n)
+  ;;                     (conj result divider)             
+  ;;                     (filter #(and (not= 0 (mod %1 divider))
+  ;;                                   (> %1 n))  boundaries)))))))
 
 
-  ;; 4Clojure Question 67
+
   ;; (defn prime? [n]
     
   ;;   )
@@ -1209,7 +1214,7 @@
 
 #+end_src
 
-* 4Clojure Question 70
+* Problem 70
 #+begin_src clojure
   ;; (defn split-sentence [xs]
   ;;   (-> xs
@@ -1239,7 +1244,7 @@
          ["fall" "follies" "foolish" "Fools" "for"]))))
 #+end_src
 
-* 4Clojure Question 73
+* INPROGRESS Problem 73
 #+begin_src clojure
   ;; 
   ;; NOT the best solution, but applicable for any square matrix
@@ -1254,6 +1259,8 @@
   ;; vertical, or diagonal row.  Write a function which analyzes a
   ;; tic-tac-toe board and returns :x if X has won, :o if O has won,
   ;; and nil if neither player has won.
+
+  ;; TBD improve the first attempt which was training with loops and such
   (defn tic-tac-toe-winner [boards]
     (let [transform-fn (fn [xs mode pos]
                          (cond 
@@ -1299,7 +1306,7 @@
     )
 #+end_src
 
-* 4Clojure Question 74
+* Problem 74
 #+begin_src clojure
   ;; Perfect square numbers
   ;; http://www.mathwarehouse.com/arithmetic/numbers/what-is-a-perfect-square.php
@@ -1322,7 +1329,7 @@
       (= (perfect-sqrt-nums "15,16,25,36,37") "16,25,36"))))
 #+end_src
 
-* 4Clojure Question 75
+* Problem 75
 #+begin_src clojure
   ;;
   ;; Write a function which calculates Euler's totient function.
@@ -1348,7 +1355,7 @@
       (= (euler-totient 99) 60))))
 #+end_src
 
-* 4Clojure Question 76
+* Problem 76
 #+begin_src clojure
   ;;
   ;; The trampoline function takes a function f and a variable number of parameters.
@@ -1370,7 +1377,7 @@
        (trampoline foo [] 1)))
 #+end_src
 
-* 4Clojure Question 80
+* Problem 80
 *Test perfect numbers*
 
 #+begin_src clojure
@@ -1396,7 +1403,7 @@
       (= (perfect-num? 8128) true))))
 #+end_src
 
-* 4Clojure Question 81
+* Problem 81
 *Write a function which returns the intersection of two sets.*
 
 #+begin_src clojure
@@ -1415,7 +1422,7 @@
       (= (set-intersection #{:a :b :c :d} #{:c :e :a :f :d}) #{:a :c :d}))))
 #+end_src
 
-* 4Clojure Question 82
+* TODO Problem 82
 *Test continuous word chain*
 
 #+begin_src clojure
@@ -1428,6 +1435,7 @@
   ;; Write a function which takes a sequence of words,
   ;; and returns true if they can be arranged into one continous word chain, and false if they cannot.
 
+  ;; TBD implement me
   (defn cont-word-chain? [xs]
     
     )
@@ -1444,7 +1452,7 @@
       (= false (cont-word-chain? #{"share" "hares" "hare" "are"})))))
 #+end_src
 
-* 4Clojure Question 83
+* Problem 83
 
 #+begin_src clojure
   ;; Write a function which takes a variable number of booleans.
@@ -1463,7 +1471,7 @@
        (= true (some-true? true true true false)))
 #+end_src
 
-* 4Clojure Question 84
+* TODO Problem 84
 
 #+begin_src clojure
   ;; http://en.wikipedia.org/wiki/Transitive_closure
@@ -1472,6 +1480,7 @@
   ;; Write a function which generates the transitive closure of a binary relation.
   ;; The relation will be represented as a set of 2 item vectors.
 
+  
   (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
     (= (__ divides) #{[4 2] [8 4] [8 2] [9 3] [27 9] [27 3]}))
 
@@ -1488,7 +1497,7 @@
          ["uncle" "cousin"] ["son" "grandson"]}))
 #+end_src
 
-* 4Clojure Question 85
+* Problem 85
 
 #+begin_src clojure
   ;; http://en.wikipedia.org/wiki/Power_set
@@ -1540,7 +1549,7 @@
 
 #+end_src
 
-* 4Clojure Question 86
+* Problem 86
 *Test happy numbers*
 
 #+begin_src clojure
@@ -1573,7 +1582,7 @@
    (= (happy-num? 3) false))
 #+end_src
 
-* 4Clojure Question 88
+* Problem 88
 
 *Symmetric difference of two sets*
 
@@ -1594,7 +1603,7 @@
    (= (symetric-set-diff #{[1 2] [2 3]} #{[2 3] [3 4]}) #{[1 2] [3 4]}))
 #+end_src
 
-* 4Clojure Question 89
+* WAITING Problem 89
 
 #+begin_src clojure
   ;; Starting with a graph you must write a function that returns true
@@ -1688,7 +1697,7 @@
        (= false (eulerian-path? [[1 2] [2 3] [2 4] [2 5]])))
 #+end_src
 
-* 4Clojure Question 90
+* Problem 90
 
 *Cartesian product*
 
@@ -1712,7 +1721,7 @@
 
 #+end_src
 
-* 4Clojure Question 91
+* WAITING Problem 91
 
 *Check if a graph is connected*
 
@@ -1775,7 +1784,7 @@
 
 #+end_src
 
-* 4Clojure Question 92
+* Problem 92
 
 *Roman numerals to decimal parser*
 Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtractive_principle][substractive principle]] on Wikipedia.
@@ -1827,19 +1836,19 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 #+end_src
 
-* 4Clojure Question 93
+* TODO Problem 93
 
   #+BEGIN_SRC clojure
 
   #+END_SRC
 
-* 4Clojure Question 94
+* TODO Problem 94
 
   #+BEGIN_SRC clojure
 
   #+END_SRC
 
-* 4Clojure Question 104
+* Problem 104
 
 *Write roman numerals*
 
@@ -1877,7 +1886,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
    (= "XLVIII" (number-to-roman-numeral 48)))
 #+end_src
 
-* 4Clojure Question 105
+* Problem 105
 
 #+begin_src clojure
   ;; Given an input sequence of keywords and numbers,
@@ -1909,37 +1918,37 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 #+end_src
 
-* 4Clojure Question 106
+* TODO Problem 106
 
 #+begin_src clojure
 
 #+end_src
-* 4Clojure Question 107
+* TODO Problem 107
 
 #+begin_src clojure
 
 #+end_src
-* 4Clojure Question 108
+* TODO Problem 108
 
 #+begin_src clojure
 
 #+end_src
-* 4Clojure Question 109
+* TODO Problem 109
 
 #+begin_src clojure
 
 #+end_src
-* 4Clojure Question 110
+* TODO Problem 110
 
 #+begin_src clojure
 
 #+end_src
-* 4Clojure Question 111
+* TODO Problem 111
 
 #+begin_src clojure
 
 #+end_src
-* 4Clojure Question 112
+* TODO Problem 112
 
 #+begin_src clojure
   ;; Create a function which takes an integer
@@ -1972,7 +1981,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   (=  (__ 1 [-10 [1 [2 3 [4 5 [6 7 [8]]]]]])
      '(-10 (1 (2 3 (4)))))
 #+end_src
-* 4Clojure Question 113
+* Problem 113
 
 *Data types*
 
@@ -2002,7 +2011,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
             (=  "" (str (seqable-proxy)))))
 #+end_src
 
-* 4Clojure Question 114
+* Problem 114
 
 *Take up to N matches of a predicate function*
 
@@ -2050,10 +2059,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                           ["this" "is" "a" "sentence" "i" "wrote"])))
 #+end_src
 
-* 4Clojure Question 115
+* Problem 115
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 115
+    ;; Problem 115
     ;;
     ;; A balanced number is one whose component digits
     ;; have the same sum on the left and right halves of the number.
@@ -2083,7 +2092,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
         [0 1 2 3 4 5 6 7 8 9 11 22 33 44 55 66 77 88 99 101]))
   #+END_SRC
 
-* 4Clojure Question 116
+* TODO Problem 116
 
   #+BEGIN_SRC clojure
     ;; http://en.wikipedia.org/wiki/Balanced_prime
@@ -2105,16 +2114,16 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= 1103 (nth (filter balanced-prime? (range)) 15)))
   #+END_SRC
 
-* 4Clojure Question 117
+* Problem 117
 
   #+BEGIN_SRC clojure
 
   #+END_SRC
 
-* 4Clojure Question 118
+* Problem 118
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 118
+    ;; Problem 118
     ;;
     ;; <p>Map is one of the core elements of a functional programming language.
     ;; Given a function <code>f</code> and an input sequence <code>s</code>,
@@ -2143,7 +2152,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   #+END_SRC
 
 
-* 4Clojure Question 128
+* TODO Problem 128
 
 #+begin_src clojure
   ;; A standard American deck of playing cards has four suits
@@ -2172,10 +2181,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                        S8 S9 ST SJ SQ SK SA]))
 #+end_src
 
-* 4Clojure Question 132
+* TODO Problem 132
 
 #+begin_src clojure
-  ;; 4Clojure Question 132
+  ;; Problem 132
   ;; Write a function that takes a two-argument predicate,
   ;; a value, and a collection; and returns a new collection
   ;; where the <code>value</code> is inserted between every
@@ -2200,10 +2209,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 #+end_src
 
-* 4Clojure Question 143
+* Problem 143
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 143
+    ;; Problem 143
     ;; http://en.wikipedia.org/wiki/Dot_product#Definition
     ;;
     ;; Create a function that computes the dot product of two sequences.
@@ -2221,10 +2230,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= 256 (dot-product [2 5 6] [100 10 1])))
   #+END_SRC
 
-* 4Clojure Question 144
+* Problem 144
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 144
+    ;; Problem 144
     ;;
     ;; Write an oscillating iterate: a function that takes an initial
     ;; value and a variable number of functions. It should return a
@@ -2246,7 +2255,89 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
   #+END_SRC
 
-* 4Clojure Question 150
+* Problem 145
+
+  #+BEGIN_SRC clojure
+    ;; Problem 145
+    ;;
+    ;; Clojure's for macro is a tremendously versatile mechanism
+    ;; for producing a sequence based on some other sequence(s).
+    ;; It can take some time to understand how to use it properly,
+    ;; but that investment will be paid back with clear,
+    ;; concise sequence-wrangling later.
+    ;;
+    ;; With that in mind, read over these <code>for</code> expressions
+    ;; and try to see how each of them produces the same result.
+    ;;
+
+    ;; answer (take-nth 4 (range 1 40))
+    (and (= (take-nth 4 (range 1 40)) (for [x (range 40)
+                                            :when (= 1 (rem x 4))]
+                                        x))
+
+         (= (take-nth 4 (range 1 40)) (for [x (iterate #(+ 4 %) 0)
+                                            :let [z (inc x)]
+                                            :while (< z 40)]
+                                        z))
+
+         (= (take-nth 4 (range 1 40)) (for [[x y] (partition 2 (range 20))]
+                                        (+ x y))))
+  #+END_SRC
+
+* WAITING Problem 146
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 146
+    ;;
+    ;; <p>Because Clojure's <code>for</code> macro allows you to "walk"
+    ;; over multiple sequences in a nested fashion, it is excellent for
+    ;; transforming all sorts of sequences. If you don't want a sequence
+    ;; as your final output (say you want a map), you are often still
+    ;; best-off using <code>for</code>, because you can produce a sequence
+    ;; and feed it into a map, for example.</p>
+    ;;
+    ;; <p>For this problem, your goal is to "flatten" a map of hashmaps.
+    ;; Each key in your output map should be the "path"<sup>1</sup> that
+    ;; you would have to take in the original map to get to a value, so
+    ;; for example <code>{1 {2 3}}</code> should result in <code>{[1 2] 3}</code>.
+    ;;
+    ;; You only need to flatten one level of maps: if one of the values is a map,
+    ;; just leave it alone.</p>
+    ;;
+    ;; <p><sup>1</sup> That is, <code>(get-in original [k1 k2])</code> should
+    ;; be the same as <code>(get result [k1 k2])</code></p>.
+
+    ;; (defn flatten-m
+    ;;   "Flattens a map."
+    ;;   [m]
+    ;;   (reduce (fn step [col kv]
+    ;;             (let [k  (first kv), v (last kv)]
+    ;;               (if (map? v)
+    ;;                 (do
+    ;;                   (println "is a map:" "k:" k "v:" v))
+    ;;                  (conj col (vector (reduce step [[k v]] v)))
+    ;;                  (do
+    ;;                    (println "Not a map" k)
+    ;;                  (conj col [k v]))))
+    ;;           []
+    ;;           m)))
+
+    (and (= (flatten-m '{a {p 1, q 2}
+                         b {m 3, n 4}})
+            '{[a p] 1, [a q] 2
+              [b m] 3, [b n] 4})
+
+         (= (flatten-m '{[1] {a b c d}
+                         [2] {q r s t u v w x}})
+            '{[[1] a] b, [[1] c] d,
+              [[2] q] r, [[2] s] t,
+              [[2] u] v, [[2] w] x})
+
+         (= (flatten-m '{m {1 [a b c] 3 nil}})
+            '{[m 1] [a b c], [m 3] nil}))
+  #+END_SRC
+
+* WAITING Problem 150
 
 #+begin_src clojure
   ;; A palindromic number is a number that is the same
