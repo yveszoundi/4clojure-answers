@@ -897,7 +897,7 @@
        [c e]))
 #+end_src
 
-* TODO Problem 53
+* INPROGRESS Problem 53
 
   #+BEGIN_SRC clojure
     ;; Given a vector of integers, find the longest consecutive sub-sequence
@@ -906,19 +906,67 @@
     ;; An increasing sub-sequence must have a length of 2 or greater to qualify.
     ;;
 
-    (= (__ [1 0 1 2 3 0 4 5]) [0 1 2 3])
+    ;; (defn lcs [col]
+    ;;   (take-while #(not (nil? %1))
+    ;;               (rest (split-with nil?
+    ;;                                 (reductions (fn [a b]
+    ;;                                               (if (> (last b) (first b)) b))
+    ;;                                             nil
+    ;;                                             (partition 2 1 col))))))
 
-    (= (__ [5 6 1 3 2 7]) [5 6])
+    (defn lcs
+      [col]
+      {:pre [(vector? col)]}
 
-    (= (__ [2 3 3 4 5]) [3 4 5])
+      (let [size (count col)
+            compute-results (fn [i0 i1 results]
+                              (if (> i1 i0)
+                                (if-let [last-seq (last results)]
+                                  (let [new-results (assoc results
+                                                      (dec (count results))
+                                                      (conj last-seq i1))]
+                                    new-results)
+                                  (conj results [i0 i1]))
+                                (conj results nil)))]
+        (if (<= size 1) []
+            (loop [results[], idx 1]
+              (if (= size idx)
+                (reduce (fn [a b]
+                          (if (>= (count a) (count b))
+                            a b))
+                        []
+                        (keep identity results))
+                (let [prev (col (dec idx))
+                      cur (col idx)
+                      next-results (compute-results prev cur results)]
+                  (recur next-results (inc idx))))))))
 
-    (= (__ [7 6 5 4]) [])
+    (and (= (lcs [1 0 1 2 3 0 4 5]) [0 1 2 3])
+         (= (lcs [5 6 1 3 2 7]) [5 6])
+         (= (lcs [2 3 3 4 5]) [3 4 5])
+         (= (lcs [7 6 5 4]) []))
   #+END_SRC
 
 * TODO Problem 54
 
   #+BEGIN_SRC clojure
+    ;; 4Clojure Question 54
+    ;;
+    ;; Write a function which returns a sequence of lists of x items each.  Lists of less than x items should not be returned.
+    ;;
+    ;; Restrictions (please don't use these function(s)): partition, partition-all
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
 
+    (defn my-partition [n c]
+      (lazy-seq
+       (when (>= (count c) n)
+         (cons (take n c) (my-partition n (nthnext c n))))))
+
+    (and
+     (= (my-partition 3 (range 9)) '((0 1 2) (3 4 5) (6 7 8)))
+     (= (my-partition 2 (range 8)) '((0 1) (2 3) (4 5) (6 7)))
+     (= (my-partition 3 (range 8)) '((0 1 2) (3 4 5))))
   #+END_SRC
 
 * Problem 55
