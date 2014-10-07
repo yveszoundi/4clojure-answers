@@ -1179,36 +1179,24 @@
     {:pre [(pos? n)]}
     (let [add-prime? (fn [x xs limit]
                        (let [max-val (inc (long (Math/ceil (Math/sqrt x))))]
-
                          (if (not-any? (fn [a]
                                          (zero? (mod x a)))
                                        (for [j xs :while (< j max-val)] j))
                            [(conj xs x) (dec limit)]
                            [xs limit])))]
-      (loop [i 3 , prime-xs [2], limit (dec n)]
-        (if-not (pos? limit)
-          prime-xs
-          (let [prime-op-ctx (add-prime? i prime-xs limit)]
-            (recur (+ i 2)
-                   (prime-op-ctx 0)
-                   (prime-op-ctx 1)))))))
+      (lazy-seq
+       (loop [i 3 , prime-xs [2], limit (dec n)]
+         (if-not (pos? limit)
+           prime-xs
+           (let [prime-op-ctx (add-prime? i prime-xs limit)]
+             (recur (+ i 2)
+                    (prime-op-ctx 0)
+                    (prime-op-ctx 1))))))))
 
   (and
    (= (prime-sieve 2) [2 3])
    (= (prime-sieve 5) [2 3 5 7 11])
    (= (last (prime-sieve 100)) 541))
-
-
-  (defn prime-sieve [n]
-      (let [primes
-            (fn c-primes
-              ([] (cons 2 (c-primes (iterate inc 3) [2])))
-              ([coll acc]
-               (lazy-seq
-                 (if (not-any? #(zero? (mod (first coll) %)) acc)
-                   (cons (first coll) (c-primes (rest coll) (conj acc (first coll))))
-                   (c-primes (rest coll) acc)))))]
-        (take n (primes))))
 #+end_src
 
 * Problem 70
