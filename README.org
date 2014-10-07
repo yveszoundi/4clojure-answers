@@ -2200,6 +2200,27 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 #+end_src
 
+* 4Clojure Question 143
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 143
+    ;; http://en.wikipedia.org/wiki/Dot_product#Definition
+    ;;
+    ;; Create a function that computes the dot product of two sequences.
+    ;; You may assume that the vectors will have the same length.
+
+    (defn dot-product
+      "dot product of two sequences"
+      [c1 c2]
+      {:pre [(= (count c1) (count c2))]}
+      (reduce + (map * c1 c2)))
+
+    (and (= 0 (dot-product [0 1 0] [1 0 0]))
+         (= 3 (dot-product [1 1 1] [1 1 1]))
+         (= 32 (dot-product [1 2 3] [4 5 6]))
+         (= 256 (dot-product [2 5 6] [100 10 1])))
+  #+END_SRC
+
 * 4Clojure Question 150
 
 #+begin_src clojure
