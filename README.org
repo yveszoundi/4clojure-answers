@@ -737,9 +737,7 @@
     ;; process into x number of subsequences.
 
     (defn reverse-interleave [xs cnt]
-      (loop [result []
-             col xs
-             counter cnt]
+      (loop [result [], col xs, counter cnt]
         (if (zero? counter)
           result
           (recur
@@ -1556,16 +1554,13 @@
 
   (defn happy-num? [n]
     {:pre [(pos? n)]}
-    (letfn [(inverted-digits-seq [x]
+    (letfn [(digits-seq [x] ; order doesn't matter
               (when (pos? x)
-                (cons (mod x 10) (inverted-digits-seq (long (/ x 10))))))
-            (digits-seq [x]
-              ((comp reverse inverted-digits-seq) x))
+                (cons (mod x 10) (digits-seq (long (/ x 10))))))
             (square-sum [xs]
               (long (reduce  #(+ %1 (Math/pow %2 2)) 0 xs)))]
-      (loop [loop-detection #{}, current-n n]
-        (let [digits-xs (digits-seq current-n)
-              sum (square-sum digits-xs)]
+      (loop [loop-detection #{}, i n]
+        (let [sum (square-sum (digits-seq i))]
           (cond
            (= 1 sum) true
            (contains? loop-detection sum) false
@@ -2058,8 +2053,95 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * 4Clojure Question 115
 
   #+BEGIN_SRC clojure
+    ;; 4Clojure Question 115
+    ;;
+    ;; A balanced number is one whose component digits
+    ;; have the same sum on the left and right halves of the number.
+    ;;
+    ;; Write a function which accepts an integer n,
+    ;; and returns true iff n is balanced.
+
+    (defn balanced-num? [n]
+      (let [digits (mapv #(Integer/valueOf (str %1)) (str n))
+            mid (fn [col] (let [cnt (/ (count col) 2)]
+                            (if (odd? (count col))
+                              [(int (Math/floor cnt)) (inc (int (Math/floor cnt)))]
+                              [(int cnt) (int cnt)] )))
+            bounds (mid digits)]
+        (= (reduce + (subvec digits 0 ((first bounds))))
+           (reduce + (subvec digits (last bounds))))))
+
+    (and
+     (= true (balanced-num? 11))
+     (= true (balanced-num? 121))
+     (= false (balanced-num? 123))
+     (= true (balanced-num? 0))
+     (= false (balanced-num? 88099))
+     (= true (balanced-num? 89098))
+     (= true (balanced-num? 89089))
+     (= (take 20 (filter balanced-num? (range)))
+        [0 1 2 3 4 5 6 7 8 9 11 22 33 44 55 66 77 88 99 101]))
+  #+END_SRC
+
+* 4Clojure Question 116
+
+  #+BEGIN_SRC clojure
+    ;; http://en.wikipedia.org/wiki/Balanced_prime
+    ;;
+    ;; A balanced prime is a prime number which is also
+    ;; the mean of the primes directly before and after
+    ;; it in the sequence of valid primes.
+
+    ;; Create a function which takes an integer n,
+    ;; and returns true iff it is a balanced prime.
+    ;; 
+    ;; TBD
+    (defn balanced-prime? [n]
+
+      )
+
+    (and (= false (balanced-prime? 4))
+         (= true (balanced-prime? 563))
+         (= 1103 (nth (filter balanced-prime? (range)) 15)))
+  #+END_SRC
+
+* 4Clojure Question 117
+
+  #+BEGIN_SRC clojure
 
   #+END_SRC
+
+* 4Clojure Question 118
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 118
+    ;;
+    ;; <p>Map is one of the core elements of a functional programming language.
+    ;; Given a function <code>f</code> and an input sequence <code>s</code>,
+    ;; return a lazy sequence of <code>(f x)</code> for each element
+    ;; <code>x</code> in <code>s</code>.
+    ;;
+    ;; Restrictions (please don't use these function(s)): map, map-indexed, mapcat, for
+
+    (defn do-map [f col]
+      ((fn step [xs]
+         (lazy-seq
+          (when-not (empty? xs)
+            (cons (f (first xs)) (step (rest xs))))))
+       col))
+
+    (and (= [3 4 5 6 7]
+            (do-map inc [2 3 4 5 6]))
+
+         (= (repeat 10 nil)
+            (do-map (fn [_] nil) (range 10)))
+
+         (= [1000000 1000001]
+            (->> (do-map inc (range))
+                 (drop (dec 1000000))
+                 (take 2))))
+  #+END_SRC
+
 
 * 4Clojure Question 128
 
