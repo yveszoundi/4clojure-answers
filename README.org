@@ -897,7 +897,7 @@
        [c e]))
 #+end_src
 
-* INPROGRESS Problem 53
+* Problem 53
 
   #+BEGIN_SRC clojure
     ;; Given a vector of integers, find the longest consecutive sub-sequence
@@ -906,40 +906,17 @@
     ;; An increasing sub-sequence must have a length of 2 or greater to qualify.
     ;;
 
-    ;; (defn lcs [col]
-    ;;   (take-while #(not (nil? %1))
-    ;;               (rest (split-with nil?
-    ;;                                 (reductions (fn [a b]
-    ;;                                               (if (> (last b) (first b)) b))
-    ;;                                             nil
-    ;;                                             (partition 2 1 col))))))
-
-    (defn lcs
-      [col]
-      {:pre [(vector? col)]}
-
-      (let [size (count col)
-            compute-results (fn [i0 i1 results]
-                              (if (> i1 i0)
-                                (if-let [last-seq (last results)]
-                                  (let [new-results (assoc results
-                                                      (dec (count results))
-                                                      (conj last-seq i1))]
-                                    new-results)
-                                  (conj results [i0 i1]))
-                                (conj results nil)))]
-        (if (<= size 1) []
-            (loop [results[], idx 1]
-              (if (= size idx)
-                (reduce (fn [a b]
-                          (if (>= (count a) (count b))
-                            a b))
-                        []
-                        (keep identity results))
-                (let [prev (col (dec idx))
-                      cur (col idx)
-                      next-results (compute-results prev cur results)]
-                  (recur next-results (inc idx))))))))
+    (defn lcs [col]
+      (let [results (map (fn [xs]
+                           ((comp sort set) (mapcat identity xs)))
+                         (filter #(not (every? nil? %))
+                                 (partition-by (fn [x]
+                                                 (nil? x))
+                                               (reductions (fn [m b]
+                                                             (when (> (last b) (first b)) b))
+                                                           nil
+                                                           (partition 2 1 col)))))]
+        (reduce #(if (> (count %2) (count %1)) %2 %1) [] results)))
 
     (and (= (lcs [1 0 1 2 3 0 4 5]) [0 1 2 3])
          (= (lcs [5 6 1 3 2 7]) [5 6])
@@ -2254,6 +2231,55 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
             (->> (do-map inc (range))
                  (drop (dec 1000000))
                  (take 2))))
+  #+END_SRC
+
+* Problem 119
+
+  #+BEGIN_SRC clojure
+
+  #+END_SRC
+
+* Problem 120
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 120
+    ;;
+    ;; Write a function which takes a collection of integers
+    ;; as an argument.  Return the count of how many elements
+    ;; are smaller than the sum of their squared component
+    ;; digits.
+    ;;
+    ;; For example: 10 is larger than 1 squared plus 0 squared;
+    ;; whereas 15 is smaller than 1 squared plus 5 squared.
+
+    (defn sum-sqrt-digits [xs]
+      (println "\n\n")
+      (letfn [(digits [n]
+                (lazy-seq
+                 (if (> n 10)
+                   (cons (long (mod n 10)) (digits (long (/ n 10))))
+                   (cons n nil))))
+
+              (sum-sqrt [col]
+                (println "Col is:" col)
+                (reduce #(+ %1 (Math/sqrt %2)) 0 col))]
+        (reduce (fn [sum num]
+                  (println "Num:" num
+                           "Sum:" sum
+                           "digits:" (digits num)
+                           "sum-sqrt:" (sum-sqrt (digits num)))
+                  (if (<= (long num) (long (sum-sqrt (digits num)) ))
+                    (let [new-sum (inc sum)]
+                      (println "FinalSum:" new-sum)
+                      new-sum)
+                    sum))
+                0
+                xs)))
+
+    (and (= 8  (sum-sqrt-digits (range 10)))
+         (= 19 (sum-sqrt-digits (range 30)))
+         (= 50 (sum-sqrt-digits (range 100)))
+         (= 50 (sum-sqrt-digits (range 1000))))
   #+END_SRC
 
 
