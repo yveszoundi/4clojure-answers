@@ -906,7 +906,7 @@
     ;; An increasing sub-sequence must have a length of 2 or greater to qualify.
     ;;
 
-    (defn lcs [col]
+    (defn lcis [col]
       (let [results (map (fn [xs]
                            ((comp sort set) (mapcat identity xs)))
                          (filter #(not (every? nil? %))
@@ -918,10 +918,10 @@
                                                            (partition 2 1 col)))))]
         (reduce #(if (> (count %2) (count %1)) %2 %1) [] results)))
 
-    (and (= (lcs [1 0 1 2 3 0 4 5]) [0 1 2 3])
-         (= (lcs [5 6 1 3 2 7]) [5 6])
-         (= (lcs [2 3 3 4 5]) [3 4 5])
-         (= (lcs [7 6 5 4]) []))
+    (and (= (lcis [1 0 1 2 3 0 4 5]) [0 1 2 3])
+         (= (lcis [5 6 1 3 2 7]) [5 6])
+         (= (lcis [2 3 3 4 5]) [3 4 5])
+         (= (lcis [7 6 5 4]) []))
   #+END_SRC
 
 * Problem 54
@@ -1161,33 +1161,38 @@
       (=  6 (reduce #'+ 1 [2 3])))))
 #+end_src
 
-* TODO Problem 65
+* Problem 65
 
 #+begin_src clojure
+  ;; "Clojure has many sequence types, which act in subtly different ways.
+  ;; The core functions typically convert them into a uniform \"sequence\"
+  ;; type and work with them that way, but it can be important to understand
+  ;; the behavioral and performance differences so that you know which kind
+  ;; is appropriate for your application.<br /><br />Write a function which
+  ;; takes a collection and returns one of :map, :set, :list, or :vector -
+  ;; describing the type of collection it was given.<br />You won't be allowed
+  ;; to inspect their class or use the built-in predicates like list? - the
+  ;; point is to poke at them and understand their behavior.
+  ;;
+  ;; Restrictions (please don't use these function(s)): class, type, Class,
+  ;; vector?, sequential?, list?, seq?, map?, set?, instance?, getClass"
 
-  ;; (defn lookup-type [xs]
-  ;;   )
+  (defn lookup-type [obj]
+    (let [a [1 1], result (conj obj a)]
+      (cond
+       (and (not (associative? obj)) (= (conj result a) result)) :set
+       (and (associative? obj) (identical? (conj result a) result)) :map
+       (and (not (associative? obj)) (identical? (first result) a)) :list
+       (and (associative? obj) (identical? (last result) a)) :vector
+       :else (throw (IllegalArgumentException. "Unknown collection type!")))))
 
-  ;; (clojure.test/testing
-  ;;     "Clojure has many sequence types, which act in subtly different ways.
-  ;;      The core functions typically convert them into a uniform \"sequence\"
-  ;;      type and work with them that way, but it can be important to understand
-  ;;      the behavioral and performance differences so that you know which kind
-  ;;      is appropriate for your application.<br /><br />Write a function which
-  ;;      takes a collection and returns one of :map, :set, :list, or :vector -
-  ;;      describing the type of collection it was given.<br />You won't be allowed
-  ;;      to inspect their class or use the built-in predicates like list? - the
-  ;;      point is to poke at them and understand their behavior.
+  (and
+   (= :map (lookup-type {:a 1, :b 2}))
+   (= :list (lookup-type (range (rand-int 20))))
+   (= :vector (lookup-type [1 2 3 4 5 6]))
+   (= :set (lookup-type #{10 (rand-int 5)}))
+   (= [:map :set :vector :list] (map lookup-type [{} #{} [] ()])))
 
-  ;;      Restrictions (please don't use these function(s)): class, type, Class,
-  ;;      vector?, sequential?, list?, seq?, map?, set?, instance?, getClass"
-  ;;   (clojure.test/is
-  ;;    (and
-  ;;     (= :map (lookup-type {:a 1, :b 2}))
-  ;;     (= :list (lookup-type (range (rand-int 20))))
-  ;;     (= :vector (lookup-type [1 2 3 4 5 6]))
-  ;;     (= :set (lookup-type #{10 (rand-int 5)}))
-  ;;     (= [:map :set :vector :list] (map lookup-type [{} #{} [] ()])))))
 #+end_src
 
 * Problem 66
@@ -2508,29 +2513,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; that are not less than n.
   ;; The most simple solution will exceed the time limit!
 
-  (defn palindromic-seq [n]
+  (defn palindromic-sieve [n]
     {:pre [(pos? n)]}
-    (lazy-seq)
-    (let [start (inc n)
-          
-          mirror-num (fn [n digits]
-                       (for [i (range 10) :let [v (make-array Long/TYPE digits)]]
-                         (map (fn [x] (identity i)) v)))                     
-          make-digits-seq (fn[x]
-                            (when (pos? x)
-                              (cons (mod x 10) (make-digits-seq (long (/ x 10))))))]
-
-      (cond (< start 10) (reduce conj
-                                 (range start 10)
-                                 (palindromic-seq 10))
-            :else (let [digits-seq ((comp reverse make-digits-seq) start)]
-                    (when (= (first digits-seq) (last digits-seq))
-                      
-                    
-
-            (lazy-seq (palindromic-seq start))
-
-            )))
+    ;; redoing
+    )
 
   (and
    (= (take 26 (palindromic-seq 0))
