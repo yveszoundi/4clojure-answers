@@ -1340,6 +1340,42 @@
          ["fall" "follies" "foolish" "Fools" "for"]))))
 #+end_src
 
+* Problem 71
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 71
+    ;;
+    ;; The -> macro threads an expression x through a variable
+    ;; number of forms. First, x is inserted as the second item
+    ;; in the first form, making a list of it if it is not a
+    ;; list already.
+
+    ;; Then the first form is inserted as the second item in
+    ;; the second form, making a list of that form if necessary.
+    ;; This process continues for all the forms.
+    ;; Using -> can sometimes make your code more readable.
+    ;;
+
+
+    (= (last (sort (rest (reverse [2 5 4 1 3 6]))))
+       (-> [2 5 4 1 3 6] (reverse) (rest) (sort) (last))
+       5)
+  #+END_SRC
+
+* Problem 72
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 72
+    ;;
+    ;; The ->> macro threads an expression x through a variable number of forms. First, x is inserted as the last item in the first form, making a list of it if it is not a list already.  Then the first form is inserted as the last item in the second form, making a list of that form if necessary.  This process continues for all the forms.  Using ->> can sometimes make your code more readable.
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (= (reduce + (map inc (take 3 (drop 2 [2 5 4 1 3 6]))))
+       (->> [2 5 4 1 3 6] (drop 2) (take 3) (map inc) (__))
+       11)
+  #+END_SRC
+
 * INPROGRESS Problem 73
 #+begin_src clojure
   ;; 
@@ -1472,6 +1508,87 @@
                      #(foo x (+ 2 y))))]
        (trampoline foo [] 1)))
 #+end_src
+
+* Problem 77
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 77
+    ;;
+    ;; Write a function which finds all the anagrams in a vector of words.  A word x is an anagram of word y if all the letters in x can be rearranged in a different order to form y.  Your function should return a set of sets, where each sub-set is a group of words which are anagrams of each other.  Each sub-set should have at least two words.  Words without any anagrams should not be included in the result.
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (defn anagrams [xs]
+      (->> (set xs)
+           (group-by (fn [x] (sort x)))
+           (vals)
+           (keep (fn [x] (when (> (count x) 1) x)))
+           (map set)
+           set))
+
+    (and
+     (= (anagrams ["meat" "mat" "team" "mate" "eat"])
+        #{#{"meat" "team" "mate"}})
+     (= (anagrams ["veer" "lake" "item" "kale" "mite" "ever"])
+        #{#{"veer" "ever"} #{"lake" "kale"} #{"mite" "item"}}))
+  #+END_SRC
+
+* Problem 78
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 78
+    ;;
+    ;; Reimplement the function described in <a href="76"> "Intro to Trampoline"</a>.
+    ;;
+    ;; Restrictions (please don't use these function(s)): trampoline
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+    (defn my-trampoline [f x]
+      ((fn step [f & args]
+       (let [result (apply f args)]
+         (if-not (fn? result)
+           result
+           (recur f result)))) f x))
+
+    (= (letfn [(triple [x] #(sub-two (* 3 x)))
+              (sub-two [x] #(stop?(- x 2)))
+              (stop? [x] (if (> x 50) x #(triple x)))]
+        (__ triple 2))
+      82)
+
+    (= (letfn [(my-even? [x] (if (zero? x) true #(my-odd? (dec x))))
+              (my-odd? [x] (if (zero? x) false #(my-even? (dec x))))]
+        (map (partial __ my-even?) (range 6)))
+      [true false true false true false])
+  #+END_SRC
+
+* Problem 79
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 79
+    ;;
+    ;; Write a function which calculates the sum of the
+    ;; minimal path through a triangle.
+    ;;
+    ;; The triangle is represented as a collection of vectors.
+    ;; The path should start at the top of the triangle and
+    ;; move to an adjacent number on the next row until the
+    ;; bottom of the triangle is reached.
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (= 7 (__ '([1]
+              [2 4]
+             [5 1 4]
+            [2 3 4 5]))) ; 1->2->1->3
+
+    (= 20 (__ '([3]
+               [2 4]
+              [1 9 3]
+             [9 9 2 4]
+            [4 6 6 7 8]
+           [5 7 3 5 1 4]))) ; 3->4->3->2->7->1
+  #+END_SRC
 
 * Problem 80
 
@@ -2247,7 +2364,76 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * Problem 117
 
   #+BEGIN_SRC clojure
+    ;; 4Clojure Question 117
+    ;;
+    ;; A mad scientist with tenure has created an experiment
+    ;; tracking mice in a maze.  Several mazes have been
+    ;; randomly generated, and you've been tasked with
+    ;; writing a program to determine the mazes in which
+    ;; it's possible for the mouse to reach the cheesy endpoint.
+    ;;
+    ;; Write a function which accepts a maze in the form of a
+    ;; collection of rows, each row is a string where:
+    ;;
+    ;; <ul>
+    ;;
+    ;; <li>spaces represent areas where the mouse can walk freely</li>
+    ;;
+    ;; <li>hashes (#) represent walls where the mouse can not walk</li>
+    ;;
+    ;; <li>M represents the mouse's starting point</li>
+    ;;
+    ;; <li>C represents the cheese which the mouse must reach</li>
+    ;;
+    ;; </ul>
+    ;;
+    ;; The mouse is not allowed to travel diagonally in the maze
+    ;; (only up/down/left/right), nor can he escape the edge
+    ;; of the maze.  Your function must return true iff
+    ;; the maze is solvable by the mouse.
+    ;;
 
+    (= true  (__ ["M   C"]))
+
+    (= false (__ ["M # C"]))
+
+    (= true  (__ ["#######"
+                  "#     #"
+                  "#  #  #"
+                  "#M # C#"
+                  "#######"]))
+
+    (= false (__ ["########"
+                  "#M  #  #"
+                  "#   #  #"
+                  "# # #  #"
+                  "#   #  #"
+                  "#  #   #"
+                  "#  # # #"
+                  "#  #   #"
+                  "#  #  C#"
+                  "########"]))
+
+    (= false (__ ["M     "
+                  "      "
+                  "      "
+                  "      "
+                  "    ##"
+                  "    #C"]))
+
+    (= true  (__ ["C######"
+                  " #     "
+                  " #   # "
+                  " #   #M"
+                  "     # "]))
+
+    (= true  (__ ["C# # # #"
+                  "        "
+                  "# # # # "
+                  "        "
+                  " # # # #"
+                  "        "
+                  "# # # #M"]))
   #+END_SRC
 
 * Problem 118
