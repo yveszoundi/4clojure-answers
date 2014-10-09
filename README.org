@@ -2416,7 +2416,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                                         (+ x y))))
   #+END_SRC
 
-* WAITING Problem 146
+* Problem 146
 
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 146
@@ -2439,20 +2439,17 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; <p><sup>1</sup> That is, <code>(get-in original [k1 k2])</code> should
     ;; be the same as <code>(get result [k1 k2])</code></p>.
 
-    ;; (defn flatten-m
-    ;;   "Flattens a map."
-    ;;   [m]
-    ;;   (reduce (fn step [col kv]
-    ;;             (let [k  (first kv), v (last kv)]
-    ;;               (if (map? v)
-    ;;                 (do
-    ;;                   (println "is a map:" "k:" k "v:" v))
-    ;;                  (conj col (vector (reduce step [[k v]] v)))
-    ;;                  (do
-    ;;                    (println "Not a map" k)
-    ;;                  (conj col [k v]))))
-    ;;           []
-    ;;           m)))
+    (defn flatten-m
+      "Flattens a map."
+      [m]
+      (reduce (fn [acc [k v]]
+                (let [path [k]]
+                  (reduce (fn step [p [ke ve]]
+                            (assoc p (conj path ke) ve))
+                          acc
+                          (seq v))))
+              {}
+              m))
 
     (and (= (flatten-m '{a {p 1, q 2}
                          b {m 3, n 4}})
@@ -2464,7 +2461,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
             '{[[1] a] b, [[1] c] d,
               [[2] q] r, [[2] s] t,
               [[2] u] v, [[2] w] x})
-
          (= (flatten-m '{m {1 [a b c] 3 nil}})
             '{[m 1] [a b c], [m 3] nil}))
   #+END_SRC
