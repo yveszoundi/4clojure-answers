@@ -2222,19 +2222,17 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                 (into [] (take-last n
                                     (primes-list max-until-prime-value))))
 
-              (median [vec-of-3-items]
-                (let [middle (vec-of-3-items 1)
-                      lower-bound (vec-of-3-items 0)
-                      upper-bound (vec-of-3-items 2)]
-                  (/ (+ upper-bound lower-bound) 2)))]
-        
+              (valid-results? [primes-v n-primes n]
+                (and (= (count primes-v) n-primes)
+                     (= (primes-v 1) n)))
+
+              (median [v-size-3]
+                (/ (+ (v-size-3 2) (v-size-3 0)) 2))]
+
         (let [n-primes 3
               primes-v (last-n-primes n-primes num)]
-          (if (or (empty? primes-v)
-                  (< (count primes-v) n-primes)
-                  (not= (primes-v 1) num))
-            false
-            (= (median primes-v) num)))))
+          (and (valid-results? primes-v n-primes num)
+               (= (median primes-v) num)))))
 
     (and (= false (balanced-prime? 4))
          (= true (balanced-prime? 563))
