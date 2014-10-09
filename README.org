@@ -2262,34 +2262,25 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; For example: 10 is larger than 1 squared plus 0 squared;
     ;; whereas 15 is smaller than 1 squared plus 5 squared.
 
-    (defn sum-sqrt-digits [xs]
-      (println "\n\n")
+    (defn cnt-<-x2-sum-digits [xs]
       (letfn [(digits [n]
-                (lazy-seq
-                 (if (> n 10)
-                   (cons (long (mod n 10)) (digits (long (/ n 10))))
-                   (cons n nil))))
+                (loop [x n r '()]
+                  (if (< x 10) (cons x r)
+                      (recur (quot x 10) (cons (mod x 10) r)))))
+              (square-sum [col]
+                (reduce + (map (fn [x] (Math/pow x 2)) col)))]
 
-              (sum-sqrt [col]
-                (println "Col is:" col)
-                (reduce #(+ %1 (Math/sqrt %2)) 0 col))]
-        (reduce (fn [sum num]
-                  (println "Num:" num
-                           "Sum:" sum
-                           "digits:" (digits num)
-                           "sum-sqrt:" (sum-sqrt (digits num)))
-                  (if (<= (long num) (long (sum-sqrt (digits num)) ))
-                    (let [new-sum (inc sum)]
-                      (println "FinalSum:" new-sum)
-                      new-sum)
-                    sum))
+        (reduce (fn [total num]
+                  (let [num-digits (digits num)
+                        num-square-sum (square-sum num-digits)]
+                    (if (< num num-square-sum) (inc total) total)))
                 0
                 xs)))
 
-    (and (= 8  (sum-sqrt-digits (range 10)))
-         (= 19 (sum-sqrt-digits (range 30)))
-         (= 50 (sum-sqrt-digits (range 100)))
-         (= 50 (sum-sqrt-digits (range 1000))))
+    (and (= 8  (cnt-<-x2-sum-digits (range 10)))
+         (= 19 (cnt-<-x2-sum-digits (range 30)))
+         (= 50 (cnt-<-x2-sum-digits (range 100)))
+         (= 50 (cnt-<-x2-sum-digits (range 1000))))
   #+END_SRC
 
 
