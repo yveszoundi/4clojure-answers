@@ -1219,24 +1219,35 @@
   ;; number of prime numbers.
   ;;
   ;; Not really fast but maybe "ok" for small numbers below 100000
+  (defn prime-sieve
+    "Prime sieve"
+    ([]
+       (letfn [(add-prime? [candidate prime-set]
+                 (let [narrowed-primes-set (reduce-primes-set candidate prime-set)]
+                   (if (valid-candidate? candidate narrowed-primes-set)
+                     candidate
+                     (recur (next-prime-candidate candidate) prime-set))))
 
-  (defn prime-sieve [n]
-    {:pre [(pos? n)]}
-    (let [add-prime? (fn [x xs limit]
-                       (let [max-val (inc (long (Math/ceil (Math/sqrt x))))]
-                         (if (not-any? (fn [a]
-                                         (zero? (mod x a)))
-                                       (for [j xs :while (< j max-val)] j))
-                           [(conj xs x) (dec limit)]
-                           [xs limit])))]
-      (lazy-seq
-       (loop [i 3 , prime-xs [2], limit (dec n)]
-         (if-not (pos? limit)
-           prime-xs
-           (let [prime-op-ctx (add-prime? i prime-xs limit)]
-             (recur (+ i 2)
-                    (prime-op-ctx 0)
-                    (prime-op-ctx 1))))))))
+               (reduce-primes-set [candidate primes-set]
+                 (let [max-val (inc (long (Math/ceil (Math/sqrt candidate))))]
+                   (take-while #(< %1 max-val) primes-set)))
+
+               (valid-candidate? [current-candidate prime-set]
+                 (not-any? #(zero? (mod current-candidate %1)) prime-set))
+
+               (next-prime-candidate [current-candidate]
+                 (+ 2 current-candidate))
+
+               (gen-primes [candidate acc]
+                 (lazy-seq
+                  (let [next-prime (add-prime? candidate acc)]
+                    (cons next-prime
+                          (gen-primes (next-prime-candidate next-prime)
+                                      (conj acc next-prime))))))]
+         (cons 2
+               (gen-primes 3 [2]))))
+    ([n]
+       (take n (prime-sieve))))
 
   (and
    (= (prime-sieve 2) [2 3])
@@ -2184,7 +2195,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
         [0 1 2 3 4 5 6 7 8 9 11 22 33 44 55 66 77 88 99 101]))
   #+END_SRC
 
-* TODO Problem 116
+* Problem 116
 
   #+BEGIN_SRC clojure
     ;; http://en.wikipedia.org/wiki/Balanced_prime
@@ -2195,11 +2206,35 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
     ;; Create a function which takes an integer n,
     ;; and returns true iff it is a balanced prime.
-    ;; 
-    ;; TBD
-    (defn balanced-prime? [n]
+    ;;
 
-      )
+    ;; requires previous prime-sieve function from problem 67
+    (defn balanced-prime? [num]
+      (letfn [(primes-list [n]
+                (loop [acc [], primes (seq (prime-sieve))]
+                  (if (> (or (last acc) 0) n)
+                    acc
+                    (let [cur-prime (first primes)]
+                      (recur (conj acc cur-prime)
+                             (rest primes))))))
+
+              (last-n-primes [n max-until-prime-value]
+                (into [] (take-last n
+                                    (primes-list max-until-prime-value))))
+
+              (median [vec-of-3-items]
+                (let [middle (vec-of-3-items 1)
+                      lower-bound (vec-of-3-items 0)
+                      upper-bound (vec-of-3-items 2)]
+                  (/ (+ upper-bound lower-bound) 2)))]
+        
+        (let [n-primes 3
+              primes-v (last-n-primes n-primes num)]
+          (if (or (empty? primes-v)
+                  (< (count primes-v) n-primes)
+                  (not= (primes-v 1) num))
+            false
+            (= (median primes-v) num)))))
 
     (and (= false (balanced-prime? 4))
          (= true (balanced-prime? 563))
