@@ -1176,26 +1176,32 @@
   ;; Write a function which returns the first x
   ;; number of prime numbers.
   ;;
-  ;; Takes about 1 minute for 1 million numbers
+  ;; Takes about 1 minute for the first 1 000 000 primes.
+  ;; Have not yet seen an implementation that doesn't run out of memory
+  ;; for such a huge number...
+  ;;
   ;; A really fast implementation can be found at this address:
   ;; https://gist.github.com/tnoda/3028665#file-primes-clj
   ;; Check the primes' version of it... blazing fast...
+  ;;
+  ;; Typical approach where you mark non primes
+  ;; http://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
+  ;; http://stackoverflow.com/questions/960980/fast-prime-number-generation-in-clojure#answer-22668959
 
   (defn prime-sieve
     "Prime sieve"
     ([]
        (letfn [(add-prime? [candidate prime-set]
                  (let [narrowed-primes-set (reduce-primes-set candidate prime-set)]
-                   (if (valid-candidate? candidate narrowed-primes-set)
+                   (if (empty? narrowed-primes-set)
                      candidate
                      (recur (next-prime-candidate candidate) prime-set))))
 
                (reduce-primes-set [candidate primes-set]
                  (let [max-val (inc (long (Math/ceil (Math/sqrt candidate))))]
-                   (take-while #(< %1 max-val) primes-set)))
-
-               (valid-candidate? [current-candidate prime-set]
-                 (not-any? #(zero? (mod current-candidate %1)) prime-set))
+                   (for [i primes-set
+                         :while (< i max-val)
+                         :when (zero? (mod candidate i))] i)))
 
                (next-prime-candidate [current-candidate]
                  (+ 2 current-candidate))
@@ -1360,8 +1366,10 @@
     (let [magic-square [[8 1 6] [3 5 7] [4 9 2]]
           boards-count (count boards)
           boards-count-range (range boards-count)
+
           row-winner (fn [row]
-                             (case (reduce + row) 15 :o, 30 :x, nil))
+                       (case (reduce + row) 15 :o, 30 :x, nil))
+
           cell-to-num (fn [cell mapped-cell]
                         (case cell :o mapped-cell, :x (* mapped-cell 2), 0))
 
