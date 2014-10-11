@@ -1176,7 +1176,11 @@
   ;; Write a function which returns the first x
   ;; number of prime numbers.
   ;;
-  ;; Not really fast but maybe "ok" for small numbers below 100000
+  ;; Takes about 1 minute for 1 million numbers
+  ;; A really fast implementation can be found at this address:
+  ;; https://gist.github.com/tnoda/3028665#file-primes-clj
+  ;; Check the primes' version of it... blazing fast...
+
   (defn prime-sieve
     "Prime sieve"
     ([]
@@ -1329,11 +1333,8 @@
        11)
   #+END_SRC
 
-* INPROGRESS Problem 73
+* Problem 73
 #+begin_src clojure
-  ;;
-  ;; NOT the best solution, but applicable for any square matrix
-  ;; N rows x N columns
   ;;
   ;; A tic-tac-toe board is represented by a two dimensional vector.
   ;; X is represented by :x,
