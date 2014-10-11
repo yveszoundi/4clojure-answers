@@ -1357,12 +1357,12 @@
   ;; - If the total of a row adds up to 15 :o wins, 30 :x wins otherwise nobody
   (defn tic-tac-toe-winner [boards]
     (let [magic-square [[8 1 6] [3 5 7] [4 9 2]]
-          row-count (count boards)
-          row-count-range (range row-count)
-          dimension-winner (fn [row]
+          boards-count (count boards)
+          boards-count-range (range boards-count)
+          row-winner (fn [row]
                              (case (reduce + row) 15 :o, 30 :x, nil))
           cell-to-num (fn [cell mapped-cell]
-                        (case cell :e 0, :o mapped-cell, :x (* mapped-cell 2)))
+                        (case cell :o mapped-cell, :x (* mapped-cell 2), 0))
 
           transform-row (fn [matrix mapped-matrix]
                           (map (fn [row mapped-row] (cell-to-num row mapped-row))
@@ -1375,23 +1375,22 @@
                                                    (map (fn [i]
                                                           (map (fn [x]
                                                                  (nth (nth num-matrix x) i))
-                                                               row-count-range))
-                                                        row-count-range)
+                                                               boards-count-range))
+                                                        boards-count-range)
 
-                                                   ;; diagonal right
+                                                   ;; diagonal towards right
                                                    (list (map #(nth (nth num-matrix %1) %1)
-                                                              row-count-range))
+                                                              boards-count-range))
 
-                                                   ;; diagonal left
+                                                   ;; diagonal towards left
                                                    (list (map #(nth (nth num-matrix %1)
-                                                                    (- (dec row-count) %1))
-                                                              row-count-range)))]
+                                                                    (- (dec boards-count) %1))
+                                                              boards-count-range)))]
 
         (loop [winner nil, rows num-matrix-with-cols-and-diags]
           (if (or winner (empty? rows))
             winner
-            (recur (dimension-winner (first rows))
-                   (rest rows))))
+            (recur (row-winner (first rows)) (rest rows))))
 
         )))
 
