@@ -494,30 +494,6 @@
      (= (partition-dups [:a :a :b :b :c]) '((:a :a) (:b :b) (:c)))
      (= (partition-dups [[1 2] [1 2] [3 4]]) '(([1 2] [1 2]) ([3 4]))))
 
-    ;; (defn true-partition [col]
-    ;;   (->> (map-indexed (fn [idx item]
-    ;;                       (if-not (pos? idx)
-    ;;                         false
-    ;;                         (or (= (col (dec idx)) item)
-    ;;                             (= (nth col (inc idx) (dec idx)) item))))
-    ;;                     col)
-    ;;        (partition-by (fn [x] (true? x)))))
-
-    ;; (defn walk-dups [truth-table col]
-    ;;   (loop [i 0, result [], xs truth-table]
-    ;;     (if (empty? xs)
-    ;;       result
-    ;;       (let [grp (first xs)
-    ;;             split-all? (false? (first (first grp)))]
-    ;;         (if split-all?
-    ;;           (recur (+ i (Math/max 1 (count grp)))
-                     
-    ;;           )
-            
-        
-
-    ;;     )
-
   #+END_SRC
 
 * Problem 32
@@ -551,13 +527,6 @@
 
     (defn replicate-each-item [col n-times]
       (mapcat #(repeat n-times %1) col))
-
-
-    ;; (defn replicate-each-item [col n-times]
-    ;;   (reduce (fn [xs item]
-    ;;             (apply conj xs (for [i (range n-times)] item)))
-    ;;           []
-    ;;           col))
 
     (and (= (replicate-each-item [1 2 3] 2) '(1 1 2 2 3 3))
          (= (replicate-each-item [:a :b] 4) '(:a :a :a :a :b :b :b :b))
@@ -848,22 +817,6 @@
 
     (defn type-partition [col]
       (vals (group-by #(type %1) col)))
-
-    ;; (defn type-partition [col]
-    ;;   (let [xx (map type col)
-    ;;         m (group-by #(type %1) col)]
-    ;;     (reduce (fn [s k]
-    ;;               (conj s (m k)))
-    ;;             []
-    ;;             (keys m))))
-
-    ;; (defn type-partition [col]
-    ;;   (let [xx (map type col)
-    ;;         m (group-by #(type %1) col)]
-    ;;     (reduce (fn [s k]
-    ;;               (conj s (m k)))
-    ;;             []
-    ;;             (keys m))))
 
     (and
      (= (set (type-partition [1 :a 2 :b 3 :c])) #{[1 2 3] [:a :b :c]})
@@ -1378,7 +1331,7 @@
 
 * INPROGRESS Problem 73
 #+begin_src clojure
-  ;; 
+  ;;
   ;; NOT the best solution, but applicable for any square matrix
   ;; N rows x N columns
   ;;
@@ -1392,50 +1345,84 @@
   ;; tic-tac-toe board and returns :x if X has won, :o if O has won,
   ;; and nil if neither player has won.
 
-  ;; TBD improve the first attempt which was training with loops and such
+  ;; Rewrite with Magic Square approach
+  ;; - (My initial version was a loop with 'apply = collection')
+  ;;   *  loop on rows, then columns, then diagonals
+  ;;   *  for each set possibility check winner with apply = collection
+  ;;
+  ;; New approach http://mathworld.wolfram.com/MagicSquare.html
+  ;; - Map number to 0 for empty cells
+  ;; - Leave number as is for :o
+  ;; - Multiply the number by 2 for :x
+  ;; - If the total of a row adds up to 15 :o wins, 30 :x wins otherwise nobody
   (defn tic-tac-toe-winner [boards]
-    (let [transform-fn (fn [xs mode pos]
-                         (cond 
-                          (= mode :row-mode) (xs pos)
-                          (= mode :column-mode) (map #(% pos) xs)
-                          :else (if (= 0 (mod pos 2))
-                                  (map-indexed #(%2 %1) xs)
-                                  (map-indexed #(%2 (- (dec (count %2)) %1)) xs))))
-          valid-modes [:row-mode :column-mode :diagonal-mode]]
-      (loop [max-index (count boards)
-             max-iterations (inc (* 2 max-index))
-             current-mode (first valid-modes)
-             current-index 0
-             current-iteration 0
-             stop-condition false
-             winner nil]
-        (if (or stop-condition
-                (> current-iteration max-iterations))
-          winner
-          (let [new-xs (transform-fn boards current-mode current-index)
-                row-check (apply = new-xs)
-                x (first new-xs)
-                success-condition (and row-check
-                                       (or (= :x x) (= :o x)))]
-            (recur max-index
-                   max-iterations
-                   (if (and (= (inc current-index) max-index)
-                            (>= max-iterations (inc current-iteration)))
-                     (valid-modes (inc (.indexOf valid-modes current-mode)))
-                     current-mode)
-                   (if (= (inc current-index) max-index)
-                     0
-                     (inc current-index))
-                   (inc current-iteration)
-                   success-condition
-                   (if success-condition
-                     x
-                     winner))
-            )
-          )
-        )
-      )
-    )
+    (let [magic-square [[8 1 6] [3 5 7] [4 9 2]]
+          row-count (count boards)
+          row-count-range (range row-count)
+          dimension-winner (fn [row]
+                             (case (reduce + row) 15 :o, 30 :x, nil))
+          cell-to-num (fn [cell mapped-cell]
+                        (case cell :e 0, :o mapped-cell, :x (* mapped-cell 2)))
+
+          transform-row (fn [matrix mapped-matrix]
+                          (map (fn [row mapped-row] (cell-to-num row mapped-row))
+                               matrix
+                               mapped-matrix))]
+
+      (let [num-matrix (map transform-row boards magic-square)
+            num-matrix-with-cols-and-diags (concat num-matrix
+                                                   ;; columns
+                                                   (map (fn [i]
+                                                          (map (fn [x]
+                                                                 (nth (nth num-matrix x) i))
+                                                               row-count-range))
+                                                        row-count-range)
+
+                                                   ;; diagonal right
+                                                   (list (map #(nth (nth num-matrix %1) %1)
+                                                              row-count-range))
+
+                                                   ;; diagonal left
+                                                   (list (map #(nth (nth num-matrix %1)
+                                                                    (- (dec row-count) %1))
+                                                              row-count-range)))]
+
+        (loop [winner nil, rows num-matrix-with-cols-and-diags]
+          (if (or winner (empty? rows))
+            winner
+            (recur (dimension-winner (first rows))
+                   (rest rows))))
+
+        )))
+
+  (and
+   (= nil (tic-tac-toe-winner [[:e :e :e]
+                               [:e :e :e]
+                               [:e :e :e]]))
+
+   (= :x (tic-tac-toe-winner [[:x :e :o]
+                              [:x :e :e]
+                              [:x :e :o]]))
+
+   (= :o (tic-tac-toe-winner [[:e :x :e]
+                              [:o :o :o]
+                              [:x :e :x]]))
+
+   (= nil (tic-tac-toe-winner [[:x :e :o]
+                               [:x :x :e]
+                               [:o :x :o]]))
+
+   (= :x (tic-tac-toe-winner [[:x :e :e]
+                              [:o :x :e]
+                              [:o :e :x]]))
+
+   (= :o (tic-tac-toe-winner [[:x :e :o]
+                              [:x :o :e]
+                              [:o :e :x]]))
+
+   (= nil (tic-tac-toe-winner [[:x :o :x]
+                               [:x :o :x]
+                               [:o :x :o]])))
 #+end_src
 
 * Problem 74
@@ -1777,17 +1764,20 @@
 
   (defn happy-num? [n]
     {:pre [(pos? n)]}
-    (letfn [(digits-seq [x] ; order doesn't matter
-              (when (pos? x)
-                (cons (mod x 10) (digits-seq (long (/ x 10))))))
+    (letfn [(digits [n]
+              (lazy-seq
+               (loop [x n r '()]
+                 (if (< x 10) (cons x r)
+                     (recur (quot x 10) (cons (mod x 10) r))))))
             (square-sum [xs]
               (long (reduce  #(+ %1 (Math/pow %2 2)) 0 xs)))]
       (loop [loop-detection #{}, i n]
-        (let [sum (square-sum (digits-seq i))]
+        (let [sum (square-sum (digits i))]
           (cond
            (= 1 sum) true
            (contains? loop-detection sum) false
            :else (recur (conj loop-detection sum) sum))))))
+
 
   (and
    (= (happy-num? 7) true)
@@ -1831,65 +1821,9 @@
   ;; - All edges are undirected.
 
   (defn eulerian-path? [g]
-    {:pre [(and (sequential? g) (not-empty g))]}
-    (println "\n*****START")
-    ;; (println "graph" g)
 
-    (let [vertices (fn [g]
-                     ((comp set flatten) g))
-
-          remove-first (fn [target col]
-                         (let [[n m] (split-with (partial not= target) col)]
-                           (concat n (rest m))))
-          lowest-freq (fn [x1 x2 g src]
-                        (frequencies g)
-
-                        )
-          ]
-      (= g
-         ((fn step [p [a b] src visited start]
-            (println "grapH:" p "visits:" visited "start" start)
-            (if (nil? a)
-              visited
-              (let [r (filter (fn [[c d]]
-                                (and
-                                 (or (= src c) (= src d))
-                                 (not (and (= a c) (= d b)))
-                                 ))
-                              p)
-                    z (first (filter (fn [[x y]]
-                                       (println "filter:p count" (count p))
-
-                                       (if (> (count p) 1)
-                                         (not (or (= x start)
-                                                  (= y start)))
-                                         true)
-
-                                       )
-
-                                     r))]
-                (println "r:" r ",z:" z)
-                (step (remove-first z p)
-                      z
-                      (if-not (empty? z)
-                        (first (disj (set z) src))
-                        [])
-                      (reduce conj visited (if (empty? z)
-                                             []
-                                             [z]))
-                      start)
-                )
-              ))
-          (rest g)
-          (first g)
-          (last (first g))
-          [(first g)]
-            (first (first g))
-            )
-
-         )
-      )
     )
+
 
 
   (and (= true (eulerian-path? [[:a :b]]))
@@ -1948,41 +1882,8 @@
   ;; - Each edge is undirected (can be traversed either direction).
 
   (defn graph-connected? [s]
-    (apply = (vals (reduce 
-                    (fn [g [a b]]
-                      (println "a" a "b" b)
-                      (let [r (reduce conj (g a #{a}) (g b #{b}))]
-                        (println "r is" r)
-                        (println "s is" s)
-                        (reduce #(assoc % %2 r) g r)))
-                    {} s))))
 
-  (defn graph-connected? [edges]
-    (let [vertices (fn [e] ((comp set flatten seq) e))
-          narrow-vertices (fn [v e]
-                            (filter #(not= (first v) (first %1)) e))
-          neighbours (fn [v e]
-                       (reduce (fn [s x]
-                                 (if (= e (last x))
-                                   (conj s (first x))
-                                   s))
-                               #{} v))
-          build-connections (fn [v l r]
-                              (println "v" v "l" l "r" r)
-                              (if (empty? r)
-                                l
-                                (let [new-l (reduce  #(set (neighbours v %1)) r)]
-                                  (recur v
-                                         (reduce conj l new-l)
-                                         (narrow-vertices new-l r)))))
-          edge-connected? (fn [v e]
-                            (let [l (set (neighbours v e))
-                                  r (narrow-vertices l v)
-                                  connections (build-connections v l r)]
-                              (println "node:" e "neighbours:" l "connections:" connections)
-                              (>= (count connections) (dec (count (vertices v))) )))]
-      (println "vertices:" (vertices edges))
-      (every? #(edge-connected? edges %1) (vertices edges))))
+)
 
   (and
    (= true (graph-connected? #{[:a :a]}))
@@ -2014,26 +1915,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; You don't need to handle any numbers greater than MMMCMXCIX (3999),
   ;; the largest number representable with ordinary letters.
 
-  ;; (defn roman-numeral-to-number
-  ;;   "For each numeral the operation is + if nothing greater on the right.
-  ;;   Otherwise we need to negate the number while accumulating the sum."
-  ;;   [roman-num-str]
-  ;;   (let [sym-table {\I 1, \V 5, \X 10, \L 50, \C 100, \D 500, \M 1000}
-  ;;         roman-num-xs (seq roman-num-str)
-  ;;         signed-num (fn [num remaining-nums]
-  ;;                      (if (seq remaining-nums)
-  ;;                        (if (> (apply max remaining-nums) num)
-  ;;                          ( - 0 num)
-  ;;                          num)
-  ;;                        num))]
-
-  ;;     ;; map each numeral to its number
-  ;;     (loop [nums (map #(sym-table %1) roman-num-xs), sum 0]
-  ;;       (if-not (seq nums)                ; return if nothing on the right
-  ;;         sum
-  ;;         (recur (rest nums)              ; loop and add the signed number
-  ;;                (+ sum (signed-num (first nums) (rest nums))))))))
-
   (defn roman-numeral-to-number [str]
     (let [sym-table {\I 1, \V 5, \X 10, \L 50, \C 100, \D 500, \M 1000}
           nums (mapv #(sym-table %1) str)]
@@ -2053,7 +1934,27 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * TODO Problem 93
 
   #+BEGIN_SRC clojure
+    ;; 4Clojure Question 93
+    ;;
+    ;; Write a function which flattens any nested combination of sequential things
+    ;; (lists, vectors, etc.), but maintains the lowest level sequential items.
+    ;; The result should be a sequence of sequences with only one level of nesting.
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
 
+    (defn flatten-xs [col]
+
+      )
+
+
+    (= (__ [["Do"] ["Nothing"]])
+       [["Do"] ["Nothing"]])
+
+    (= (__ [[[[:a :b]]] [[:c :d]] [:e :f]])
+       [[:a :b] [:c :d] [:e :f]])
+
+    (= (__ '((1 2)((3 4)((((5 6)))))))
+       '((1 2)(3 4)(5 6)))
   #+END_SRC
 
 * TODO Problem 94
@@ -2139,12 +2040,83 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * TODO Problem 107
 
 #+begin_src clojure
+  ;; 4Clojure Question 107
+  ;;
+  ;; <p>Lexical scope and first-class functions are two of the most
+  ;; basic building blocks of a functional language like Clojure.
+  ;; When you combine the two together, you get something very
+  ;; powerful called <strong>lexical closures</strong>.
+  ;;
+  ;; With these, you can exercise a great deal of control over the
+  ;; lifetime of your local bindings, saving their values for use later,
+  ;; long after the code you're running now has finished.</p>
+  ;; 
+  ;;
+  ;; <p>It can be hard to follow in the abstract, so let's build a
+  ;; simple closure. Given a positive integer <i>n</i>, return a
+  ;; function <code>(f x)</code> which computes <i>x<sup>n</sup></i>.
+  ;; Observe that the effect of this is to preserve the value of
+  ;; <i>n</i> for use outside the scope in which it is defined.</p>
+  ;;
+  ;; Use M-x 4clojure-check-answers when you're done!
 
+  (= 256 ((__ 2) 16),
+         ((__ 8) 2))
+
+  (= [1 8 27 64] (map (__ 3) [1 2 3 4]))
+
+  (= [1 2 4 8 16] (map #((__ %) 2) [0 1 2 3 4]))
 #+end_src
 * TODO Problem 108
 
 #+begin_src clojure
+  ;; 4Clojure Question 108
+  ;;
+  ;; <p>Given any number of sequences, each sorted from smallest to largest,
+  ;; find the smallest single number which appears in all of the sequences.
+  ;; The sequences may be infinite, so be careful to search lazily.</p>
+  ;;
+  ;; Use M-x 4clojure-check-answers when you're done!
 
+
+  (defn smallest-common-num [& xs]
+    (letfn
+        (nav-skip [col cur max]
+          (cond
+           (= cur max) (nthnext col 1)
+           
+          :else (recur col (first (nthnext col)) max)))
+                   
+
+      
+
+          
+      (if (= nb-cols 1)
+        (first (first xs))
+        (loop [cols xs
+               result -1
+               lowest-elements #{}
+               one-col-exhausted false
+               all-visited false]
+
+          (map )
+
+          (recur (map #(nthnext %1 1)) cols)
+          
+          
+
+          nil))))
+
+
+  (= 3 (smallest-common-num [3 4 5]))
+
+  (= 4 (__ [1 2 3 4 5 6 7] [0.5 3/2 4 19]))
+
+  (= 7 (__ (range) (range 0 100 7/6) [2 3 5 7 11 13]))
+
+  (= 64 (__ (map #(* % % %) (range)) ;; perfect cubes
+            (filter #(zero? (bit-and % (dec %))) (range)) ;; powers of 2
+            (iterate inc 20))) ;; at least as large as 20
 #+end_src
 * TODO Problem 109
 
@@ -2154,7 +2126,75 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * TODO Problem 110
 
 #+begin_src clojure
+  ;; 4Clojure Question 109
+  ;;
+  ;; A mad scientist with tenure has created an experiment tracking mice in a maze.
+  ;; Several mazes have been randomly generated, and you've been tasked with writing
+  ;; a program to determine the mazes in which it's possible for the mouse to reach
+  ;; the cheesy endpoint.
+  ;;
+  ;; Write a function which accepts a maze in the form of a collection of rows,
+  ;; each row is a string where:
+  ;;
+  ;; <ul>
+  ;;
+  ;; <li>spaces represent areas where the mouse can walk freely</li>
+  ;;
+  ;; <li>hashes (#) represent walls where the mouse can not walk</li>
+  ;;
+  ;; <li>M represents the mouse's starting point</li>
+  ;;
+  ;; <li>C represents the cheese which the mouse must reach</li>
+  ;;
+  ;; </ul>
+  ;;
+  ;; The mouse is not allowed to travel diagonally in the maze
+  ;; (only up/down/left/right), nor can he escape the edge of the maze.
+  ;; Your function must return true iff the maze is solvable by the mouse.
+  ;;
+  ;; Use M-x 4clojure-check-answers when you're done!
 
+  (= true  (__ ["M   C"]))
+
+  (= false (__ ["M # C"]))
+
+  (= true  (__ ["#######"
+                "#     #"
+                "#  #  #"
+                "#M # C#"
+                "#######"]))
+
+  (= false (__ ["########"
+                "#M  #  #"
+                "#   #  #"
+                "# # #  #"
+                "#   #  #"
+                "#  #   #"
+                "#  # # #"
+                "#  #   #"
+                "#  #  C#"
+                "########"]))
+
+  (= false (__ ["M     "
+                "      "
+                "      "
+                "      "
+                "    ##"
+                "    #C"]))
+
+  (= true  (__ ["C######"
+                " #     "
+                " #   # "
+                " #   #M"
+                "     # "]))
+
+  (= true  (__ ["C# # # #"
+                "        "
+                "# # # # "
+                "        "
+                " # # # #"
+                "        "
+                "# # # #M"]))
 #+end_src
 * TODO Problem 111
 
@@ -2488,9 +2528,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
     (defn cnt-<-x2-sum-digits [xs]
       (letfn [(digits [n]
-                (loop [x n r '()]
-                  (if (< x 10) (cons x r)
-                      (recur (quot x 10) (cons (mod x 10) r)))))
+                (lazy-seq
+                 (loop [x n r '()]
+                   (if (< x 10) (cons x r)
+                       (recur (quot x 10) (cons (mod x 10) r))))))
               (square-sum [col]
                 (reduce + (map (fn [x] (Math/pow x 2)) col)))]
 
