@@ -10,7 +10,7 @@
 
 * Problem 1
 
-#+begin_src clojure  
+#+begin_src clojure
   ;; This is a clojure form.  Enter a value which will make the form evaluate to true.
   ;; Don't over think it!  If you are confused, see the <a href='/directions'>getting started</a> page.
   ;; Hint: true is equal to true.
@@ -249,7 +249,7 @@
   ;; (= (.get '(4 5 6 7) 2) 6))
 
   (= (nth-element '(4 5 6 7) 2) 6)
-#+end_src 
+#+end_src
 
 * Problem 22
 
@@ -845,7 +845,7 @@
   ;;
   ;; Use M-x 4clojure-check-answers when you're done!
 
-  (= [2 4] 
+  (= [2 4]
      (let [[a b c d e f g] (range)]
        [c e]))
 #+end_src
@@ -1154,7 +1154,7 @@
     "Greatest common dividor of 2 numbers.
     See http://en.wikipedia.org/wiki/Greatest_common_divisor"
     [a b]
-    (cond 
+    (cond
      (or (= 0 a) (= 0 b)) 0
      ( = a b) a
      (> a b) (recur (- a b) b)
@@ -1193,7 +1193,7 @@
     ([]
        (letfn [(add-prime? [candidate prime-set]
                  (let [narrowed-primes-set (reduce-primes-set candidate prime-set)]
-                   (if (empty? narrowed-primes-set)
+                 (if (empty? narrowed-primes-set)
                      candidate
                      (recur (next-prime-candidate candidate) prime-set))))
 
@@ -1275,15 +1275,6 @@
 
 * Problem 70
 #+begin_src clojure
-  ;; (defn split-sentence [xs]
-  ;;   (-> xs
-  ;;       (.split " ")
-  ;;       concat
-  ;;       (->> (map (fn [x]
-  ;;                   ((comp #(apply str %1) filter)
-  ;;                    #(Character/isJavaLetterOrDigit %1) x))))
-  ;;       (->> (sort-by #(.toLowerCase %)))))
-
   (defn split-sentence [xs]
     (->> (re-seq #"\w+|\d+" xs)
          (sort-by #(.toLowerCase %))))
@@ -1353,7 +1344,7 @@
   ;; and nil if neither player has won.
 
   ;; Rewrite with Magic Square approach
-  ;; - (My initial version was a loop with 'apply = collection')
+  ;; - My initial version was a loop with 'apply = collection'
   ;;   *  loop on rows, then columns, then diagonals
   ;;   *  for each set possibility check winner with apply = collection
   ;;
@@ -1645,20 +1636,79 @@
   ;; and returns true if they can be arranged into one continous word chain, and false if they cannot.
 
   ;; TBD implement me
-  (defn cont-word-chain? [xs]
-    
-    )
+  (defn continuous-word-chain? [xs]
+    (letfn [(word-vec [word] (into [] (seq word)))
+
+            (pick-words [word1 word2]
+              (if (> (count word2) (count word1))
+                [word2 word1]
+                [word1 word2]))
+
+            (distance [matrix]
+              (last (last matrix)))
+
+            (make-matrix [word1 word2]
+              (let [matrix (into []
+                                 (for [i (range (inc (count word1)))]
+                                   (into [] (take (inc (count word2)) (iterate inc 0)))))]
+                ;; new matrix
+                (reduce (fn [acc idx]
+                          (assoc acc idx
+                                 (assoc (acc idx) 0 idx)))
+                        matrix
+                        (range (count matrix)))))
+
+            (min-value
+              "top, top-left, left"
+              [ch-w1 ch-w2 ch-idx matrix col-idx row-idx]
+              (cond
+               (= ch-w1 ch-w2) 0
+               :else (min   (inc ((new-matrix col-idx) (dec row-idx)))
+                            (inc ((new-matrix (dec col-idx)) (dec row-idx)))
+                            (inc ((new-matrix (dec col-idx)) row-idx)))))
+
+            (compute-distance [word1 word2 matrix]
+              (loop [row-idx 1,  max-row (count word2), m matrix]
+                (if (= row-idx max-row)
+                  (distance m)
+                  (recur (inc row-idx)
+                         max-row
+                         (loop [col-idx 1, max-col-idx (count word1), m-mod m]
+                           (if (= col-idx max-col-idx)
+                             m-mod
+                             (let [ch-w1 (word1 (dec row-idx))
+                                   ch-w2 (word2 (dec col-idx))
+                                   min-val (min-value (ch-w1 ch-w2 m-mod row-idx col-idx))]
+
+
+                               (recur (inc col-idx)
+                                      max-col-idx
+                                      (assoc m-mod
+                                        col-idx
+                                        (assoc (m-mod col-idx)
+                                          row-idx
+                                          min-val))))))))))]
+
+
+
+      (let [col (into [] xs)
+            words (pick-words (word-vec (col 0)) (word-vec (col 1)))
+            word1 (first words), word2 (last words)
+            matrix (make-matrix word1 word2)]
+        (compute-distance word1 word2 matrix))
+
+      ))
 
   (clojure.test/testing
       "Word chain"
     (clojure.test/is
      (and
-      (= true (cont-word-chain? #{"hat" "coat" "dog" "cat" "oat" "cot" "hot" "hog"}))
-      (= false (cont-word-chain? #{"cot" "hot" "bat" "fat"}))
-      (= false (cont-word-chain? #{"to" "top" "stop" "tops" "toss"}))
-      (= true (cont-word-chain? #{"spout" "do" "pot" "pout" "spot" "dot"}))
-      (= true (cont-word-chain? #{"share" "hares" "shares" "hare" "are"}))
-      (= false (cont-word-chain? #{"share" "hares" "hare" "are"})))))
+      (= true  (continuous-word-chain? #{"hat" "coat" "dog" "cat" "oat" "cot" "hot" "hog"}) )
+      (= false (continuous-word-chain? #{"cot" "hot" "bat" "fat"}))
+      (= false (continuous-word-chain? #{"to" "top" "stop" "tops" "toss"}))
+      (= true  (continuous-word-chain? #{"spout" "do" "pot" "pout" "spot" "dot"}))
+      (= true  (continuous-word-chain? #{"share" "hares" "shares" "hare" "are"}))
+      (= false (continuous-word-chain? #{"share" "hares" "hare" "are"})))))
 #+end_src
 
 * Problem 83
@@ -1682,6 +1732,8 @@
 
 * TODO Problem 84
 
+*Transitive Closure*
+ 
 #+begin_src clojure
   ;; http://en.wikipedia.org/wiki/Transitive_closure
   ;; http://en.wikipedia.org/wiki/Binary_relation
@@ -1689,7 +1741,30 @@
   ;; Write a function which generates the transitive closure of a binary relation.
   ;; The relation will be represented as a set of 2 item vectors.
 
-  
+  (defn transitive-closure [col]
+    (into #{}
+          (reduce (fn [acc item]
+                    ((fn step [acc parent src xs]
+                       (let [edges (filter #(= src (first %1)) xs)]
+                         (if (empty? edges)
+                           acc
+                           (lazy-seq
+                           (loop [edges-col edges, new-acc acc]
+                             (if (empty? edges-col)
+                               new-acc
+                               (let [current-edge (first edges-col)]
+                                 (recur (rest edges-col)
+                                        (step
+                                         (conj new-acc
+                                               [parent (last current-edge)])
+                                         parent
+                                         (first current-edge)
+                                         xs)))))))))
+                     acc (first item) (first item) col))
+                  []
+                  col)
+          ))
+
   (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
     (= (__ divides) #{[4 2] [8 4] [8 2] [9 3] [27 9] [27 3]}))
 
@@ -1793,6 +1868,7 @@
    (= (happy-num? 2) false)
    (= (happy-num? 3) false))
 #+end_src
+
 
 * Problem 88
 
@@ -1951,6 +2027,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; Use M-x 4clojure-check-answers when you're done!
 
     (defn flatten-xs [col]
+      (letfn [(nested-list? [e]
+                (if (sequential? e)
+                  false)
+
+
 
       )
 
@@ -2058,7 +2139,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; With these, you can exercise a great deal of control over the
   ;; lifetime of your local bindings, saving their values for use later,
   ;; long after the code you're running now has finished.</p>
-  ;; 
+  ;;
   ;;
   ;; <p>It can be hard to follow in the abstract, so let's build a
   ;; simple closure. Given a positive integer <i>n</i>, return a
@@ -2075,8 +2156,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
   (= [1 2 4 8 16] (map #((__ %) 2) [0 1 2 3 4]))
 #+end_src
-* TODO Problem 108
+* Problem 108
 
+*Lazy Searching*
+ 
 #+begin_src clojure
   ;; 4Clojure Question 108
   ;;
@@ -2087,44 +2170,26 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; Use M-x 4clojure-check-answers when you're done!
 
 
-  (defn smallest-common-num [& xs]
-    (letfn
-        (nav-skip [col cur max]
-          (cond
-           (= cur max) (nthnext col 1)
-           
-          :else (recur col (first (nthnext col)) max)))
-                   
+  (defn smallest-common-num [& cols]
+    (letfn [(move-cursor [col num]
+              (if (>= (first col) num)
+                col
+                (recur (rest col) num)))]
 
-      
+      (let [firsts (map first cols)
+            max-first (reduce max firsts)]
+        (if (apply = firsts)
+          (first firsts)
+          (recur (map #(move-cursor %1 max-first) cols))))))
 
-          
-      (if (= nb-cols 1)
-        (first (first xs))
-        (loop [cols xs
-               result -1
-               lowest-elements #{}
-               one-col-exhausted false
-               all-visited false]
-
-          (map )
-
-          (recur (map #(nthnext %1 1)) cols)
-          
-          
-
-          nil))))
-
-
-  (= 3 (smallest-common-num [3 4 5]))
-
-  (= 4 (__ [1 2 3 4 5 6 7] [0.5 3/2 4 19]))
-
-  (= 7 (__ (range) (range 0 100 7/6) [2 3 5 7 11 13]))
-
-  (= 64 (__ (map #(* % % %) (range)) ;; perfect cubes
-            (filter #(zero? (bit-and % (dec %))) (range)) ;; powers of 2
-            (iterate inc 20))) ;; at least as large as 20
+  (and
+   (= 3 (smallest-common-num [3 4 5]))
+   (= 4 (smallest-common-num [1 2 3 4 5 6 7] [0.5 3/2 4 19]))
+   (= 7 (smallest-common-num (range) (range 0 100 7/6) [2 3 5 7 11 13]))
+   (= 64 (smallest-common-num (map #(* % % %) (range)) ;; perfect cubes
+                              (filter #(zero? (bit-and % (dec %))) (range)) ;; powers of 2
+                              (iterate inc 20))) ;; at least as large as 20
+   )
 #+end_src
 * TODO Problem 109
 
@@ -2306,30 +2371,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
        (= ["this" "is"]
           (take-up-to 1 #{"a"}
                       ["this" "is" "a" "sentence" "i" "wrote"])))
-
-
-  ;; (defn take-up-to
-  ;;   "Take all elements of xs until
-  ;;   n matches satisfy a predicate pred"
-  ;;   [n pred xs]
-  ;;   (lazy-seq
-  ;;    (letfn [(pick-first-when-pred [condition x1 x2]
-  ;;              (if condition x1 x2))]
-  ;;      (loop [col xs, match-count 0, result []]
-  ;;        (if (or (= n match-count)
-  ;;                (empty? col))
-  ;;          result
-  ;;          (let [x (first col)
-  ;;                matched? (pred (first col))
-  ;;                new-match-count (pick-first-when-pred matched?
-  ;;                                                      (inc match-count)
-  ;;                                                      match-count)]
-  ;;            (recur (rest col)
-  ;;                   new-match-count
-  ;;                   (pick-first-when-pred (< new-match-count n)
-  ;;                                         (conj result x)
-  ;;                                         result))))))))
-
 #+end_src
 
 * Problem 115
@@ -2399,8 +2440,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
               (median [v-size-3]
                 (/ (+ (v-size-3 2) (v-size-3 0)) 2))]
 
-        (let [n-primes 3
-              primes-v (last-n-primes n-primes num)]
+        (let [n-primes 3, primes-v (last-n-primes n-primes num)]
           (and (valid-results? primes-v n-primes num)
                (= (median primes-v) num)))))
 
@@ -2637,6 +2677,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 144
 
+*Oscillate iterate*
+
   #+BEGIN_SRC clojure
     ;; Problem 144
     ;;
@@ -2691,6 +2733,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 146
 
+*Flatten maps*
+
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 146
     ;;
@@ -2739,6 +2783,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   #+END_SRC
 
 * WAITING Problem 150
+
+*Palindromic number*
 
 #+begin_src clojure
   ;; A palindromic number is a number that is the same
