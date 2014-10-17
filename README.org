@@ -453,23 +453,6 @@
     (defn del-consecutive-dups [col]
       (mapcat set (#(partition-by identity %1) col)))
 
-    ;; (defn del-consecutive-dups [col]
-    ;;   (reduce (fn [xs b]
-    ;;             (if (or (empty? xs)
-    ;;                     (not= (last xs) b))
-    ;;               (conj xs b)
-    ;;               xs))
-    ;;           []
-    ;;           col))
-
-    ;; Cannot seem to make it both simpler and faster...
-    ;; (defn del-consecutive-dups [col]
-    ;;   (reduce (fn [xs item]
-    ;;             (apply conj xs (set item)))
-    ;;           []
-    ;;           (partition-by identity col)))
-
-
     (and (= (apply str (del-consecutive-dups "Leeeeeerrroyyy")) "Leroy")
          (= (del-consecutive-dups [1 1 2 3 3 2 2 3]) '(1 2 3 2 3))
          (= (del-consecutive-dups [[1 2] [1 2] [3 4] [1 2]]) '([1 2] [3 4] [1 2])))
@@ -598,12 +581,12 @@
     (last (sort xs)))
 
   ;; default impl used
-  (defn find-max-with-reduce [x & y]
+  (defn find-max-with-reduce [x & xs]
     (reduce (fn [x y]
               (if y
                 (if (> y x) y x)
                 x))
-            x y))
+            x xs))
 
   (clojure.test/testing
       "Write a function which takes a variable number of
@@ -1548,7 +1531,9 @@
       [true false true false true false])
   #+END_SRC
 
-* Problem 79
+* TODO Problem 79
+
+*Triangle Minimal Path*
 
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 79
@@ -1563,17 +1548,32 @@
     ;;
     ;; Use M-x 4clojure-check-answers when you're done!
 
-    (= 7 (__ '([1]
-              [2 4]
-             [5 1 4]
-            [2 3 4 5]))) ; 1->2->1->3
+    (defn min-triangle-path  [col]
+      (let [root (first col)]
+        (loop [paths (rest col), acc root]
+          (if (empty? paths)
+            acc
+            (recur (rest paths)
+                   (loop [x paths new-acc acc]
+                     (if (empty? x)
+                       new-acc
+                       
+                     
 
-    (= 20 (__ '([3]
-               [2 4]
-              [1 9 3]
-             [9 9 2 4]
-            [4 6 6 7 8]
-           [5 7 3 5 1 4]))) ; 3->4->3->2->7->1
+        ))
+
+    (and
+     (= 7 (min-triangle-path '([1]
+                                 [2 4]
+                                   [5 1 4]
+                                     [2 3 4 5]))) ; 1->2->1->3
+
+     (= 20 (min-triangle-path '([3]
+                                  [2 4]
+                                    [1 9 3]
+                                      [9 9 2 4]
+                                        [4 6 6 7 8]
+                                          [5 7 3 5 1 4]))) ; 3->4->3->2->7->1)
   #+END_SRC
 
 * Problem 80
@@ -1635,67 +1635,15 @@
   ;; Write a function which takes a sequence of words,
   ;; and returns true if they can be arranged into one continous word chain, and false if they cannot.
 
-  ;; TBD implement me
-  (defn continuous-word-chain? [xs]
-    (letfn [(word-vec [word] (into [] (seq word)))
-
-            (pick-words [word1 word2]
-              (if (> (count word2) (count word1))
-                [word2 word1]
-                [word1 word2]))
-
-            (distance [matrix]
-              (last (last matrix)))
-
-            (make-matrix [word1 word2]
-              (let [matrix (into []
-                                 (for [i (range (inc (count word1)))]
-                                   (into [] (take (inc (count word2)) (iterate inc 0)))))]
-                ;; new matrix
-                (reduce (fn [acc idx]
-                          (assoc acc idx
-                                 (assoc (acc idx) 0 idx)))
-                        matrix
-                        (range (count matrix)))))
-
-            (min-value
-              "top, top-left, left"
-              [ch-w1 ch-w2 ch-idx matrix col-idx row-idx]
-              (cond
-               (= ch-w1 ch-w2) 0
-               :else (min   (inc ((new-matrix col-idx) (dec row-idx)))
-                            (inc ((new-matrix (dec col-idx)) (dec row-idx)))
-                            (inc ((new-matrix (dec col-idx)) row-idx)))))
-
-            (compute-distance [word1 word2 matrix]
-              (loop [row-idx 1,  max-row (count word2), m matrix]
-                (if (= row-idx max-row)
-                  (distance m)
-                  (recur (inc row-idx)
-                         max-row
-                         (loop [col-idx 1, max-col-idx (count word1), m-mod m]
-                           (if (= col-idx max-col-idx)
-                             m-mod
-                             (let [ch-w1 (word1 (dec row-idx))
-                                   ch-w2 (word2 (dec col-idx))
-                                   min-val (min-value (ch-w1 ch-w2 m-mod row-idx col-idx))]
+  (defn continuous-word-chain?
+    "Check if words can be arranged into a continuous chain."
+    [xs]
+    (let [word-vec (fn [word]
+                     (into [] (seq word)))
+          words (into [] xs)]
 
 
-                               (recur (inc col-idx)
-                                      max-col-idx
-                                      (assoc m-mod
-                                        col-idx
-                                        (assoc (m-mod col-idx)
-                                          row-idx
-                                          min-val))))))))))]
-
-
-
-      (let [col (into [] xs)
-            words (pick-words (word-vec (col 0)) (word-vec (col 1)))
-            word1 (first words), word2 (last words)
-            matrix (make-matrix word1 word2)]
-        (compute-distance word1 word2 matrix))
+      
 
       ))
 
@@ -1791,26 +1739,6 @@
   ;; including the empty set and x itself.
   ;;
   ;; http://www.mathsisfun.com/sets/power-set.html
-
-  ;; Poor man solution - too slow and not idiomatic Clojure...
-  ;; (defn power-set [xs]
-  ;;   (let [xs-count (count xs)
-  ;;         seq-xs (into [] xs)
-  ;;         to-binary-seq (fn [n padding]
-  ;;                         (clojure.pprint/cl-format nil (str "~" padding ",'0',B") n))
-  ;;         bin-seq (map #(to-binary-seq %1 xs-count) (range 0 (Math/pow 2 xs-count)))
-  ;;         map-bitset-to-set (fn [set-seq str-bin-seq]
-  ;;                             (into #{}
-  ;;                                   (for [i (range (count str-bin-seq))
-  ;;                                         :when (= \1 (nth str-bin-seq i))]
-  ;;                                     (nth set-seq i))))]
-
-  ;;     (into #{}
-  ;;           (map (fn [bin-str]
-  ;;                  (map-bitset-to-set seq-xs (seq bin-str)))
-  ;;                bin-seq))
-  ;;     )
-  ;;   )
 
   (defn power-set [col]
     (let [col-count (count col)
@@ -1965,9 +1893,20 @@
   ;; - Each member of a tuple being a vertex/node in the graph.
   ;; - Each edge is undirected (can be traversed either direction).
 
-  (defn graph-connected? [s]
+  (defn graph-connected? [g]
+    (if (= 1 (count g))
+      true
+      )
+    )
 
-)
+
+    1 2 3 4 5 6
+  1   1
+  2     1   
+  3 1     1
+  4         1
+  5           1
+  6       1
 
   (and
    (= true (graph-connected? #{[:a :a]}))
@@ -2027,23 +1966,42 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; Use M-x 4clojure-check-answers when you're done!
 
     (defn flatten-xs [col]
-      (letfn [(nested-list? [e]
-                (if (sequential? e)
-                  false)
+      (letfn [(do-flatten [acc item]
+                (if (sequential? item)
+                  (loop [cols item child-acc []]
+                    (if (empty? cols)
+                      (conj acc child-acc)
+                      (let [first-item (first item)
+                            exploded-seq (explode-seq acc first-item cols)]
+                        (recur (exploded-seq 0) (exploded-seq 1)))))                    
+                  (conj acc item)))
+
+              (explode-seq [acc item col]
+                (let [result (if (sequential? item)
+                                 [acc, (concat (first item) (rest item) (rest col) )]
+                                 [(conj acc item), (rest col)])]
+                  (println "Result is:" (first result) (last result) col)
+                  result))
+                  
+              (seq-only? [sexp]
+                (and (= 1 (count sexp))
+                     (sequential? (first sexp))))]
+
+        (reduce (fn [acc item]
+                  (println "Item is:" item)
+                  (do-flatten acc item))
+                []
+                col)))
 
 
+    (and (= (flatten-xs [["Do"] ["Nothing"]])
+            [["Do"] ["Nothing"]])
 
-      )
+         (= (flatten-xs [[[[:a :b]]] [[:c :d]] [:e :f]])
+            [[:a :b] [:c :d] [:e :f]])
 
-
-    (= (__ [["Do"] ["Nothing"]])
-       [["Do"] ["Nothing"]])
-
-    (= (__ [[[[:a :b]]] [[:c :d]] [:e :f]])
-       [[:a :b] [:c :d] [:e :f]])
-
-    (= (__ '((1 2)((3 4)((((5 6)))))))
-       '((1 2)(3 4)(5 6)))
+         (= (flatten-xs '((1 2)((3 4)((((5 6)))))))
+            '((1 2)(3 4)(5 6))))
   #+END_SRC
 
 * TODO Problem 94
@@ -2121,12 +2079,42 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 #+end_src
 
-* TODO Problem 106
+* Problem 106
+
+*Number Maze*
 
 #+begin_src clojure
+  ;; 4Clojure Question 106
+  ;;
+  ;; Given a pair of numbers, the start and end point,
+  ;; find a path between the two using only three possible operations:<ul>
+  ;;
+  ;; <li>double</li>
+  ;; <li>halve (odd numbers cannot be halved)</li>
+  ;; <li>add 2</li></ul>
+  ;;
+  ;; Find the shortest path through the "maze".
+  ;; Because there are multiple shortest paths, you must return the
+  ;; length of the shortest path, not the path itself.
 
+  (defn num-maze [start end]
+    (if (= start end)
+      1
+      (letfn [(make-path [acc target]
+
+                )]
+        )))
+
+  (and
+   (= 1 (num-maze 1 1))  ; 1
+   (= 3 (num-maze 3 12)) ; 3 6 12
+   (= 3 (num-maze 12 3)) ; 12 6 3
+   (= 3 (num-maze 5 9))  ; 5 7 9
+   (= 9 (num-maze 9 2))  ; 9 18 20 10 12 6 8 4 2
+   (= 5 (num-maze 9 12)) ; 9 11 22 24 12
+   )
 #+end_src
-* TODO Problem 107
+* Problem 107
 
 #+begin_src clojure
   ;; 4Clojure Question 107
@@ -2149,12 +2137,14 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;;
   ;; Use M-x 4clojure-check-answers when you're done!
 
-  (= 256 ((__ 2) 16),
-         ((__ 8) 2))
+  (defn exp [n]
+    (fn [& args]
+      (long (Math/pow (first args) n))))
 
-  (= [1 8 27 64] (map (__ 3) [1 2 3 4]))
-
-  (= [1 2 4 8 16] (map #((__ %) 2) [0 1 2 3 4]))
+  (and (= 256 ((exp 2) 16),
+          ((exp 8) 2))
+       (= [1 8 27 64] (map (exp 3) [1 2 3 4]))
+       (= [1 2 4 8 16] (map #((exp %) 2) [0 1 2 3 4])))
 #+end_src
 * Problem 108
 
@@ -2596,6 +2586,175 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= 50 (cnt-<-x2-sum-digits (range 1000))))
   #+END_SRC
 
+* Problem 121
+
+  #+BEGIN_SRC clojure
+
+  #+END_SRC
+
+* Problem 122
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 122
+    ;;
+    ;; Convert a binary number, provided in the form of a string, to its numerical value.
+
+    (defn bin->decimal-4fun-not-fluent [xs]
+      (loop [idx 0
+             sum 0
+             col (map #(Integer/valueOf %) (re-seq #"\d" xs))]
+        (if (empty? col)
+          (long sum)
+          (let [cur-num (last col)]
+            (recur (inc idx)
+                   (+ sum (* cur-num (Math/pow 2 idx)))
+                   (butlast col))))))
+
+    (defn bin->decimal [str-xs]
+      (Integer/valueOf str-xs 2))
+
+    (and (= 0     (bin->decimal "0"))
+         (= 7     (bin->decimal "111"))
+         (= 8     (bin->decimal "1000"))
+         (= 9     (bin->decimal "1001"))
+         (= 255   (bin->decimal "11111111"))
+         (= 1365  (bin->decimal "10101010101"))
+         (= 65535 (bin->decimal "1111111111111111")))
+  #+END_SRC
+
+* Problem 123
+
+  #+BEGIN_SRC clojure
+
+  #+END_SRC
+
+* Problem 125
+
+  #+BEGIN_SRC clojure
+
+  #+END_SRC
+
+* Problem 126
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 126
+    ;;
+    ;; Enter a value which satisfies the following:
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (let [x Class]
+      (and (= (class x) x) x))
+  #+END_SRC
+
+* Problem 127
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 127
+    ;;
+    ;; Everyone loves triangles, and it's easy to understand why&mdash;they're so wonderfully symmetric (except scalenes, they suck).
+    ;;
+    ;; <br/><br/>
+    ;;
+    ;; Your passion for triangles has led you to become a miner (and part-time Clojure programmer) where you work all day to chip out isosceles-shaped minerals from rocks gathered in a nearby open-pit mine.  There are too many rocks coming from the mine to harvest them all so you've been tasked with writing a program to analyze the mineral patterns of each rock, and determine which rocks have the biggest minerals.
+    ;;
+    ;; <br/><br/>
+    ;;
+    ;; Someone has already written a <a href="http://en.wikipedia.org/wiki/Computer_vision">computer-vision</a> system for the mine.  It images each rock as it comes into the processing centre and creates a cross-sectional <a href="http://en.wikipedia.org/wiki/Bit_array">bitmap</a> of mineral (1) and rock (0) concentrations for each one.
+    ;;
+    ;; <br/><br/>
+    ;;
+    ;; You must now create a function which accepts a collection of integers, each integer when read in base-2 gives the bit-representation of the rock (again, 1s are mineral and 0s are worthless scalene-like rock).  You must return the cross-sectional area of the largest harvestable mineral from the input rock, as follows:
+    ;;
+    ;; <br>
+    ;;
+    ;; <ul>
+    ;;
+    ;; <li>The minerals only have smooth faces when sheared vertically or horizontally from the rock's cross-section</li>
+    ;;
+    ;; <li>The mine is only concerned with harvesting isosceles triangles (such that one or two sides can be sheared)</li>
+    ;;
+    ;; <li>If only one face of the mineral is sheared, its opposing vertex must be a point (ie. the smooth face must be of odd length), and its two equal-length sides must intersect the shear face at 45&deg; (ie. those sides must cut even-diagonally)</li>
+    ;;
+    ;; <li>The harvested mineral may not contain any traces of rock</li>
+    ;;
+    ;; <li>The mineral may lie in any orientation in the plane</li>
+    ;;
+    ;; <li>Area should be calculated as the sum of 1s that comprise the mineral</li>
+    ;;
+    ;; <li>Minerals must have a minimum of three measures of area to be harvested</li>
+    ;;
+    ;; <li>If no minerals can be harvested from the rock, your function should return nil</li>
+    ;;
+    ;; </ul>
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (defn harvested-minerals [xs]
+      (let [bin-xs (map #(Integer/toString %1 2) xs)
+            max-count (reduce max (map count bin-xs))
+            pad-seqs (fn [x]
+                       (let [count-x (count x)]
+                         (if (< count-x max-count)
+                           (concat (repeat (- max-count count-x) \0) x)
+                           (seq x))))]
+
+
+        (map pad-seqs bin-xs)
+        
+        ))
+
+    (= 10 (harvested-minerals [15 15 15 15 15]))
+                                            ; 1111      1111
+                                            ; 1111      *111
+                                            ; 1111  ->  **11
+                                            ; 1111      ***1
+                                            ; 1111      ****
+
+    (= 15 (harvested-minerals [1 3 7 15 31]))
+                                            ; 00001      0000*
+                                            ; 00011      000**
+                                            ; 00111  ->  00***
+                                            ; 01111      0****
+                                            ; 11111      *****
+
+    (= 3 (__ [3 3]))
+                                            ; 11      *1
+                                            ; 11  ->  **
+
+    (= 4 (__ [7 3]))
+                                            ; 111      ***
+                                            ; 011  ->  0*1
+
+    (= 6 (__ [17 22 6 14 22]))
+                                            ; 10001      10001
+                                            ; 10110      101*0
+                                            ; 00110  ->  00**0
+                                            ; 01110      0***0
+                                            ; 10110      10110
+
+    (= 9 (__ [18 7 14 14 6 3]))
+                                            ; 10010      10010
+                                            ; 00111      001*0
+                                            ; 01110      01**0
+                                            ; 01110  ->  0***0
+                                            ; 00110      00**0
+                                            ; 00011      000*1
+
+    (= nil (__ [21 10 21 10]))
+                                            ; 10101      10101
+                                            ; 01010      01010
+                                            ; 10101  ->  10101
+                                            ; 01010      01010
+
+    (= nil (__ [0 31 0 31 0]))
+                                            ; 00000      00000
+                                            ; 11111      11111
+                                            ; 00000  ->  00000
+                                            ; 11111      11111
+                                            ; 00000      00000
+  #+END_SRC
+
 
 * TODO Problem 128
 
@@ -2626,31 +2785,233 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                        S8 S9 ST SJ SQ SK SA]))
 #+end_src
 
+* Problem 130
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 130
+    ;;
+    ;; Every node of a tree is connected to each of its children as
+    ;;
+    ;; well as its parent.  One can imagine grabbing one node of
+    ;;
+    ;; a tree and dragging it up to the root position, leaving all
+    ;;
+    ;; connections intact.  For example, below on the left is
+    ;;
+    ;; a binary tree.  By pulling the "c" node up to the root, we
+    ;;
+    ;; obtain the tree on the right.
+    ;;
+    ;; <br/>
+    ;;
+    ;; <img src="http://i.imgur.com/UtD2T.png">
+    ;;
+    ;; <br/>
+    ;;
+    ;; Note it is no longer binary as "c" had three connections
+    ;;
+    ;; total -- two children and one parent.
+    ;;
+    ;; 
+    ;;
+    ;; Each node is represented as a vector, which always has at
+    ;;
+    ;; least one element giving the name of the node as a symbol.
+    ;;
+    ;; Subsequent items in the vector represent the children of the
+    ;;
+    ;; node.  Because the children are ordered it's important that
+    ;;
+    ;; the tree you return keeps the children of each node in order
+    ;;
+    ;; and that the old parent node, if any, is appended on the
+    ;;
+    ;; right.
+    ;;
+    ;; 
+    ;;
+    ;; Your function will be given two args -- the name of the node
+    ;;
+    ;; that should become the new root, and the tree to transform.
+    ;;
+    ;; 
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (= '(n)
+       (__ 'n '(n)))
+
+    (= '(a (t (e)))
+       (__ 'a '(t (e) (a))))
+
+    (= '(e (t (a)))
+       (__ 'e '(a (t (e)))))
+
+    (= '(a (b (c)))
+       (__ 'a '(c (b (a)))))
+
+    (= '(d 
+          (b
+            (c)
+            (e)
+            (a 
+              (f 
+                (g) 
+                (h)))))
+      (__ 'd '(a
+                (b 
+                  (c) 
+                  (d) 
+                  (e))
+                (f 
+                  (g)
+                  (h)))))
+
+    (= '(c 
+          (d) 
+          (e) 
+          (b
+            (f 
+              (g) 
+              (h))
+            (a
+              (i
+              (j
+                (k)
+                (l))
+              (m
+                (n)
+                (o))))))
+       (__ 'c '(a
+                 (b
+                   (c
+                     (d)
+                     (e))
+                   (f
+                     (g)
+                     (h)))
+                 (i
+                   (j
+                     (k)
+                     (l))
+                   (m
+                     (n)
+                     (o))))))
+
+  #+END_SRC
+
+* Problem 131
+
+  #+BEGIN_SRC clojure
+    ;; Given a variable number of sets of integers,
+    ;; create a function which returns true iff all of
+    ;; the sets have a non-empty subset with an equivalent summation.
+
+    ;; Reusing power-set function from Question 85
+    (defn common-subset-sum? [& xs]
+      (letfn [(non-empty-subsets [col]
+                (keep #(not-empty %1) (power-set col)))
+
+              (subsets-sum [col]
+                (into #{} (map #(reduce + %1) col)))
+
+              (find-common-subsets [subsets-sums]
+                (reduce #(filter (set %1) %2) (first subsets-sums) (rest subsets-sums)))]
+
+        (if (= 1 (count xs))
+          true
+          (->> (map non-empty-subsets xs)
+               (map subsets-sum)
+               find-common-subsets
+               count
+               pos?))))
+
+
+    (and
+     (= true  (common-subset-sum? #{-1 1 99}
+                                  #{-2 2 888}
+                                  #{-3 3 7777})) ; ex. all sets have a subset which sums to zero
+
+     (= false (common-subset-sum? #{1}
+                                  #{2}
+                                  #{3}
+                                  #{4}))
+
+     (= true  (common-subset-sum? #{1}))
+
+     (= false (common-subset-sum? #{1 -3 51 9}
+                                  #{0}
+                                  #{9 2 81 33}))
+
+     (= true  (common-subset-sum? #{1 3 5}
+                                  #{9 11 4}
+                                  #{-3 12 3}
+                                  #{-3 4 -2 10}))
+
+     (= false (common-subset-sum? #{-1 -2 -3 -4 -5 -6}
+                                  #{1 2 3 4 5 6 7 8 9}))
+
+     (= true  (common-subset-sum? #{1 3 5 7}
+                                  #{2 4 6 8}))
+
+     (= true  (common-subset-sum? #{-1 3 -5 7 -9 11 -13 15}
+                                  #{1 -3 5 -7 9 -11 13 -15}
+                                  #{1 -1 2 -2 4 -4 8 -8}))
+
+     (= true  (common-subset-sum? #{-10 9 -8 7 -6 5 -4 3 -2 1}
+                                  #{10 -9 8 -7 6 -5 4 -3 2 -1})))
+  #+END_SRC
+
 * TODO Problem 132
 
+*Insert between two items*
+
 #+begin_src clojure
-  ;; Problem 132
   ;; Write a function that takes a two-argument predicate,
   ;; a value, and a collection; and returns a new collection
   ;; where the <code>value</code> is inserted between every
   ;; two items that satisfy the predicate.
 
-  (= '(1 :less 6 :less 7 4 3) (__ < :less [1 6 7 4 3]))
+  (defn insert-between-items [pred sep xs]
+    (letfn [(insert-fn [f prev cur sep col]
+              (lazy-seq
+               (cons prev
+                     (when cur
+                       (if (f prev cur)
+                         (cons sep (insert-fn f
+                                              cur
+                                              (first col)
+                                              sep
+                                              (rest col)))
+                         (insert-fn f
+                                    cur
+                                    (first col)
+                                    sep
+                                    (rest col)))))))]
+      (if (empty? xs)
+        xs
+        (let [prev (first xs)
+              col (rest xs)]
+          (println "col:" xs)
+          (insert-fn pred prev (first col) sep col)))))
 
-  (= '(2) (__ > :more [2]))
 
-  (= [0 1 :x 2 :x 3 :x 4]  (__ #(and (pos? %) (< % %2)) :x (range 5)))
+  (and
+   (= '(1 :less 6 :less 7 4 3) (insert-between-items < :less [1 6 7 4 3]))
 
-  (empty? (__ > :more ()))
+   (= '(2) (insert-between-items > :more [2]))
 
-  (and (= [0 1 :same 1 2 3 :same 5 8 13 :same 21]
-     (take 12 (->> [0 1]
-                   (iterate (fn [[a b]] [b (+ a b)]))
-                   (map first) ; fibonacci numbers
-                   (__ (fn [a b] ; both even or both odd
-                         (= (mod a 2) (mod b 2)))
-                       :same)))))
+   (= [0 1 :x 2 :x 3 :x 4]  (insert-between-items #(and (pos? %) (< % %2)) :x (range 5)))
 
+   (empty? (insert-between-items > :more ()))
+
+   (and (= [0 1 :same 1 2 3 :same 5 8 13 :same 21]
+           (take 12 (->> [0 1]
+                         (iterate (fn [[a b]] [b (+ a b)]))
+                         (map first) ; fibonacci numbers
+                         (insert-between-items (fn [a b] ; both even or both odd
+                                                 (= (mod a 2) (mod b 2)))
+                                               :same)))q)))
 
 #+end_src
 
@@ -2782,6 +3143,34 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
             '{[m 1] [a b c], [m 3] nil}))
   #+END_SRC
 
+* Problem 147
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 147
+    ;;
+    ;; <p>Write a function that, for any given input vector of numbers,
+    ;; returns an infinite lazy sequence of vectors, where each next one
+    ;; is constructed from the previous following the rules used in
+    ;; <a href="http://en.wikipedia.org/wiki/Pascal's_triangle">Pascal's Triangle</a>.
+    ;; For example, for [3 1 2], the next row is [3 4 3 2].</p>
+    ;;
+    ;; <p>Beware of arithmetic overflow! In clojure (since version 1.3 in 2011),
+    ;; if you use an arithmetic operator like + and the result is too large to
+    ;; fit into a 64-bit integer, an exception is thrown.
+    ;; You can use +' to indicate that you would rather overflow into Clojure's slower,
+    ;; arbitrary-precision bigint.</p>
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (= (second (__ [2 3 2])) [2 5 5 2])
+
+    (= (take 5 (__ [1])) [[1] [1 1] [1 2 1] [1 3 3 1] [1 4 6 4 1]])
+
+    (= (take 2 (__ [3 1 2])) [[3 1 2] [3 4 3 2]])
+
+    (= (take 100 (__ [2 4 2])) (rest (take 101 (__ [2 2]))))
+  #+END_SRC
+
 * WAITING Problem 150
 
 *Palindromic number*
@@ -2796,8 +3185,39 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
   (defn palindromic-sieve [n]
     {:pre [(pos? n)]}
-    ;; redoing
-    )
+
+    (letfn [(num->digits [n]
+              (lazy-seq
+               (loop [x n r '()]
+                 (if (< x 10) (cons x r)
+                     (recur (quot x 10) (cons (mod x 10) r))))))
+
+            (digits->num [num-digits]
+              (reduce #(conj %1 %2) [] num-digits))
+
+            (mirror-digits [num-digits start-offset end-offset]
+              (let [digits-count (count num-digits)]
+                (if (not= (first num-digits) (last num-digits))
+                  ;;191
+                  ;;12352
+                  ;; 1234
+                  )))
+
+            (increment-digit [num target]
+              (if (= (long target) (Long/valueOf (str (last (str num)))))
+                (long num)
+                (recur (inc num target))))
+
+            (next-palindromic-num [n]
+              (if (< (inc n) 10)
+                (inc n)
+                (let [num-digits (num->digits n)]
+
+
+                  )))]
+
+    ))
+
 
   (and
    (= (take 26 (palindromic-seq 0))
