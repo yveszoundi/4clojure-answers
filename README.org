@@ -203,28 +203,14 @@
 
 * Problem 20
 
+*Penultimate Element*
+
 #+begin_src clojure
   ;; Write a function which returns the second to last element from a sequence.
-  ;; (= (__ (list 1 2 3 4 5)) 4)
-  ;; (defn second-to-last [xs]
-  ;;   ((comp last butlast) xs))
 
-  ;; (defn second-to-last [xs]
-  ;;   (nth xs (- (count xs) 2)))
-
-  ;; seems faster
   (defn second-to-last [[x & xs]]
     (if (= 1 (count xs)) x
         (recur xs)))
-
-
-  ;; (time
-  ;;  (and
-  ;;   (= (second-to-last (list 1 2 3 4 5)) 4)
-  ;;   (= (second-to-last ["a" "b" "c"]) "b")
-  ;;   (= (second-to-last [[1 2] [3 4]]) [1 2])))
-
-
 
   (clojure.test/testing
       "Write a function which returns the second to last element from a sequence."
@@ -236,6 +222,8 @@
 
 * Problem 21
 
+*Nth Element*
+
 #+begin_src clojure
   ;; Write a function which returns the Nth element from a sequence.
   ;; Restrictions (please don't use these function(s)): nth
@@ -245,34 +233,19 @@
     (if (= idx 0) x
         (recur xs (dec idx))))
 
-  ;; (time
-  ;; (= (.get '(4 5 6 7) 2) 6))
-
   (= (nth-element '(4 5 6 7) 2) 6)
 #+end_src
 
 * Problem 22
 
+*Count a Sequence*
+ 
 #+begin_src clojure
   ;; Write a function which returns the total number of elements in a sequence.
   ;; Restrictions (please don't use these function(s)): count
-  ;; (= (__ '(1 2 3 3 1)) 5)
-  ;; (defn count-seq [xs]
-  ;;   ((comp #(reduce + %) #(map (fn[x] 1) %)) xs))
 
-  ;; v2 seems faster and maybe more idiomatic
   (defn count-seq [xs]
     (reduce (fn [sum _] (inc sum)) 0 xs))
-
-
-  ;; (time
-  ;;  (and
-  ;;                     (= (count-seq '(1 2 3 3 1)) 5)
-  ;;                     (= (count-seq "Hello World") 11)
-  ;;                     (= (count-seq [[1 2] [3 4] [5 6]]) 3)
-  ;;                     (= (count-seq '(13)) 1)
-  ;;                     (= (count-seq '(:a :b :c)) 3)))
-
 
   (and
    (= (count-seq '(1 2 3 3 1)) 5)
@@ -284,6 +257,8 @@
 
 * Problem 23
 
+*Reverse a Sequence*
+ 
 #+begin_src clojure
   ;; Write a function which reverses a sequence.
   ;; Restrictions (please don't use these function(s)): reverse, rseq
@@ -300,6 +275,8 @@
 #+end_src
 
 * Problem 24
+
+*Sum It All Up*
 
 #+begin_src clojure
   ;; Write a function which returns the sum of a sequence of numbers.
@@ -319,6 +296,8 @@
 
 * Problem 25
 
+*Find the odd numbers*
+
 #+begin_src clojure
   ;; Write a function which returns only the odd numbers from a sequence.
   ;; (= (__ #{1 2 3 4 5}) '(1 3 5))
@@ -331,6 +310,8 @@
 #+end_src
 
 * Problem 26
+
+*Fibonacci Sequence*
 
 #+begin_src clojure
   ;; Write a function which returns the first X fibonacci numbers.
@@ -383,6 +364,8 @@
 
 * Problem 27
 
+*Palindrome Detector*
+
   #+BEGIN_SRC clojure
     ;; Write a function which returns true if the given sequence is a palindrome.
     ;; Hint: "racecar" does not equal '(\r \a \c \e \c \a \r)
@@ -401,7 +384,7 @@
 
 * Problem 28
 
-
+*Flatten a Sequence*
   #+BEGIN_SRC clojure
     ;; Problem 28
     ;; Write a function which flattens a sequence.
@@ -424,6 +407,8 @@
 
 * Problem 29
 
+*Get the Caps*
+
 #+begin_src clojure
   ;; Write a function which takes a string and returns a new string containing only
   ;; the capital letters.
@@ -443,9 +428,9 @@
 
 * Problem 30
 
+*Compress a Sequence*
+
   #+BEGIN_SRC clojure
-    ;; Problem 30
-    ;;
     ;; Write a function which removes consecutive duplicates from a sequence.
 
     ;; maybe more elegant and idiomatic, do not thing it is faster than
@@ -460,10 +445,9 @@
 
 * Problem 31
 
+*Pack a Sequence*
 
   #+BEGIN_SRC clojure
-    ;; Problem 31
-    ;;
     ;; Write a function which packs consecutive duplicates into sub-lists.
 
     ;; Took more than few mins for something so simple
@@ -481,13 +465,10 @@
 
 * Problem 32
 
+*Duplicate a Sequence*
 
   #+BEGIN_SRC clojure
-    ;; Problem 32
-    ;;
     ;; Write a function which duplicates each element of a sequence.
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
     (defn dup-each-item [xs]
       (reduce #(apply conj %1 (list %2 %2)) [] xs))
@@ -501,10 +482,9 @@
 
 * Problem 33
 
+*Replicate a Sequence*
 
   #+BEGIN_SRC clojure
-    ;; Problem 33
-    ;;
     ;; Write a function which replicates each element
     ;; of a sequence a variable number of times.
 
@@ -519,6 +499,8 @@
   #+END_SRC
 
 * Problem 34
+
+*Implement range*
 
 #+begin_src clojure
   ;; Write a function which creates a list of all integers in a given range.
@@ -536,6 +518,8 @@
 
 * Problem 35
 
+*Local bindings*
+
 #+begin_src clojure
   ;; Clojure lets you give local names to values using the special let-form.
   ;; (= __ (let [x 5] (+ 2 x)))
@@ -550,6 +534,8 @@
 #+end_src
 
 * Problem 36
+
+*Let it Be*
 
 #+begin_src clojure
   ;; Can you bind x, y, and z so that these are all true?
@@ -566,6 +552,7 @@
 
 * Problem 37
 
+*Regular Expressions*
 
   #+BEGIN_SRC clojure
     ;; Regex patterns are supported with a special reader macro.
@@ -573,6 +560,8 @@
   #+END_SRC
 
 * Problem 38
+
+*Maximum value*
 
 #+begin_src clojure
   ;; Write a function which takes a variable number of parameters and returns the maximum value.
@@ -600,6 +589,8 @@
 
 * Problem 39
 
+*Interleave Two Seqs*
+
 #+begin_src clojure
   ;; Write a function which takes two sequences and
   ;; returns the first item from each, then the second item
@@ -622,8 +613,9 @@
 
 * Problem 40
 
+*Interpose a Seq*
+
   #+BEGIN_SRC clojure
-    ;; Problem 40
     ;; Write a function which separates the items
     ;; of a sequence by an arbitrary value.
     ;;
@@ -644,9 +636,9 @@
 
 * Problem 41
 
+*Drop Every Nth Item*
+
   #+BEGIN_SRC clojure
-    ;; Problem 41
-    ;;
     ;; Write a function which drops every Nth item from a sequence.
 
     ;; simplistic approach no accumulator in a loop or similar
@@ -665,6 +657,8 @@
 
 * Problem 42
 
+*Factorial Fun*
+
 #+begin_src clojure
   ;; Write a function which calculates factorials.
   (defn factorial [n]
@@ -682,9 +676,9 @@
 
 * Problem 43
 
+*Reverse Interleave*
+
   #+BEGIN_SRC clojure
-    ;; Problem 43
-    ;;
     ;; Write a function which reverses the interleave
     ;; process into x number of subsequences.
 
@@ -704,9 +698,9 @@
 
 * Problem 44
 
+*Rotate Sequence*
+
   #+BEGIN_SRC clojure
-    ;; Problem 44
-    ;;
     ;; Write a function which can rotate a sequence in either direction.
 
     ;; a bit of luck and trial/error here (negation)
@@ -725,6 +719,8 @@
 
 * Problem 45
 
+*Intro to Iterate*
+
 #+begin_src clojure
   ;; The iterate function can be used to produce an infinite lazy sequence.
   ;; (= __ (take 5 (iterate #(+ 3 %) 1)))
@@ -733,9 +729,11 @@
 
 * Problem 46
 
+*Flipping out*
+
 #+begin_src clojure
   ;; Write a higher-order function which flips the order of the arguments of an input function.
-  ;; Use M-x 4clojure-check-answers when you're done!
+
   (defn flip-args [f]
     (fn [& args]
       (apply f (reverse args))))
@@ -751,26 +749,33 @@
 
 * Problem 47
 
+*Contain Yourself*
+
 #+begin_src clojure
-  ;; The contains? function checks if a KEY is present in a given collection.  This often leads beginner clojurians to use it incorrectly with numerically indexed collections like vectors and lists.
+  ;; The contains? function checks if a KEY is present in a
+  ;; given collection.
+  ;; This often leads beginner clojurians to use it
+  ;; incorrectly with numerically indexed collections like vectors and lists.
   (contains? #{4 5 6} 4)
   (contains? [1 1 1 1 1] 1)
   (contains? {4 :a 2 :b} 2)
-
-  ;; http://dev.clojure.org/jira/browse/CLJ-932
-  ;; Will throw an exception
-  ;;(not (contains? '(1 2 4) __))
 #+end_src
 
 * Problem 48
 
+*Intro to some*
+
 #+begin_src clojure
-  ;; The some function takes a predicate function and a collection.  It returns the first logical true value of (predicate x) where x is an item in the collection.
+  ;; The some function takes a predicate function and a collection.
+  ;; It returns the first logical true value of (predicate x)
+  ;; where x is an item in the collection.
   (= 6 (some #{2 7 6} [5 6 7 8]))
   (= 6 (some #(when (even? %) %) [5 6 7 8]))
 #+end_src
 
 * Problem 49
+
+*Split a sequence*
 
 #+begin_src clojure
   ;; Write a function which will split a sequence into two parts.;;
@@ -788,9 +793,9 @@
 
 * Problem 50
 
+*Split by Type*
+
   #+BEGIN_SRC clojure
-    ;; Problem 50
-    ;;
     ;; Write a function which takes a sequence consisting of items
     ;; with different types and splits them up into a set of
     ;; homogeneous sub-sequences. The internal order of each
@@ -809,6 +814,8 @@
 
 * Problem 51
 
+*Advanced Destructuring*
+
   #+BEGIN_SRC clojure
     ;; Problem 51
     ;;
@@ -820,6 +827,8 @@
   #+END_SRC
 
 * Problem 52
+
+*Intro to Destructuring*
 
 #+begin_src clojure
   ;; Problem 52
@@ -834,6 +843,8 @@
 #+end_src
 
 * Problem 53
+
+*Longest Increasing Sub-Seq*
 
   #+BEGIN_SRC clojure
     ;; Given a vector of integers, find the longest consecutive sub-sequence
@@ -862,6 +873,8 @@
 
 * Problem 54
 
+*Partition a Sequence*
+
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 54
     ;;
@@ -884,6 +897,8 @@
 
 * Problem 55
 
+*Count Occurrences*
+
 #+begin_src clojure
   (defn map-frequencies
     "Map occurrences of numbers.
@@ -905,6 +920,8 @@
 #+end_src
 
 * Problem 56
+
+*Find Distinct Items*
 
 #+begin_src clojure
   ;; Find Distinct Items
@@ -931,6 +948,8 @@
 
 * Problem 57
 
+*Simple Recursion*
+
 #+begin_src clojure
   ;; Simple Recursion
   ;; Difficulty:  Elementary
@@ -943,6 +962,8 @@
 #+end_src
 
 * Problem 58
+
+*Function Composition*
 
 #+begin_src clojure
   ;; Write a function which allows you to create function compositions.
@@ -968,6 +989,8 @@
 
 * Problem 59
 
+*Juxtaposition*
+
   #+BEGIN_SRC clojure
     ;; Take a set of functions and return a new function
     ;; that takes a variable number of arguments and
@@ -987,6 +1010,8 @@
 
 
 * Problem 60
+
+*Sequence Reductions*
 
 #+begin_src clojure
   (defn my-reductions
@@ -1016,6 +1041,8 @@
 
 * Problem 61
 
+*Map Construction*
+
 #+begin_src clojure
   (defn do-zipmap [ks vs]
     (apply hash-map (interleave ks vs)))
@@ -1032,6 +1059,8 @@
 #+end_src
 
 * Problem 62
+
+*Re-implement Iterate*
 
 #+begin_src clojure
   ;; Given a side-effect free function f and an initial
@@ -1054,6 +1083,9 @@
 #+end_src
 
 * Problem 63
+
+*Group a Sequence*
+
 #+begin_src clojure
   ;; Given a function f and a sequence s, write a function which returns a map.
   ;; The keys should be the values of f applied to each item in s.
@@ -1081,6 +1113,9 @@
 #+end_src
 
 * Problem 64
+
+*Intro to Reduce*
+
 #+begin_src clojure
   (clojure.test/testing
       "Reduce takes a 2 argument function and an optional starting value.
@@ -1098,6 +1133,8 @@
 #+end_src
 
 * Problem 65
+
+*Black Box Testing*
 
 #+begin_src clojure
   ;; "Clojure has many sequence types, which act in subtly different ways.
@@ -1132,6 +1169,9 @@
 #+end_src
 
 * Problem 66
+
+*Greatest Common Divisor*
+
 #+begin_src clojure
   (defn gcd
     "Greatest common dividor of 2 numbers.
@@ -1155,6 +1195,9 @@
 #+end_src
 
 * Problem 67
+
+*Prime Numbers* 
+
 #+begin_src clojure
   ;; Write a function which returns the first x
   ;; number of prime numbers.
@@ -1208,6 +1251,8 @@
 
 * Problem 68
 
+*Recurring Theme*
+
   #+BEGIN_SRC clojure
     ;; Clojure only has one non-stack-consuming looping construct: recur.
     ;; Either a function or a loop can be used as the recursion point.
@@ -1226,6 +1271,8 @@
   #+END_SRC
 
 * Problem 69
+
+*Merge with a Function*
 
   #+BEGIN_SRC clojure
     ;; Write a function which takes a function f and a variable number of maps.
@@ -1257,6 +1304,9 @@
   #+END_SRC
 
 * Problem 70
+
+*Word Sorting*
+
 #+begin_src clojure
   (defn split-sentence [xs]
     (->> (re-seq #"\w+|\d+" xs)
@@ -1278,6 +1328,8 @@
 #+end_src
 
 * Problem 71
+
+*Rearranging Code: ->*
 
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 71
@@ -1301,6 +1353,8 @@
 
 * Problem 72
 
+*Rearranging Code: ->>*
+
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 72
     ;;
@@ -1314,6 +1368,9 @@
   #+END_SRC
 
 * Problem 73
+
+*Analyze a Tic-Tac-Toe Board*
+
 #+begin_src clojure
   ;;
   ;; A tic-tac-toe board is represented by a two dimensional vector.
@@ -1408,6 +1465,9 @@
 #+end_src
 
 * Problem 74
+
+*Filter Perfect Squares*
+
 #+begin_src clojure
   ;; Perfect square numbers
   ;; http://www.mathwarehouse.com/arithmetic/numbers/what-is-a-perfect-square.php
@@ -1431,8 +1491,10 @@
 #+end_src
 
 * Problem 75
+
+*Euler's Totient Function*
+
 #+begin_src clojure
-  ;;
   ;; Write a function which calculates Euler's totient function.
   ;; NOTE: Reusing gcd function from question 66.
   ;;
@@ -1457,6 +1519,9 @@
 #+end_src
 
 * Problem 76
+
+*Intro to Trampoline* 
+
 #+begin_src clojure
   ;;
   ;; The trampoline function takes a function f and a variable number of parameters.
@@ -1479,6 +1544,8 @@
 #+end_src
 
 * Problem 77
+
+*Anagram Finder*
 
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 77
@@ -1504,9 +1571,9 @@
 
 * Problem 78
 
+*Reimplement Trampoline*
+
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 78
-    ;;
     ;; Reimplement the function described in <a href="76"> "Intro to Trampoline"</a>.
     ;;
     ;; Restrictions (please don't use these function(s)): trampoline
@@ -1584,13 +1651,11 @@
   ;; A number is "perfect" if the sum of its divisors equal the number itself.
   ;; 6 is a perfect number because 1+2+3=6.
   ;; Write a function which returns true for perfect numbers and false otherwise.
-  ;;
 
   (defn perfect-num? [n]
     (if (odd? n)
       false
-      (let [fl (filter #(= 0 (mod n %)) (range 1 n))]
-        (= n (apply + fl)))))
+      (= n (reduce + (filter #(= 0 (mod n %)) (range 1 n))))))
 
   (clojure.test/testing
       "Test perfect numbers."
@@ -1678,7 +1743,7 @@
        (= true (some-true? true true true false)))
 #+end_src
 
-* TODO Problem 84
+* Problem 84
 
 *Transitive Closure*
  
@@ -1690,43 +1755,73 @@
   ;; The relation will be represented as a set of 2 item vectors.
 
   (defn transitive-closure [col]
-    (into #{}
-          (reduce (fn [acc item]
-                    ((fn step [acc parent src xs]
-                       (let [edges (filter #(= src (first %1)) xs)]
-                         (if (empty? edges)
-                           acc
-                           (lazy-seq
-                           (loop [edges-col edges, new-acc acc]
-                             (if (empty? edges-col)
-                               new-acc
-                               (let [current-edge (first edges-col)]
-                                 (recur (rest edges-col)
-                                        (step
-                                         (conj new-acc
-                                               [parent (last current-edge)])
-                                         parent
-                                         (first current-edge)
-                                         xs)))))))))
-                     acc (first item) (first item) col))
-                  []
-                  col)
-          ))
+    (letfn [(neighbours [v col]
+              (reduce (fn [acc [a b]]
+                        (if (or (= a v) (= b v))
+                          (conj acc (first (disj (set [a b]) v)))
+                          acc))
+                      #{} col))
 
-  (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
-    (= (__ divides) #{[4 2] [8 4] [8 2] [9 3] [27 9] [27 3]}))
+            (vertices [graph]
+              (reverse (sort (into #{} (reduce concat graph)))))
 
-  (let [more-legs
-        #{["cat" "man"] ["man" "snake"] ["spider" "cat"]}]
-    (= (__ more-legs)
-       #{["cat" "man"] ["cat" "snake"] ["man" "snake"]
-         ["spider" "cat"] ["spider" "man"] ["spider" "snake"]}))
+            (relation-with-ownership [src dest cur-neighbours graph]
+              (if (empty? (filter (fn [[a b]]
+                                    (and (= a dest)
+                                         (contains? cur-neighbours b))) graph))
+                [src dest]
+                [dest src]))
 
-  (let [progeny
-        #{["father" "son"] ["uncle" "cousin"] ["son" "grandson"]}]
-    (= (__ progeny)
-       #{["father" "son"] ["father" "grandson"]
-         ["uncle" "cousin"] ["son" "grandson"]}))
+            (build-new-edges [src nodes acc cur-neighbours graph]
+              (if (empty? nodes)
+                acc
+                (reduce (fn [acc node]
+                          (conj acc (relation-with-ownership src node cur-neighbours graph)))
+                        acc
+                        nodes)))
+
+            (next-neighbours [visited-nodes nodes graph]
+              (let [purged-nodes (filter #(not (contains? visited-nodes %1)) nodes)]
+                (if (empty? purged-nodes)
+                  visited-nodes
+                  (recur (into #{} (concat visited-nodes purged-nodes))
+                         (mapcat set (map #(neighbours %1 graph) purged-nodes))
+                         graph))))
+
+            (find-transitive-relations [col]
+              (loop [nodes (vertices col), visited-nodes #{}, visited-transitions #{}]
+                (if (empty? nodes)
+                  visited-nodes
+                  (let [current-node (first nodes)
+                        current-neighbours (neighbours current-node col)
+                        transitive-neighbours (next-neighbours #{current-node} current-neighbours col)]
+
+                    (let [new-neighbours (apply disj transitive-neighbours
+                                                (concat #{current-node} current-neighbours visited-transitions))
+                          new-visited-nodes (build-new-edges current-node new-neighbours visited-nodes current-neighbours col)]
+
+                      (recur (rest nodes)
+                             new-visited-nodes
+                             (into #{} (concat visited-transitions new-neighbours #{current-node}))))))))]
+
+      (into #{} (concat col (find-transitive-relations col)))))
+
+
+  (and
+   (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
+     (= (transitive-closure divides) #{[4 2] [8 4] [8 2] [9 3] [27 9] [27 3]}))
+
+   (let [more-legs
+         #{["cat" "man"] ["man" "snake"] ["spider" "cat"]}]
+     (= (transitive-closure more-legs)
+        #{["cat" "man"] ["cat" "snake"] ["man" "snake"]
+          ["spider" "cat"] ["spider" "man"] ["spider" "snake"]}))
+
+   (let [progeny
+         #{["father" "son"] ["uncle" "cousin"] ["son" "grandson"]}]
+     (= (transitive-closure progeny)
+        #{["father" "son"] ["father" "grandson"]
+          ["uncle" "cousin"] ["son" "grandson"]})))
 #+end_src
 
 * Problem 85
@@ -1796,7 +1891,6 @@
    (= (happy-num? 2) false)
    (= (happy-num? 3) false))
 #+end_src
-
 
 * Problem 88
 
@@ -2266,6 +2360,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 #+end_src
 * TODO Problem 112
 
+*Sequs Horribilis*
+
 #+begin_src clojure
   ;; Create a function which takes an integer
   ;; and a nested collection of integers as arguments.
@@ -2276,27 +2372,50 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; from the head whose sum is less than or equal to
   ;; the input integer.
 
-  (=  (__ 10 [1 2 [3 [4 5] 6] 7])
-     '(1 2 (3 (4))))
+  (defn accum-while-sum-< [n xs]
+    (letfn [(walk [sum queue col]
+              (if (or (> sum n) (empty? col))
+                queue
+                (let [cur-item (first col)]
+                  (if-not (sequential? cur-item)
+                    (let [cur-sum (+ sum cur-sum)]
+                      (if (< cur-sum n)
+                        (walk cur-sum (conj queue cur-item) (rest col))
+                        (walk cur-sum queue col)))
+                    (let [ctx (visit cur-item sum {:sum sum :obj '()})]
+                      (walk (ctx :sum) (conj queue (ctx :obj)) (rest col)))))))
 
-  (=  (__ 30 [1 2 [3 [4 [5 [6 [7 8]] 9]] 10] 11])
-     '(1 2 (3 (4 (5 (6 (7)))))))
+            (visit [node sum ctx]
+              
 
-  (=  (__ 9 (range))
-     '(0 1 2 3))
+            ))]
 
-  (=  (__ 1 [[[[[1]]]]])
-     '(((((1))))))
+  (or (walk 0 xs)
+      '())))
 
-  (=  (__ 0 [1 2 [3 [4 5] 6] 7])
-     '())
+  (and
+   (=  (accum-while-sum-< 10 [1 2 [3 [4 5] 6] 7])
+       '(1 2 (3 (4))))
 
-  (=  (__ 0 [0 0 [0 [0]]])
-     '(0 0 (0 (0))))
+   (=  (accum-while-sum-< 30 [1 2 [3 [4 [5 [6 [7 8]] 9]] 10] 11])
+       '(1 2 (3 (4 (5 (6 (7)))))))
 
-  (=  (__ 1 [-10 [1 [2 3 [4 5 [6 7 [8]]]]]])
-     '(-10 (1 (2 3 (4)))))
+   (=  (accum-while-sum-< 9 (range))
+       '(0 1 2 3))
+
+   (=  (accum-while-sum-< 1 [[[[[1]]]]])
+       '(((((1))))))
+
+   (=  (accum-while-sum-< 0 [1 2 [3 [4 5] 6] 7])
+       '())
+
+   (=  (accum-while-sum-< 0 [0 0 [0 [0]]])
+       '(0 0 (0 (0))))
+
+   (=  (accum-while-sum-< 1 [-10 [1 [2 3 [4 5 [6 7 [8]]]]]])
+       '(-10 (1 (2 3 (4))))))
 #+end_src
+
 * Problem 113
 
 *Data types*
@@ -2329,7 +2448,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 114
 
-*Take up to N matches of a predicate function*
+*Global take-while*
 
 #+begin_src clojure
   ;; take-while is great for filtering sequences,
@@ -2365,6 +2484,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 115
 
+*The Balance of N*
+ 
   #+BEGIN_SRC clojure
     ;; Problem 115
     ;;
@@ -2397,6 +2518,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   #+END_SRC
 
 * Problem 116
+
+*Prime Sandwich* 
 
   #+BEGIN_SRC clojure
     ;; http://en.wikipedia.org/wiki/Balanced_prime
@@ -2516,6 +2639,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 118
 
+*Re-implement Map*
+ 
   #+BEGIN_SRC clojure
     ;; Problem 118
     ;;
@@ -2545,13 +2670,9 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                  (take 2))))
   #+END_SRC
 
-* Problem 119
-
-  #+BEGIN_SRC clojure
-
-  #+END_SRC
-
 * Problem 120
+
+*Sum of square of digits*
 
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 120
@@ -2586,17 +2707,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= 50 (cnt-<-x2-sum-digits (range 1000))))
   #+END_SRC
 
-* Problem 121
-
-  #+BEGIN_SRC clojure
-
-  #+END_SRC
-
 * Problem 122
 
+*Read a binary number*
+
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 122
-    ;;
     ;; Convert a binary number, provided in the form of a string, to its numerical value.
 
     (defn bin->decimal-4fun-not-fluent [xs]
@@ -2637,11 +2752,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * Problem 126
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 126
-    ;;
     ;; Enter a value which satisfies the following:
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
     (let [x Class]
       (and (= (class x) x) x))
@@ -2754,7 +2865,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                                             ; 11111      11111
                                             ; 00000      00000
   #+END_SRC
-
 
 * TODO Problem 128
 
@@ -2902,6 +3012,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 131
 
+*Sum Some Set Subsets*
+
   #+BEGIN_SRC clojure
     ;; Given a variable number of sets of integers,
     ;; create a function which returns true iff all of
@@ -2962,7 +3074,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                                   #{10 -9 8 -7 6 -5 4 -3 2 -1})))
   #+END_SRC
 
-* TODO Problem 132
+* Problem 132
 
 *Insert between two items*
 
@@ -2973,49 +3085,36 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; two items that satisfy the predicate.
 
   (defn insert-between-items [pred sep xs]
-    (letfn [(insert-fn [f prev cur sep col]
-              (lazy-seq
-               (cons prev
-                     (when cur
-                       (if (f prev cur)
-                         (cons sep (insert-fn f
-                                              cur
-                                              (first col)
-                                              sep
-                                              (rest col)))
-                         (insert-fn f
-                                    cur
-                                    (first col)
-                                    sep
-                                    (rest col)))))))]
-      (if (empty? xs)
-        xs
-        (let [prev (first xs)
-              col (rest xs)]
-          (println "col:" xs)
-          (insert-fn pred prev (first col) sep col)))))
-
+    (let [col (partition-all 2 1 xs)]
+      ((fn step [items]
+         (lazy-seq
+          (when-not (empty? items)
+            (let [[prev cur] (first items)]
+              (if cur
+                (if (pred prev cur)
+                  (cons prev (cons sep (step (rest items))))
+                  (cons prev (step (rest items))))
+                (cons prev nil))))))
+       col)))
 
   (and
    (= '(1 :less 6 :less 7 4 3) (insert-between-items < :less [1 6 7 4 3]))
-
    (= '(2) (insert-between-items > :more [2]))
-
    (= [0 1 :x 2 :x 3 :x 4]  (insert-between-items #(and (pos? %) (< % %2)) :x (range 5)))
-
    (empty? (insert-between-items > :more ()))
-
    (and (= [0 1 :same 1 2 3 :same 5 8 13 :same 21]
            (take 12 (->> [0 1]
                          (iterate (fn [[a b]] [b (+ a b)]))
                          (map first) ; fibonacci numbers
                          (insert-between-items (fn [a b] ; both even or both odd
                                                  (= (mod a 2) (mod b 2)))
-                                               :same)))q)))
+                                               :same))))))
 
 #+end_src
 
 * Problem 143
+
+*Dot Product*
 
   #+BEGIN_SRC clojure
     ;; Problem 143
@@ -3065,9 +3164,9 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 145
 
+*For the win*
+
   #+BEGIN_SRC clojure
-    ;; Problem 145
-    ;;
     ;; Clojure's for macro is a tremendously versatile mechanism
     ;; for producing a sequence based on some other sequence(s).
     ;; It can take some time to understand how to use it properly,
@@ -3097,8 +3196,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *Flatten maps*
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 146
-    ;;
     ;; <p>Because Clojure's <code>for</code> macro allows you to "walk"
     ;; over multiple sequences in a nested fashion, it is excellent for
     ;; transforming all sorts of sequences. If you don't want a sequence
