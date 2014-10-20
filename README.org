@@ -10,6 +10,8 @@
 
 * Problem 1
 
+*Nothing but the Truth*
+
 #+begin_src clojure
   ;; This is a clojure form.  Enter a value which will make the form evaluate to true.
   ;; Don't over think it!  If you are confused, see the <a href='/directions'>getting started</a> page.
@@ -19,6 +21,8 @@
 #+end_src
 
 * Problem 2
+
+*Simple Math*
 
 #+begin_src clojure
   ;; <p>If you are not familiar with <a href='http://en.wikipedia.org/wiki/Polish_notation'>
@@ -31,6 +35,9 @@
 #+end_src
 
 * Problem 3
+
+*Intro to Strings*
+
 #+begin_src clojure
   ;; Clojure strings are Java strings.  This means that you can use any of the Java string methods
   ;; on Clojure strings.
@@ -39,14 +46,20 @@
 #+end_src
 
 * Problem 4
+
+*Intro to Lists*
+
 #+begin_src clojure
   ;; Lists can be constructed with either a function or a quoted form.
   ;; (= (list __) '(:a :b :c))
   (= (list :a :b :c) '(:a :b :c))
 #+end_src
 
+* Problem 5
+
+*Lists: conj*
+
 #+begin_src clojure
-  ;; Problem 5
   ;; When operating on a list, the conj function will return a new list with one or more items
   ;; "added" to the front.
   ;; (= __ (conj '(2 3 4) 1))
@@ -54,6 +67,8 @@
 #+end_src
 
 * Problem 6
+
+*Intro to Vectors*
 
 #+begin_src clojure
   ;; Vectors can be constructed several ways.  You can compare them with lists.
@@ -63,6 +78,8 @@
 
 * Problem 7
 
+*Vectors: conj*
+
 #+begin_src clojure
   ;; When operating on a Vector, the conj function will return a new vector with one or
   ;; more items "added" to the end.
@@ -71,6 +88,8 @@
 #+end_src
 
 * Problem 8
+
+*Intro to Sets*
 
 #+begin_src clojure
   ;; Sets are collections of unique values.
@@ -386,11 +405,9 @@
 
 *Flatten a Sequence*
   #+BEGIN_SRC clojure
-    ;; Problem 28
     ;; Write a function which flattens a sequence.
     ;; Restrictions (please don't use these function(s)): flatten
 
-    ;; first attempt
     (defn my-flatten [xs]
       (lazy-seq
        (reduce (fn --internal-flatten [col v]
@@ -739,7 +756,8 @@
       (apply f (reverse args))))
 
   (clojure.test/testing
-      "Write a higher-order function which flips the order of the arguments of an input function."
+      "Write a higher-order function which flips the order of the 
+       arguments of an input function."
     (clojure.test/is (and
                       (= 3 ((flip-args nth) 2 [1 2 3 4 5]))
                       (= true ((flip-args >) 7 8))
@@ -876,13 +894,10 @@
 *Partition a Sequence*
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 54
-    ;;
-    ;; Write a function which returns a sequence of lists of x items each.  Lists of less than x items should not be returned.
+    ;; Write a function which returns a sequence of lists of x items each.
+    ;; Lists of less than x items should not be returned.
     ;;
     ;; Restrictions (please don't use these function(s)): partition, partition-all
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
     (defn my-partition [n c]
       (lazy-seq
@@ -1007,7 +1022,6 @@
          (= ["HELLO" 5] ((map-apply #(.toUpperCase %) count) "hello"))
          (= [2 6 4] ((map-apply :a :c :b) {:a 2, :b 4, :c 6, :d 8 :e 10})))
   #+END_SRC
-
 
 * Problem 60
 
@@ -1356,11 +1370,13 @@
 *Rearranging Code: ->>*
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 72
-    ;;
-    ;; The ->> macro threads an expression x through a variable number of forms. First, x is inserted as the last item in the first form, making a list of it if it is not a list already.  Then the first form is inserted as the last item in the second form, making a list of that form if necessary.  This process continues for all the forms.  Using ->> can sometimes make your code more readable.
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
+    ;; The ->> macro threads an expression x through a variable number of forms.
+    ;; First, x is inserted as the last item in the first form,
+    ;; making a list of it if it is not a list already.
+    ;; Then the first form is inserted as the last item in the second form,
+    ;; making a list of that form if necessary.
+    ;; This process continues for all the forms.
+    ;; Using ->> can sometimes make your code more readable.
 
     (= (reduce + (map inc (take 3 (drop 2 [2 5 4 1 3 6]))))
        (->> [2 5 4 1 3 6] (drop 2) (take 3) (map inc) (__))
@@ -1550,9 +1566,13 @@
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 77
     ;;
-    ;; Write a function which finds all the anagrams in a vector of words.  A word x is an anagram of word y if all the letters in x can be rearranged in a different order to form y.  Your function should return a set of sets, where each sub-set is a group of words which are anagrams of each other.  Each sub-set should have at least two words.  Words without any anagrams should not be included in the result.
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
+    ;; Write a function which finds all the anagrams in a vector of words.
+    ;; A word x is an anagram of word y if all the letters in x can be
+    ;; rearranged in a different order to form y.
+    ;; Your function should return a set of sets,
+    ;; where each sub-set is a group of words which are anagrams of each other.
+    ;; Each sub-set should have at least two words.
+    ;; Words without any anagrams should not be included in the result.
 
     (defn anagrams [xs]
       (->> (set xs)
@@ -1612,23 +1632,9 @@
     ;; The path should start at the top of the triangle and
     ;; move to an adjacent number on the next row until the
     ;; bottom of the triangle is reached.
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
-    (defn min-triangle-path  [col]
-      (let [root (first col)]
-        (loop [paths (rest col), acc root]
-          (if (empty? paths)
-            acc
-            (recur (rest paths)
-                   (loop [x paths new-acc acc]
-                     (if (empty? x)
-                       new-acc
-                       
-                     
-
-        ))
-
+    (defn min-triangle-path  [col])
+          
     (and
      (= 7 (min-triangle-path '([1]
                                  [2 4]
@@ -1703,14 +1709,7 @@
   (defn continuous-word-chain?
     "Check if words can be arranged into a continuous chain."
     [xs]
-    (let [word-vec (fn [word]
-                     (into [] (seq word)))
-          words (into [] xs)]
-
-
-      
-
-      ))
+    )
 
   (clojure.test/testing
       "Word chain"
@@ -1990,17 +1989,40 @@
   (defn graph-connected? [g]
     (if (= 1 (count g))
       true
-      )
-    )
+      (letfn [(vertices [g]
+                (sort (into #{} (reduce concat g))))
 
+              (target-node [v edge]
+                (first (disj (set edge) v)))
 
-    1 2 3 4 5 6
-  1   1
-  2     1   
-  3 1     1
-  4         1
-  5           1
-  6       1
+              (connected-edges [v g seen]
+                (let [res 
+                (reduce (fn [acc [a b]]                        
+                          (if (and (or (= a v) (= b v))
+                                   (not (contains? seen (target-node v [a b]))))
+                            (conj acc [a b])
+                            acc))
+                        #{} g)]
+                  (println "edges for:" v "res:" res "seen:" seen)
+                  res))
+
+              (walk [v seen g]
+                (if (empty? g)
+                  seen
+                  (let [adjacent-edges (connected-edges v g seen)]
+                    (if (empty? adjacent-edges)
+                      seen
+                      (let [first-edge (first adjacent-edges)
+                            node (first (disj (set first-edge) v))]
+                        (recur node (conj seen node) (disj g first-edge)))))))]
+
+        (let [vs (vertices g)
+              mappings (map (fn [x]
+                              (println "\n---- mappings for:" x)
+                              (assoc {} x (walk x #{x} g))) vs)]
+          (println "\n\n"
+                   "vertices" vs
+                   "mappings" mappings)))))
 
   (and
    (= true (graph-connected? #{[:a :a]}))
@@ -2059,33 +2081,18 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;;
     ;; Use M-x 4clojure-check-answers when you're done!
 
-    (defn flatten-xs [col]
-      (letfn [(do-flatten [acc item]
-                (if (sequential? item)
-                  (loop [cols item child-acc []]
-                    (if (empty? cols)
-                      (conj acc child-acc)
-                      (let [first-item (first item)
-                            exploded-seq (explode-seq acc first-item cols)]
-                        (recur (exploded-seq 0) (exploded-seq 1)))))                    
-                  (conj acc item)))
-
-              (explode-seq [acc item col]
-                (let [result (if (sequential? item)
-                                 [acc, (concat (first item) (rest item) (rest col) )]
-                                 [(conj acc item), (rest col)])]
-                  (println "Result is:" (first result) (last result) col)
-                  result))
-                  
-              (seq-only? [sexp]
-                (and (= 1 (count sexp))
-                     (sequential? (first sexp))))]
-
-        (reduce (fn [acc item]
-                  (println "Item is:" item)
-                  (do-flatten acc item))
-                []
-                col)))
+    (defn flatten-xs [xs]
+      ((fn step [acc col]
+         (if (empty? col)
+           acc
+           (let [x (first col)]
+             (if (coll? x)
+               (let [prev (peek (peek acc))]
+                 (if (coll? prev)
+                   (step (conj (pop (pop acc)) (flatten (step prev x)) (rest col)))
+                   (step (step acc x) (rest col)))
+                 (step (conj acc x) (rest col)))))))
+       [] xs))
 
 
     (and (= (flatten-xs [["Do"] ["Nothing"]])
@@ -2178,8 +2185,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *Number Maze*
 
 #+begin_src clojure
-  ;; 4Clojure Question 106
-  ;;
   ;; Given a pair of numbers, the start and end point,
   ;; find a path between the two using only three possible operations:<ul>
   ;;
@@ -2191,13 +2196,33 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; Because there are multiple shortest paths, you must return the
   ;; length of the shortest path, not the path itself.
 
+  ;; Not using any special tree or such, got off easy :-)
+  ;; We don't need to return the paths themselves per requirement,
+  ;; So we just push results and we deal with possible operations...
+
   (defn num-maze [start end]
     (if (= start end)
       1
-      (letfn [(make-path [acc target]
+      (letfn [(possible-operations [x]
+                (let [all-operations {:add-two #(+ %1 2)
+                                      :halve #(/ %1 2)
+                                      :double #(* %1 2)}]
+                  (if (even? x)
+                    (vals all-operations)
+                    (vals (dissoc all-operations :halve)))))
 
-                )]
-        )))
+              (apply-operations [nums]
+                (into []
+                      (mapcat (fn [n]
+                                (map #(%1 n) (possible-operations n)))
+                              nums)))]
+
+        (loop [nodes [[start]] at-the-end? false]
+          (if at-the-end?
+            (count nodes)
+            (let [results (apply-operations (peek nodes))
+                  result-found? (some #(= end %) results)]
+              (recur (conj nodes results) result-found?)))))))
 
   (and
    (= 1 (num-maze 1 1))  ; 1
@@ -2259,9 +2284,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
               (if (>= (first col) num)
                 col
                 (recur (rest col) num)))]
-
-      (let [firsts (map first cols)
-            max-first (reduce max firsts)]
+      (let [firsts (map first cols), max-first (reduce max firsts)]
         (if (apply = firsts)
           (first firsts)
           (recur (map #(move-cursor %1 max-first) cols))))))
@@ -3111,6 +3134,51 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                                                :same))))))
 
 #+end_src
+
+* Problem 134
+
+*A nil key*
+
+  #+BEGIN_SRC clojure
+    ;; Write a function which, given a key and map,
+    ;; returns true if the map contains an entry with that key and its value is nil.
+
+    (defn nil-key? [k m]
+      (nil? (m k false)))
+
+    (and (true?  (nil-key? :a {:a nil :b 2}))
+         (false? (nil-key? :b {:a nil :b 2}))
+         (false? (nil-key? :c {:a nil :b 2})))
+  #+END_SRC
+
+* Problem 135
+
+  #+BEGIN_SRC clojure
+    ;; Your friend Joe is always whining about Lisps
+    ;; using the prefix notation for math.
+    ;; Show him how you could easily write a function that does math
+    ;; using the infix notation. Is your favorite language that flexible, Joe?
+    ;;
+    ;; Write a function that accepts a variable length mathematical
+    ;; expression consisting of numbers and the operations +, -, *,
+    ;; and /. Assume a simple calculator that does not do precedence
+    ;; and instead just calculates left to right.
+
+    (defn infix-calc
+      [& expr]
+      ((fn step [init stmts]
+         (if (< (count stmts) 3)
+           init
+           (let [[a f b] (take 3 stmts), result (f a b)]
+             (recur result (cons result (nthnext stmts 3))))))
+       0 expr))
+
+    (and (= 7  (infix-calc 2 + 5))
+         (= 42 (infix-calc 38 + 48 - 2 / 2))
+         (= 8  (infix-calc 10 / 2 - 1 * 2))
+         (= 72 (infix-calc 20 / 2 + 2 + 4 + 8 - 6 - 10 * 9)))
+  #+END_SRC
+
 
 * Problem 143
 
