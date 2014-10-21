@@ -99,6 +99,8 @@
 
 * Problem 9
 
+*Sets: conj* 
+
 #+begin_src clojure
   ;; When operating on a set, the conj function returns a new set with one or more keys
   ;; "added".
@@ -107,6 +109,8 @@
 #+end_src
 
 * Problem 10
+
+*Intro to Maps*
 
 #+begin_src clojure
   ;; Maps store key-value pairs.  Both maps and keywords can be used as lookup functions.
@@ -117,6 +121,8 @@
 
 * Problem 11
 
+*Maps: conj*
+
 #+begin_src clojure
   ;; When operating on a map, the conj function returns a new map with one or more
   ;; key-value pairs "added".
@@ -126,6 +132,8 @@
 
 * Problem 12
 
+*Intro to Sequences*
+ 
 #+begin_src clojure
   ;; All Clojure collections support sequencing.  You can operate on sequences with
   ;; functions like first, second, and last.
@@ -135,6 +143,8 @@
 
 * Problem 13
 
+*Sequences: rest*
+ 
 #+begin_src clojure
   ;; The rest function will return all the items of a sequence except the first.
   ;; (= __ (rest [10 20 30 40]))
@@ -142,6 +152,8 @@
 #+end_src
 
 * Problem 14
+
+*Intro to Functions*
 
 #+begin_src clojure
   ;; Clojure has many different ways to create functions.
@@ -151,6 +163,8 @@
 
 * Problem 15
 
+*Double Down*
+ 
 #+begin_src clojure
   ;; Write a function which doubles a number.
   ;; (= (__ 2) 4)
@@ -168,6 +182,8 @@
 
 * Problem 16
 
+*Hello World*
+
 #+begin_src clojure
   ;; Write a function which returns a personalized greeting.
   ;; (= (__ "Dave") "Hello, Dave!")
@@ -184,6 +200,8 @@
 
 * Problem 17
 
+*Sequences: map*
+
 #+begin_src clojure
   ;; The map function takes two arguments: a function (f) and a sequence (s).
   ;; Map returns a new sequence consisting of the result of applying f to each item of s.
@@ -193,6 +211,8 @@
 #+end_src
 
 * Problem 18
+
+*Sequences: filter*
 
 #+begin_src clojure
   ;; The filter function takes two arguments: a predicate function (f) and a sequence (s).
@@ -204,20 +224,24 @@
 
 * Problem 19
 
-#+begin_src clojure
-  ;; Write a function which returns the last element in a sequence.
-  ;; Restrictions (please don't use these function(s)): last
-  ;; (= (__ [1 2 3 4 5]) 5)
-  (defn last-elem [xs]
-    ((comp first reverse) xs))
+*Last Element*
 
-  (clojure.test/testing
-      "Write a function which returns the second to last
-           element from a sequence."
-    (clojure.test/is (and
-                      (= (last-elem [1 2 3 4 5]) 5)
-                      (= (last-elem '(5 4 3)) 3)
-                      (= (last-elem ["b" "c" "d"]) "d"))))
+#+begin_src clojure
+    ;; Write a function which returns the last element in a sequence.
+    ;; Restrictions (please don't use these function(s)): last
+    ;; (= (__ [1 2 3 4 5]) 5)
+    (defn last-elem [[n & more]]
+      (if more
+        (recur more)
+        n))
+
+    (clojure.test/testing
+        "Write a function which returns the second to last
+             element from a sequence."
+      (clojure.test/is (and
+                        (= (last-elem [1 2 3 4 5]) 5)
+                        (= (last-elem '(5 4 3)) 3)
+                        (= (last-elem ["b" "c" "d"]) "d"))))
 #+end_src
 
 * Problem 20
@@ -335,50 +359,20 @@
 #+begin_src clojure
   ;; Write a function which returns the first X fibonacci numbers.
   ;; (= (__ 3) '(1 1 2))
-  (defn fib [x]
-    (if (< x 2) x
-        (loop [idx 2
-               prev-idx 1
-               before-prev-idx 0]
-          (if (< idx x)
-            (recur (inc idx) (+ prev-idx before-prev-idx) prev-idx)
-            (+ prev-idx before-prev-idx)))))
-
-  ;; Tried to be idiomatic and to keep it simple here
-  (defn fib-rec
-    "Recursive version whole lot slower."
-    [^BigInteger x]
-    (if (< x 2) x
-        (+ (fib-rec (- x 1)) (fib-rec (- x 2)))))
-
-
-  ;; Just translated from sample code
-  ;; more comfortable with my initial attempt
-  (defn fib-fast-doubling[x]
-    (if (< x 2)
-      x
-      (((fn fib-fast-doubling [n]
-          (if (<= n 0N)
-            [0N 1N]
-            (let [ab (fib-fast-doubling (Math/floor (/ n 2N)))
-                  a (ab 0)
-                  b (ab 1)
-                  c (* a (- (* b 2N) a))
-                  d ( + (* b b) (* a a))]
-
-              (if (zero? (mod n 2N))
-                [c d]
-                [d (+ c d)])))) (- x 1N)) 1 )))
-
-  (defn first-fib-nums [n]
-    (#(map fib (range 1 (inc %1))) n))
+  (defn fib [n]
+    {:pre [(pos? n)]}
+    (letfn [(fibonacci [a b]
+              (lazy-seq
+               (cons (+ a b) (fibonacci b (+ a b)))))]
+      (take n (cons 1 (fibonacci 0 1)))))
 
   (clojure.test/testing
       "Write a function which returns the first X fibonacci numbers."
     (clojure.test/is (and
-                      (= (first-fib-nums 3) '(1 1 2))
-                      (= (first-fib-nums 6) '(1 1 2 3 5 8))
-                      (= (first-fib-nums 8) '(1 1 2 3 5 8 13 21)))))
+                      (= (fib 3) '(1 1 2))
+                      (= (fib 6) '(1 1 2 3 5 8))
+                      (= (fib 8) '(1 1 2 3 5 8 13 21)))))
+
 #+end_src
 
 * Problem 27
@@ -404,6 +398,7 @@
 * Problem 28
 
 *Flatten a Sequence*
+
   #+BEGIN_SRC clojure
     ;; Write a function which flattens a sequence.
     ;; Restrictions (please don't use these function(s)): flatten
@@ -583,24 +578,17 @@
 #+begin_src clojure
   ;; Write a function which takes a variable number of parameters and returns the maximum value.
   ;; Restrictions (please don't use these function(s)): max, max-key
-  (defn find-max [& xs]
-    (last (sort xs)))
 
-  ;; default impl used
-  (defn find-max-with-reduce [x & xs]
-    (reduce (fn [x y]
-              (if y
-                (if (> y x) y x)
-                x))
-            x xs))
+  (defn max-value [x & xs]
+    (reduce (fn [x y] (if (pos? (.compareTo y x)) y x)) x xs))
 
   (clojure.test/testing
       "Write a function which takes a variable number of
            parameters and returns the maximum value."
     (clojure.test/is (and
-                      (= (find-max-with-reduce 1 8 3 4) 8)
-                      (= (find-max-with-reduce 30 20) 30)
-                      (= (find-max-with-reduce 45 67 11) 67))))
+                      (= (max-value 1 8 3 4) 8)
+                      (= (max-value 30 20) 30)
+                      (= (max-value 45 67 11) 67))))
 
 #+end_src
 
@@ -838,8 +826,6 @@
     ;; Problem 51
     ;;
     ;; Here is an example of some more sophisticated destructuring.
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
     (= [1 2 [3 4 5] [1 2 3 4 5]] (let [[a b & c :as d] [1 2 3 4 5]] [a b c d]))
   #+END_SRC
@@ -852,8 +838,6 @@
   ;; Problem 52
   ;;
   ;; Let bindings and function parameter lists support destructuring.
-  ;;
-  ;; Use M-x 4clojure-check-answers when you're done!
 
   (= [2 4]
      (let [[a b c d e f g] (range)]
@@ -1017,7 +1001,7 @@
     (defn map-apply [& fs]
       (fn [& args]
         (map #(apply %1 args) fs)))
-
+	
     (and (= [21 6 1] ((map-apply + max min) 2 3 5 1 6 4))
          (= ["HELLO" 5] ((map-apply #(.toUpperCase %) count) "hello"))
          (= [2 6 4] ((map-apply :a :c :b) {:a 2, :b 4, :c 6, :d 8 :e 10})))
@@ -1547,8 +1531,6 @@
   ;; and then trampoline returns that non-function value.
   ;; This is useful for implementing mutually recursive algorithms
   ;; in a way that won't consume the stack.
-  ;;
-  ;; Use M-x 4clojure-check-answers when you're done!
 
   (= [1 3 5 7 9 11]
      (letfn
@@ -1597,8 +1579,6 @@
     ;; Reimplement the function described in <a href="76"> "Intro to Trampoline"</a>.
     ;;
     ;; Restrictions (please don't use these function(s)): trampoline
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
     (defn my-trampoline [f x]
       ((fn step [f & args]
        (let [result (apply f args)]
@@ -1698,6 +1678,7 @@
 #+end_src
 
 * Problem 81
+
 *Write a function which returns the intersection of two sets.*
 
 #+begin_src clojure
@@ -1747,6 +1728,8 @@
 #+end_src
 
 * Problem 83
+
+*A Half-Truth*
 
 #+begin_src clojure
   ;; Write a function which takes a variable number of booleans.
@@ -1848,6 +1831,8 @@
 
 * Problem 85
 
+*Power Set*
+
 #+begin_src clojure
   ;; http://en.wikipedia.org/wiki/Power_set
   ;; Write a function which generates the power set of a given set.
@@ -1937,6 +1922,8 @@
 
 * WAITING Problem 89
 
+*Graph Tour* 
+
 #+begin_src clojure
   ;; Starting with a graph you must write a function that returns true
   ;; if it is possible to make a tour of the graph in which every edge
@@ -1948,11 +1935,57 @@
   ;; - You must visit each edge exactly once.
   ;; - All edges are undirected.
 
-  (defn eulerian-path? [g]
+  (defn eulerian-path? [graph]
+    (let [edges-count (count graph)]
+      (if (= 1 edges-count)
+        true
+        (letfn [(vertices [g]
+                  (into [] (set (reduce concat g))))
 
-    )
+                (adjacent-edges [v g]
+                  (filter (fn [[a b]] (or (= a v) (= b v))) g))
 
+                (remove-first [syb lst]
+                  (if (empty? lst)
+                    '()
+                    (if (= (first lst) syb)
+                      (rest lst)
+                      (lazy-seq (cons (first lst) (remove-first syb (rest lst)))))))
 
+                (new-origin [previous-origin edge]
+                  (first (disj (into #{} edge) previous-origin)))
+
+                (walk-tree [x]
+                  (println "x:" x)
+                  (when-not (empty? x)
+                    (cons (first x) (walk-tree (mapcat concat (rest x))))))
+
+                (found-eulerian-path? [node->paths g]
+                  (reduce (fn [condition [k paths]]
+                            (let [mp (map walk-tree paths)
+                                  r (pos? (count (filter #(= (count g) (count %1)) mp)))]
+                              (println "mp:" mp "r:" r)
+                            (and condition r)))
+                          true
+                          node->paths))
+
+                (build-node-paths [node g]
+                  (map (fn [e]
+                         (let [src (new-origin node e)]
+                           (cons e (build-node-paths src (remove-first e g)))))
+                       (adjacent-edges node g)))
+
+                (construct-paths [g]
+                  (let [nodes (vertices g)]
+                    (loop [cur-nodes nodes acc {}]
+                      (if (empty? cur-nodes)
+                        acc
+                        (let [cur-node (first cur-nodes)
+                              node-res (build-node-paths cur-node g)
+                              new-acc (assoc acc cur-node node-res)]
+                          (recur (rest cur-nodes) new-acc))))))]
+
+          (found-eulerian-path? (construct-paths graph) graph)))))
 
   (and (= true (eulerian-path? [[:a :b]]))
        (= false (eulerian-path? [[:a :a] [:b :b]]))
@@ -2101,22 +2134,23 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; Write a function which flattens any nested combination of sequential things
     ;; (lists, vectors, etc.), but maintains the lowest level sequential items.
     ;; The result should be a sequence of sequences with only one level of nesting.
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
     (defn flatten-xs [xs]
-      ((fn step [acc col]
-         (if (empty? col)
-           acc
-           (let [x (first col)]
-             (if (coll? x)
-               (let [prev (peek (peek acc))]
-                 (if (coll? prev)
-                   (step (conj (pop (pop acc)) (flatten (step prev x)) (rest col)))
-                   (step (step acc x) (rest col)))
-                 (step (conj acc x) (rest col)))))))
-       [] xs))
-
+      (letfn [(with-values [xs]
+                (when xs
+                  (if (and (coll? xs)
+                           (= 1 (count xs)))
+                    (cons (step (first xs))
+                          (with-values (rest xs)))
+                    xs)))
+              (step [xs]
+                (when xs
+                  (let [x (first xs)]
+                    (if-not (coll? x)
+                      (cons x (step (next xs)))
+                      (cons (trampoline with-values x)
+                            (step (next xs)))))))]
+        (step xs)))
 
     (and (= (flatten-xs [["Do"] ["Nothing"]])
             [["Do"] ["Nothing"]])
@@ -2132,6 +2166,87 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
   #+BEGIN_SRC clojure
 
+  #+END_SRC
+
+* Problem 95
+
+*To Tree, or not to Tree*
+ 
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 95
+    ;;
+    ;; Write a predicate which checks whether or not a given
+    ;; sequence represents a <a href="http://en.wikipedia.org/wiki/Binary_tree">binary tree</a>.
+    ;; Each node in the tree must have a value, a left child, and a right child.
+
+    (defn binary-tree? [xs]
+      (letfn [(valid-node? [col idx]
+                (let [elem (nth col idx)]
+                  (if (nil? elem)
+                    true
+                    (and (coll? elem) (binary-tree? elem)))))]
+        (if (= 3 (count xs))
+          (and
+           (not (nil? (nth xs 0))) (valid-node? xs 1) (valid-node? xs 2))
+          false)))
+
+    (and
+     (= (binary-tree? '(:a (:b nil nil) nil))
+        true)
+
+     (= (binary-tree? '(:a (:b nil nil)))
+        false)
+
+     (= (binary-tree? [1 nil [2 [3 nil nil] [4 nil nil]]])
+        true)
+
+     (= (binary-tree? [1 [2 nil nil] [3 nil nil] [4 nil nil]])
+        false)
+
+     (= (binary-tree? [1 [2 [3 [4 nil nil] nil] nil] nil])
+        true)
+
+     (= (binary-tree? [1 [2 [3 [4 false nil] nil] nil] nil])
+        false)
+
+     (= (binary-tree? '(:a nil ()))
+        false))
+  #+END_SRC
+
+* Problem 96
+
+*Beauty is Symmetry*
+
+  #+BEGIN_SRC clojure
+    ;; Let us define a binary tree as "symmetric" if the left
+    ;; half of the tree is the mirror image of the right half
+    ;; of the tree.
+
+    ;; Write a predicate to determine whether or not a given
+    ;; binary tree is symmetric. (see <a href='/problem/95'>To Tree,
+    ;; or not to Tree</a> for a reminder on the tree representation we're using).
+
+    (defn symmetric-binary-tree? [xs]
+      (throw (IllegalArgumentException. "TBD")))
+
+    (and
+     (= (symmetric-binary-tree? '(:a (:b nil nil) (:b nil nil))) true)
+
+     (= (symmetric-binary-tree? '(:a (:b nil nil) nil)) false)
+
+     (= (symmetric-binary-tree? '(:a (:b nil nil) (:c nil nil))) false)
+
+     (= (symmetric-binary-tree? [1 [2 nil [3 [4 [5 nil nil] [6 nil nil]] nil]]
+                                 [2 [3 nil [4 [6 nil nil] [5 nil nil]]] nil]])
+        true)
+
+     (= (symmetric-binary-tree? [1 [2 nil [3 [4 [5 nil nil] [6 nil nil]] nil]]
+                                 [2 [3 nil [4 [5 nil nil] [6 nil nil]]] nil]])
+        false)
+
+     (= (symmetric-binary-tree? [1 [2 nil [3 [4 [5 nil nil] [6 nil nil]] nil]]
+                                 [2 [3 nil [4 [6 nil nil] nil]] nil]])
+        false))
   #+END_SRC
 
 * Problem 104
@@ -2258,9 +2373,9 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 #+end_src
 * Problem 107
 
+*Simple closures*
+
 #+begin_src clojure
-  ;; 4Clojure Question 107
-  ;;
   ;; <p>Lexical scope and first-class functions are two of the most
   ;; basic building blocks of a functional language like Clojure.
   ;; When you combine the two together, you get something very
@@ -2276,8 +2391,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; function <code>(f x)</code> which computes <i>x<sup>n</sup></i>.
   ;; Observe that the effect of this is to preserve the value of
   ;; <i>n</i> for use outside the scope in which it is defined.</p>
-  ;;
-  ;; Use M-x 4clojure-check-answers when you're done!
 
   (defn exp [n]
     (fn [& args]
@@ -2298,9 +2411,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; <p>Given any number of sequences, each sorted from smallest to largest,
   ;; find the smallest single number which appears in all of the sequences.
   ;; The sequences may be infinite, so be careful to search lazily.</p>
-  ;;
-  ;; Use M-x 4clojure-check-answers when you're done!
-
 
   (defn smallest-common-num [& cols]
     (letfn [(move-cursor [col num]
@@ -2355,8 +2465,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; The mouse is not allowed to travel diagonally in the maze
   ;; (only up/down/left/right), nor can he escape the edge of the maze.
   ;; Your function must return true iff the maze is solvable by the mouse.
-  ;;
-  ;; Use M-x 4clojure-check-answers when you're done!
 
   (= true  (__ ["M   C"]))
 
@@ -2611,6 +2719,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 117
 
+*For Science!*
+
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 117
     ;;
@@ -2798,6 +2908,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 126
 
+*Through the Looking Class*
+
   #+BEGIN_SRC clojure
     ;; Enter a value which satisfies the following:
 
@@ -2806,6 +2918,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   #+END_SRC
 
 * Problem 127
+
+*Love Triangle*
 
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 127
@@ -2845,8 +2959,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; <li>If no minerals can be harvested from the rock, your function should return nil</li>
     ;;
     ;; </ul>
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
     (defn harvested-minerals [xs]
       (let [bin-xs (map #(Integer/toString %1 2) xs)
@@ -2915,6 +3027,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * TODO Problem 128
 
+*Recognize Playing Cards*
+
 #+begin_src clojure
   ;; A standard American deck of playing cards has four suits
   ;; - spades, hearts, diamonds, and clubs - and thirteen cards in each suit.
@@ -2943,6 +3057,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 #+end_src
 
 * Problem 130
+
+*Tree reparenting*
 
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 130
@@ -2990,10 +3106,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; Your function will be given two args -- the name of the node
     ;;
     ;; that should become the new root, and the tree to transform.
-    ;;
-    ;; 
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
     (= '(n)
        (__ 'n '(n)))
@@ -3177,6 +3289,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 135
 
+*Infix Calculator*
+
   #+BEGIN_SRC clojure
     ;; Your friend Joe is always whining about Lisps
     ;; using the prefix notation for math.
@@ -3206,8 +3320,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * Problem 136
 
 
-
 * Problem 137
+
+*Digits and bases*
+
   #+BEGIN_SRC clojure
     ;; Write a function which returns a sequence of digits
     ;; of a non-negative number (first argument) in numerical
@@ -3321,7 +3437,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 146
 
-*Flatten maps*
+*Trees into tables*
 
   #+BEGIN_SRC clojure
     ;; <p>Because Clojure's <code>for</code> macro allows you to "walk"
@@ -3370,6 +3486,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 147
 
+*Pascal's Trapezoid*
+
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 147
     ;;
@@ -3384,8 +3502,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; fit into a 64-bit integer, an exception is thrown.
     ;; You can use +' to indicate that you would rather overflow into Clojure's slower,
     ;; arbitrary-precision bigint.</p>
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
     (= (second (__ [2 3 2])) [2 5 5 2])
 
