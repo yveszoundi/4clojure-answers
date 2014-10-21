@@ -1618,13 +1618,11 @@
       [true false true false true false])
   #+END_SRC
 
-* TODO Problem 79
+* Problem 79
 
 *Triangle Minimal Path*
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 79
-    ;;
     ;; Write a function which calculates the sum of the
     ;; minimal path through a triangle.
     ;;
@@ -1632,21 +1630,46 @@
     ;; The path should start at the top of the triangle and
     ;; move to an adjacent number on the next row until the
     ;; bottom of the triangle is reached.
+    (defn min-triangle-path  [col]
+      (letfn [(triangle-vec [col] (into [] col))
 
-    (defn min-triangle-path  [col])
-          
+              (current-row-min-path [cur-row]
+                (->> (partition 2 1 cur-row) (mapv #(reduce min %))))
+
+              (update-triangle-base [last-row min-path]
+                (mapv + last-row min-path))
+
+              (update-triangle [triangle idx updated-base]
+                (assoc triangle idx updated-base))
+
+              (min-path-sum [triangle]
+                (if (= 1 (count triangle))
+                  (first (flatten triangle))
+                  (let [new-triangle (pop triangle)
+                        new-base (last new-triangle)
+                        new-base-idx (dec (count new-triangle))
+                        prev-base (peek triangle)]                
+                    (recur
+                     (->> (current-row-min-path prev-base)
+                          (update-triangle-base new-base)
+                          (update-triangle new-triangle new-base-idx))))))]
+
+        (min-path-sum (triangle-vec col))))
+
+
     (and
      (= 7 (min-triangle-path '([1]
-                                 [2 4]
-                                   [5 1 4]
-                                     [2 3 4 5]))) ; 1->2->1->3
+                              [2 4]
+                             [5 1 4]
+                            [2 3 4 5]))) ; 1->2->1->3
 
-     (= 20 (min-triangle-path '([3]
-                                  [2 4]
-                                    [1 9 3]
-                                      [9 9 2 4]
-                                        [4 6 6 7 8]
-                                          [5 7 3 5 1 4]))) ; 3->4->3->2->7->1)
+    (= 20 (min-triangle-path '([3]
+                              [2 4]
+                             [1 9 3]
+                            [9 9 2 4]
+                           [4 6 6 7 8]
+                          [5 7 3 5 1 4]))) ; 3->4->3->2->7->1
+    )
   #+END_SRC
 
 * Problem 80
@@ -2303,6 +2326,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 #+begin_src clojure
 
 #+end_src
+
 * TODO Problem 110
 
 #+begin_src clojure
@@ -3179,6 +3203,42 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= 72 (infix-calc 20 / 2 + 2 + 4 + 8 - 6 - 10 * 9)))
   #+END_SRC
 
+* Problem 136
+
+
+
+* Problem 137
+  #+BEGIN_SRC clojure
+    ;; Write a function which returns a sequence of digits
+    ;; of a non-negative number (first argument) in numerical
+    ;; system with an arbitrary base (second argument).
+    ;; Digits should be represented with their integer values,
+    ;; e.g. 15 would be [1 5] in base 10, [1 1 1 1] in base 2
+    ;; and [15] in base 16.
+
+    (defn seq-digits [num radix]
+      ((fn step [r n base]
+         (if (pos? n)
+           (let [d (mod n base), q (quot n base)]
+             (recur (cons d r) q base))
+           (if (empty? r) '(0) r)))
+       '() num radix))
+
+    (and (= [1 2 3 4 5 0 1] (seq-digits 1234501 10))
+         (= [0] (seq-digits 0 11))
+         (= [1 0 0 1] (seq-digits 9 2))
+         (= [1 0] (let [n (rand-int 100000)](seq-digits n n)))
+         (= [16 18 5 24 15 1] (seq-digits Integer/MAX_VALUE 42)))
+  #+END_SRC
+* Problem 138
+
+* Problem 139
+
+* Problem 140
+
+* Problem 141
+
+* Problem 142
 
 * Problem 143
 
