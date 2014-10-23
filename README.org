@@ -1662,9 +1662,8 @@
   ;; Write a function which returns true for perfect numbers and false otherwise.
 
   (defn perfect-num? [n]
-    (if (odd? n)
-      false
-      (= n (reduce + (filter #(= 0 (mod n %)) (range 1 n))))))
+    (and (not (odd? n))
+         (= n (reduce + (filter #(= 0 (mod n %)) (range 1 n))))))
 
   (clojure.test/testing
       "Test perfect numbers."
@@ -2511,6 +2510,63 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * TODO Problem 111
 
 #+begin_src clojure
+  ;; 4Clojure Question 111
+  ;;
+  ;; Write a function that takes a string and a partially-filled crossword puzzle board, and determines if the input string can be legally placed onto the board.
+  ;;
+  ;; </br></br>
+  ;;
+  ;; 
+  ;;
+  ;; The crossword puzzle board consists of a collection of partially-filled rows.  Empty spaces are denoted with an underscore (_), unusable spaces are denoted with a hash symbol (#), and pre-filled spaces have a character in place; the whitespace characters are for legibility and should be ignored.
+  ;;
+  ;; </br></br>
+  ;;
+  ;; For a word to be legally placed on the board:
+  ;;
+  ;; </br>
+  ;;
+  ;; - It may use empty spaces (underscores)
+  ;;
+  ;; </br>
+  ;;
+  ;; - It may use but must not conflict with any pre-filled characters.
+  ;;
+  ;; </br>
+  ;;
+  ;; - It must not use any unusable spaces (hashes).
+  ;;
+  ;; </br>
+  ;;
+  ;; - There must be no empty spaces (underscores) or extra characters before or after the word (the word may be bound by unusable spaces though).
+  ;;
+  ;; </br>
+  ;;
+  ;; - Characters are not case-sensitive. 
+  ;;
+  ;; </br>
+  ;;
+  ;; - Words may be placed vertically (proceeding top-down only), or horizontally (proceeding left-right only).
+  ;;
+  ;; Use M-x 4clojure-check-answers when you're done!
+
+  (= true  (__ "the" ["_ # _ _ e"]))
+
+  (= false (__ "the" ["c _ _ _"
+                      "d _ # e"
+                      "r y _ _"]))
+
+  (= true  (__ "joy" ["c _ _ _"
+                      "d _ # e"
+                      "r y _ _"]))
+
+  (= false (__ "joy" ["c o n j"
+                      "_ _ y _"
+                      "r _ _ #"]))
+
+  (= true  (__ "clojure" ["_ _ _ # j o y"
+                          "_ _ o _ _ _ _"
+                          "_ _ f _ # _ _"]))
 
 #+end_src
 * TODO Problem 112
@@ -2528,25 +2584,18 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; the input integer.
 
   (defn accum-while-sum-< [n xs]
-    (letfn [(walk [sum queue col]
-              (if (or (> sum n) (empty? col))
-                queue
-                (let [cur-item (first col)]
-                  (if-not (sequential? cur-item)
-                    (let [cur-sum (+ sum cur-sum)]
-                      (if (< cur-sum n)
-                        (walk cur-sum (conj queue cur-item) (rest col))
-                        (walk cur-sum queue col)))
-                    (let [ctx (visit cur-item sum {:sum sum :obj '()})]
-                      (walk (ctx :sum) (conj queue (ctx :obj)) (rest col)))))))
-
-            (visit [node sum ctx]
-              
-
-            ))]
-
-  (or (walk 0 xs)
-      '())))
+    (letfn [(step [sum n xs]
+              (println "sum:" sum)
+              (if (or (> sum n) (empty? xs))
+                nil            
+                (let [cur (first xs)]
+                  (if (coll? cur)
+                    (cons (step sum n cur) (step sum n (rest xs)))
+                    (let [sum-candidate (+ sum cur)]
+                      (if (> sum-candidate n)
+                        xs
+                        (cons cur (step sum-candidate n (rest xs)))))))))]
+      (step 0 n xs)))
 
   (and
    (=  (accum-while-sum-< 10 [1 2 [3 [4 5] 6] 7])
@@ -3025,7 +3074,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                                             ; 00000      00000
   #+END_SRC
 
-* TODO Problem 128
+* Problem 128
 
 *Recognize Playing Cards*
 
@@ -3045,15 +3094,24 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; of <code>{:suit :spade, :rank 9}</code>. A ten will always be represented
   ;; with the single character "T", rather than the two characters "10".
 
-  (= {:suit :diamond :rank 10} (__ "DQ"))
+  (defn decode-card [code]
+    (let [suits {\D :diamond \H :heart \S :spade \C :club}
+          ranks {\A 12 \K 11 \Q 10 \T 10 \J 9}
+          get-rank (fn [x]
+                     (cond
+                      (Character/isDigit x) (- (Integer/valueOf (str x)) 2)
+                      (= \T x) (- (ranks x) 2)
+                      :else (ranks x)))]
+      (-> (assoc {} :suit (suits (first code)))
+          (assoc :rank (get-rank (last code))))))
 
-  (= {:suit :heart :rank 3} (__ "H5"))
-
-  (= {:suit :club :rank 12} (__ "CA"))
-
-  (= (range 13) (map (comp :rank __ str)
-                     '[S2 S3 S4 S5 S6 S7
-                       S8 S9 ST SJ SQ SK SA]))
+  (and
+   (= {:suit :diamond :rank 10} (decode-card "DQ"))
+   (= {:suit :heart :rank 3} (decode-card "H5"))
+   (= {:suit :club :rank 12} (decode-card "CA"))
+   (= (range 13) (map (comp :rank decode-card str)
+                      '[S2 S3 S4 S5 S6 S7
+                        S8 S9 ST SJ SQ SK SA])))
 #+end_src
 
 * Problem 130
@@ -3319,7 +3377,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 136
 
-
 * Problem 137
 
 *Digits and bases*
@@ -3510,6 +3567,45 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     (= (take 2 (__ [3 1 2])) [[3 1 2] [3 4 3 2]])
 
     (= (take 100 (__ [2 4 2])) (rest (take 101 (__ [2 2]))))
+  #+END_SRC
+
+* Problem 148
+
+*The Big Divide*
+
+  #+BEGIN_SRC clojure
+    ;; <p>Write a function which calculates the sum of all natural numbers
+    ;; under <i>n</i> (first argument) which are evenly divisible by at
+    ;; least one of <i>a</i> and <i>b</i> (second and third argument).
+    ;; Numbers <i>a</i> and <i>b</i> are guaranteed to be
+    ;; <a href="http://en.wikipedia.org/wiki/Coprime">coprimes</a>.</p>
+    ;;
+    ;; <p>Note: Some test cases have a very large <i>n</i>,
+    ;; so the most obvious solution will exceed the time limit.</p>
+
+    ;; We reuse again the gcd function from question 66
+    (defn big-divide-sum [n a b]
+      (if (and (> b n) (> a n))
+        0
+        (reduce (fn [sum n]
+                  (if (or  (= 1 (gcd b n)) (= 1 (gcd a n)))
+                    (+ sum n)
+                    sum))
+                0
+                (filter #(and (not (zero? (mod %1 a)))
+                              (not (zero? (mod %1 b)))) (range n)))))
+
+    (and
+     (= 0 (big-divide-sum 3 17 11))
+     (= 23 (big-divide-sum 10 3 5))
+     (= 233168 (big-divide-sum 1000 3 5))
+     (= "2333333316666668" (str (big-divide-sum 100000000 3 5)))
+     (= "110389610389889610389610"
+        (str (big-divide-sum (* 10000 10000 10000) 7 11)))
+     (= "1277732511922987429116"
+        (str (big-divide-sum (* 10000 10000 10000) 757 809)))
+     (= "4530161696788274281"
+        (str (big-divide-sum (* 10000 10000 1000) 1597 3571))))
   #+END_SRC
 
 * WAITING Problem 150
