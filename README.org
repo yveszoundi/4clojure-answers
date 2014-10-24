@@ -2838,8 +2838,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; Convert a binary number, provided in the form of a string, to its numerical value.
 
     (defn bin->decimal [xs]
-      (let [col (map #(Integer/valueOf %) (reverse (re-seq #"\d" xs)))]
-        (bigint (reduce + (map-indexed #(* (Math/pow 2 %1) %2) col)))))
+      (let [col (map #(read-string %) (reverse (re-seq #"\d" xs)))]
+        (bigint (reduce +' (map-indexed #(* (Math/pow 2 %1) %2) col)))))
 
     (defn bin->decimal-java [str-xs]
       (Integer/valueOf str-xs 2))
@@ -2851,6 +2851,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= 255   (bin->decimal "11111111"))
          (= 1365  (bin->decimal "10101010101"))
          (= 65535 (bin->decimal "1111111111111111")))
+
   #+END_SRC
 
 * Problem 123
