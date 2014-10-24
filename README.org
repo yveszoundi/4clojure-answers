@@ -1223,9 +1223,7 @@
 
                (reduce-primes-set [candidate primes-set]
                  (let [max-val (inc (long (Math/ceil (Math/sqrt candidate))))]
-                   (for [i primes-set
-                         :while (< i max-val)
-                         :when (zero? (mod candidate i))] i)))
+                   (for [i primes-set :while (< i max-val) :when (zero? (mod candidate i))] i)))
 
                (next-prime-candidate [current-candidate]
                  (+ 2 current-candidate))
@@ -1307,8 +1305,7 @@
 
 #+begin_src clojure
   (defn split-sentence [xs]
-    (->> (re-seq #"\w+|\d+" xs)
-         (sort-by #(.toLowerCase %))))
+    (->> (re-seq #"\w+|\d+" xs) (sort-by #(.toLowerCase %))))
 
   (clojure.test/testing
       "Write a function that splits a sentence up
@@ -1430,9 +1427,7 @@
         (loop [winner nil, rows num-matrix-with-cols-and-diags]
           (if (or winner (empty? rows))
             winner
-            (recur (row-winner (first rows)) (rest rows))))
-
-        )))
+            (recur (row-winner (first rows)) (rest rows)))))))
 
   (and
    (= nil (tic-tac-toe-winner [[:e :e :e]
@@ -1474,8 +1469,8 @@
   (defn perfect-sqrt-nums [str]
     (let [num-xs (map #(Integer/valueOf %) (.split str ","))
           pred-fn (fn [x]
-                    (let [xx (Math/sqrt x)]
-                      (= (double 0) (double (- xx (Math/floor xx))))))
+                    (let [x-sqrt (Math/sqrt x)]
+                      (= (double 0) (double (- x-sqrt (Math/floor x-sqrt))))))
           fl-xs (filter pred-fn num-xs)]
       (clojure.string/join "," fl-xs)))
 
@@ -1636,7 +1631,6 @@
 
         (min-path-sum (triangle-vec col))))
 
-
     (and
      (= 7 (min-triangle-path '([1]
                               [2 4]
@@ -1751,6 +1745,8 @@
 
 *Transitive Closure*
  
+NOTE: Too much code, need to simplify...
+
 #+begin_src clojure
   ;; http://en.wikipedia.org/wiki/Transitive_closure
   ;; http://en.wikipedia.org/wiki/Binary_relation
@@ -1758,72 +1754,43 @@
   ;; Write a function which generates the transitive closure of a binary relation.
   ;; The relation will be represented as a set of 2 item vectors.
 
-  (defn transitive-closure [col]
-    (letfn [(neighbours [v col]
-              (reduce (fn [acc [a b]]
-                        (if (or (= a v) (= b v))
-                          (conj acc (first (disj (set [a b]) v)))
-                          acc))
-                      #{} col))
+  (defn <->closure [col]
+    (letfn [(vertices [g] (into #{} (reduce concat g)))
 
-            (vertices [graph]
-              (reverse (sort (into #{} (reduce concat graph)))))
+            (links [root xs]
+              (map #(cons root (cons (last %1) nil)) xs))
 
-            (relation-with-ownership [src dest cur-neighbours graph]
-              (if (empty? (filter (fn [[a b]]
-                                    (and (= a dest)
-                                         (contains? cur-neighbours b))) graph))
-                [src dest]
-                [dest src]))
+            (relations [root a b g]
+              (let [neighbors (filter (fn [[c d]] (= b c)) g)]
+                (if-not (empty? neighbors)
+                  (let [new-links (links root neighbors)]
+                    (concat new-links (mapcat (fn [x]
+                                             (relations root (first x) (last x) (disj g x))) new-links)))
+                  [])))]
 
-            (build-new-edges [src nodes acc cur-neighbours graph]
-              (if (empty? nodes)
-                acc
-                (reduce (fn [acc node]
-                          (conj acc (relation-with-ownership src node cur-neighbours graph)))
-                        acc
-                        nodes)))
-
-            (next-neighbours [visited-nodes nodes graph]
-              (let [purged-nodes (filter #(not (contains? visited-nodes %1)) nodes)]
-                (if (empty? purged-nodes)
-                  visited-nodes
-                  (recur (into #{} (concat visited-nodes purged-nodes))
-                         (mapcat set (map #(neighbours %1 graph) purged-nodes))
-                         graph))))
-
-            (find-transitive-relations [col]
-              (loop [nodes (vertices col), visited-nodes #{}, visited-transitions #{}]
-                (if (empty? nodes)
-                  visited-nodes
-                  (let [current-node (first nodes)
-                        current-neighbours (neighbours current-node col)
-                        transitive-neighbours (next-neighbours #{current-node} current-neighbours col)]
-
-                    (let [new-neighbours (apply disj transitive-neighbours
-                                                (concat #{current-node} current-neighbours visited-transitions))
-                          new-visited-nodes (build-new-edges current-node new-neighbours visited-nodes current-neighbours col)]
-
-                      (recur (rest nodes)
-                             new-visited-nodes
-                             (into #{} (concat visited-transitions new-neighbours #{current-node}))))))))]
-
-      (into #{} (concat col (find-transitive-relations col)))))
-
+      (->>
+       (concat
+              (filter #(not (empty? %1))
+                      (reduce (fn [acc [a b]]
+                                (concat acc (relations a a b col)))
+                              [] col)))
+       (map #(into [] %))
+       (concat col)
+       set)))
 
   (and
    (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
-     (= (transitive-closure divides) #{[4 2] [8 4] [8 2] [9 3] [27 9] [27 3]}))
+     (= (<->closure divides) #{[4 2] [8 4] [8 2] [9 3] [27 9] [27 3]}))
 
    (let [more-legs
          #{["cat" "man"] ["man" "snake"] ["spider" "cat"]}]
-     (= (transitive-closure more-legs)
+     (= (<->closure more-legs)
         #{["cat" "man"] ["cat" "snake"] ["man" "snake"]
           ["spider" "cat"] ["spider" "man"] ["spider" "snake"]}))
 
    (let [progeny
          #{["father" "son"] ["uncle" "cousin"] ["son" "grandson"]}]
-     (= (transitive-closure progeny)
+     (= (<->closure progeny)
         #{["father" "son"] ["father" "grandson"]
           ["uncle" "cousin"] ["son" "grandson"]})))
 #+end_src
@@ -1848,8 +1815,7 @@
       (set
        (for [i (range power-set-bin-size)]
          (set
-          (for [j (range col-count)
-                :when (pos? (bit-and i (bit-shift-left 1 j)))]
+          (for [j (range col-count) :when (pos? (bit-and i (bit-shift-left 1 j)))]
             (col-v j)))))))
 
   (time
@@ -1919,7 +1885,7 @@
    (= (symetric-set-diff #{[1 2] [2 3]} #{[2 3] [3 4]}) #{[1 2] [3 4]}))
 #+end_src
 
-* WAITING Problem 89
+* INPROGRESS Problem 89
 
 *Graph Tour* 
 
@@ -1934,75 +1900,26 @@
   ;; - You must visit each edge exactly once.
   ;; - All edges are undirected.
 
-  (defn eulerian-path? [graph]
-    (let [edges-count (count graph)]
-      (if (= 1 edges-count)
-        true
-        (letfn [(vertices [g]
-                  (into [] (set (reduce concat g))))
 
-                (adjacent-edges [v g]
-                  (filter (fn [[a b]] (or (= a v) (= b v))) g))
+  (defn eulerian-walk? [g])
 
-                (remove-first [syb lst]
-                  (if (empty? lst)
-                    '()
-                    (if (= (first lst) syb)
-                      (rest lst)
-                      (lazy-seq (cons (first lst) (remove-first syb (rest lst)))))))
-
-                (new-origin [previous-origin edge]
-                  (first (disj (into #{} edge) previous-origin)))
-
-                (walk-tree [x]
-                  (println "x:" x)
-                  (when-not (empty? x)
-                    (cons (first x) (walk-tree (mapcat concat (rest x))))))
-
-                (found-eulerian-path? [node->paths g]
-                  (reduce (fn [condition [k paths]]
-                            (let [mp (map walk-tree paths)
-                                  r (pos? (count (filter #(= (count g) (count %1)) mp)))]
-                              (println "mp:" mp "r:" r)
-                            (and condition r)))
-                          true
-                          node->paths))
-
-                (build-node-paths [node g]
-                  (map (fn [e]
-                         (let [src (new-origin node e)]
-                           (cons e (build-node-paths src (remove-first e g)))))
-                       (adjacent-edges node g)))
-
-                (construct-paths [g]
-                  (let [nodes (vertices g)]
-                    (loop [cur-nodes nodes acc {}]
-                      (if (empty? cur-nodes)
-                        acc
-                        (let [cur-node (first cur-nodes)
-                              node-res (build-node-paths cur-node g)
-                              new-acc (assoc acc cur-node node-res)]
-                          (recur (rest cur-nodes) new-acc))))))]
-
-          (found-eulerian-path? (construct-paths graph) graph)))))
-
-  (and (= true (eulerian-path? [[:a :b]]))
-       (= false (eulerian-path? [[:a :a] [:b :b]]))
-       (= false (eulerian-path? [[:a :b] [:a :b] [:a :c] [:c :a]
-                                 [:a :d] [:b :d] [:c :d]]))
-       (= true (eulerian-path? [[1 2] [2 3] [3 4] [4 1]]))
-       (= true (eulerian-path? [[:a :b]
-                                [:a :c]
-                                [:c :b]
-                                [:a :e]
-                                [:b :e]
-                                [:a :d]
-                                [:b :d]
-                                [:c :e]
-                                [:d :e]
-                                [:c :f]
-                                [:d :f]]))
-       (= false (eulerian-path? [[1 2] [2 3] [2 4] [2 5]])))
+  (and (= true (eulerian-walk?? [[:a :b]]))
+       (= false (eulerian-walk?? [[:a :a] [:b :b]]))
+       (= false (eulerian-walk?? [[:a :b] [:a :b] [:a :c] [:c :a]
+                                  [:a :d] [:b :d] [:c :d]]))
+       (= true (eulerian-walk?? [[1 2] [2 3] [3 4] [4 1]]))
+       (= true (eulerian-walk?? [[:a :b]
+                                 [:a :c]
+                                 [:c :b]
+                                 [:a :e]
+                                 [:b :e]
+                                 [:a :d]
+                                 [:b :d]
+                                 [:c :e]
+                                 [:d :e]
+                                 [:c :f]
+                                 [:d :f]]))
+       (= false (eulerian-walk?? [[1 2] [2 3] [2 4] [2 5]])))
 #+end_src
 
 * Problem 90
@@ -2973,11 +2890,20 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   #+BEGIN_SRC clojure
     ;; 4Clojure Question 127
     ;;
-    ;; Everyone loves triangles, and it's easy to understand why&mdash;they're so wonderfully symmetric (except scalenes, they suck).
+    ;; Everyone loves triangles, and it's easy to understand
+    ;; why&mdash;they're so wonderfully symmetric (except scalenes, they suck).
     ;;
     ;; <br/><br/>
     ;;
-    ;; Your passion for triangles has led you to become a miner (and part-time Clojure programmer) where you work all day to chip out isosceles-shaped minerals from rocks gathered in a nearby open-pit mine.  There are too many rocks coming from the mine to harvest them all so you've been tasked with writing a program to analyze the mineral patterns of each rock, and determine which rocks have the biggest minerals.
+    ;; Your passion for triangles has led you to become a miner
+    ;; (and part-time Clojure programmer) where you work all day
+    ;; to chip out isosceles-shaped minerals from rocks gathered
+    ;; in a nearby open-pit mine.
+
+    ;; There are too many rocks coming from the mine to harvest
+    ;; them all so you've been tasked with writing a program
+    ;; to analyze the mineral patterns of each rock,
+    ;; and determine which rocks have the biggest minerals.
     ;;
     ;; <br/><br/>
     ;;
@@ -3515,29 +3441,28 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; <p><sup>1</sup> That is, <code>(get-in original [k1 k2])</code> should
     ;; be the same as <code>(get result [k1 k2])</code></p>.
 
-    (defn flatten-m
+    (defn tree->table
       "Flattens a map."
       [m]
       (reduce (fn [acc [k v]]
-                (let [path [k]]
-                  (reduce (fn step [p [ke ve]]
-                            (assoc p (conj path ke) ve))
-                          acc
-                          (seq v))))
+                (reduce (fn step [p [ke ve]]
+                          (assoc p [k ke] ve))
+                        acc
+                        (seq v)))
               {}
               m))
 
-    (and (= (flatten-m '{a {p 1, q 2}
-                         b {m 3, n 4}})
+    (and (= (tree->table '{a {p 1, q 2}
+                           b {m 3, n 4}})
             '{[a p] 1, [a q] 2
               [b m] 3, [b n] 4})
 
-         (= (flatten-m '{[1] {a b c d}
-                         [2] {q r s t u v w x}})
+         (= (tree->table '{[1] {a b c d}
+                           [2] {q r s t u v w x}})
             '{[[1] a] b, [[1] c] d,
               [[2] q] r, [[2] s] t,
               [[2] u] v, [[2] w] x})
-         (= (flatten-m '{m {1 [a b c] 3 nil}})
+         (= (tree->table '{m {1 [a b c] 3 nil}})
             '{[m 1] [a b c], [m 3] nil}))
   #+END_SRC
 
@@ -3621,66 +3546,68 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; The most simple solution will exceed the time limit!
 
   (defn palindromic-sieve [n]
-    {:pre [(pos? n)]}
+    (letfn [(digits [num radix]
+              ((fn step [r n base]
+                 (if (pos? n)
+                   (let [d (mod n base), q (quot n base)]
+                     (recur (cons d r) q base))
+                   (if (empty? r) '(0) r)))
+               '() num radix))
 
-    (letfn [(num->digits [n]
+            (median [length]
+              (if (odd? length)
+                (/ (dec length) 2)
+                [(/ length 2) (dec (/ length 2))]))
+                
+            (expand-group [digits-count digits]
+
+              )
+
+            (next-palindrome [ digits]
+              (if (< 9))
+
+              
+            (next-candidate [n]
+              (let [num-digits (digits n 10)
+                    count-digits (count num-digits)]
+                
+                
+              )
+            
+            (next-palindromes [n]
               (lazy-seq
-               (loop [x n r '()]
-                 (if (< x 10) (cons x r)
-                     (recur (quot x 10) (cons (mod x 10) r))))))
+               (if (< n 8)
+                 (cons (inc n) (next-palindromes (inc n)))
+                 (next-candidate n))))]
 
-            (digits->num [num-digits]
-              (reduce #(conj %1 %2) [] num-digits))
-
-            (mirror-digits [num-digits start-offset end-offset]
-              (let [digits-count (count num-digits)]
-                (if (not= (first num-digits) (last num-digits))
-                  ;;191
-                  ;;12352
-                  ;; 1234
-                  )))
-
-            (increment-digit [num target]
-              (if (= (long target) (Long/valueOf (str (last (str num)))))
-                (long num)
-                (recur (inc num target))))
-
-            (next-palindromic-num [n]
-              (if (< (inc n) 10)
-                (inc n)
-                (let [num-digits (num->digits n)]
-
-
-                  )))]
-
-    ))
+      (next-palindromes n)))
 
 
   (and
-   (= (take 26 (palindromic-seq 0))
+   (= (take 26 (palindromic-sieve 0))
       [0 1 2 3 4 5 6 7 8 9
        11 22 33 44 55 66 77 88 99
        101 111 121 131 141 151 161])
 
-   (= (take 16 (palindromic-seq 162))
+   (= (take 16 (palindromic-sieve 162))
       [171 181 191 202
        212 222 232 242
        252 262 272 282
        292 303 313 323])
 
-   (= (take 6 (palindromic-seq 1234550000))
+   (= (take 6 (palindromic-sieve 1234550000))
       [1234554321 1234664321 1234774321
        1234884321 1234994321 1235005321])
 
-   (= (first (palindromic-seq (* 111111111 111111111)))
+   (= (first (palindromic-sieve (* 111111111 111111111)))
       (* 111111111 111111111))
 
-   (= (set (take 199 (palindromic-seq 0)))
-      (set (map #(first (palindromic-seq %)) (range 0 10000))))
+   (= (set (take 199 (palindromic-sieve 0)))
+      (set (map #(first (palindromic-sieve %)) (range 0 10000))))
 
    (= true
-      (apply < (take 6666 (palindromic-seq 9999999))))
+      (apply < (take 6666 (palindromic-sieve 9999999))))
 
-   (= (nth (palindromic-seq 0) 10101)
+   (= (nth (palindromic-sieve 0) 10101)
       9102019))
 #+end_src
