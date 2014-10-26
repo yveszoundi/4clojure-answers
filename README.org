@@ -1755,28 +1755,30 @@ NOTE: Too much code, need to simplify...
   ;; The relation will be represented as a set of 2 item vectors.
 
   (defn <->closure [col]
-    (letfn [(vertices [g] (into #{} (reduce concat g)))
+    (letfn [(walk-edge [src e g]
+              (next-edges (first src) (last src) (disj g [src])))
 
-            (links [root xs]
-              (map #(cons root (cons (last %1) nil)) xs))
+            (next-edges [root src g v-src]
+              (when-not (empty? g )
+                (let [adj-edges (filter (fn [[a b]] (or (= a src) (= b src))) g)]
 
-            (relations [root a b g]
-              (let [neighbors (filter (fn [[c d]] (= b c)) g)]
-                (if-not (empty? neighbors)
-                  (let [new-links (links root neighbors)]
-                    (concat new-links (mapcat (fn [x]
-                                             (relations root (first x) (last x) (disj g x))) new-links)))
-                  [])))]
+                  (reduce (fn [acc [a b]]
+                            (let [new-src (first (disj #{a b} src))]
+                              (println "new-src:" new-src "root:" root)
+                              (if (or (= new-src root)
+                                      (contains? v-src src))
+                                acc
+                                (conj (conj acc [root new-src])
+                                      (next-edges root new-src (disj g [a b]) (conj v-src new-src))))))
+                          []
+                          adj-edges))))]
 
-      (->>
-       (concat
-              (filter #(not (empty? %1))
-                      (reduce (fn [acc [a b]]
-                                (concat acc (relations a a b col)))
-                              [] col)))
-       (map #(into [] %))
-       (concat col)
-       set)))
+
+      (reduce (fn [acc x]
+                (let [result (next-edges (first x) (last x) (disj col x) #{(first x)})]
+                  (println "mapping:" x  "col:" (disj col x) "results:" result)
+                  (conj acc result)))
+              [] col)))
 
   (and
    (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
@@ -2617,13 +2619,13 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; and returns true iff n is balanced.
 
     (defn balanced-num? [n]
-      (let [digits (mapv #(Integer/valueOf (str %1)) (str n))
-            mid (fn [col] (let [cnt (/ (count col) 2)]
-                            (if (odd? (count col))
-                              [(int (Math/floor cnt)) (inc (int (Math/floor cnt)))]
-                              [(int cnt) (int cnt)] )))
+      (let [digits (mapv (fn [x] (read-string (str x))) (str n))
+            mid (fn [xs] (let [ln (/ (count xs) 2)]
+                           (if (odd? (count xs))
+                             [(int ln) (inc ln)]
+                             [(int ln) (int ln)])))
             bounds (mid digits)]
-        (= (reduce + (subvec digits 0 ((first bounds))))
+        (= (reduce + (subvec digits 0 (first bounds)))
            (reduce + (subvec digits (last bounds))))))
 
     (and
@@ -2901,21 +2903,34 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;;
     ;; <br/><br/>
     ;;
-    ;; Someone has already written a <a href="http://en.wikipedia.org/wiki/Computer_vision">computer-vision</a> system for the mine.  It images each rock as it comes into the processing centre and creates a cross-sectional <a href="http://en.wikipedia.org/wiki/Bit_array">bitmap</a> of mineral (1) and rock (0) concentrations for each one.
+    ;; Someone has already written a
+    ;; <a href="http://en.wikipedia.org/wiki/Computer_vision">computer-vision</a>
+    ;; system for the mine.  It images each rock as it comes into the processing centre
+    ;; and creates a cross-sectional
+    ;; <a href="http://en.wikipedia.org/wiki/Bit_array">bitmap</a> of mineral (1)
+    ;; and rock (0) concentrations for each one.
     ;;
     ;; <br/><br/>
     ;;
-    ;; You must now create a function which accepts a collection of integers, each integer when read in base-2 gives the bit-representation of the rock (again, 1s are mineral and 0s are worthless scalene-like rock).  You must return the cross-sectional area of the largest harvestable mineral from the input rock, as follows:
+    ;; You must now create a function which accepts a collection of integers,
+    ;; each integer when read in base-2 gives the bit-representation of the rock
+    ;; (again, 1s are mineral and 0s are worthless scalene-like rock).
+    ;; You must return the cross-sectional area of the largest harvestable
+    ;; mineral from the input rock, as follows:
     ;;
     ;; <br>
     ;;
     ;; <ul>
     ;;
-    ;; <li>The minerals only have smooth faces when sheared vertically or horizontally from the rock's cross-section</li>
+    ;; <li>The minerals only have smooth faces when sheared vertically or
+    ;; horizontally from the rock's cross-section</li>
     ;;
-    ;; <li>The mine is only concerned with harvesting isosceles triangles (such that one or two sides can be sheared)</li>
+    ;; <li>The mine is only concerned with harvesting isosceles triangles
+    ;; (such that one or two sides can be sheared)</li>
     ;;
-    ;; <li>If only one face of the mineral is sheared, its opposing vertex must be a point (ie. the smooth face must be of odd length), and its two equal-length sides must intersect the shear face at 45&deg; (ie. those sides must cut even-diagonally)</li>
+    ;; <li>If only one face of the mineral is sheared, its opposing vertex must be a
+    ;; point (ie. the smooth face must be of odd length), and its two equal-length sides
+    ;; must intersect the shear face at 45&deg; (ie. those sides must cut even-diagonally)</li>
     ;;
     ;; <li>The harvested mineral may not contain any traces of rock</li>
     ;;
@@ -2930,18 +2945,12 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; </ul>
 
     (defn harvested-minerals [xs]
-      (let [bin-xs (map #(Integer/toString %1 2) xs)
-            max-count (reduce max (map count bin-xs))
-            pad-seqs (fn [x]
-                       (let [count-x (count x)]
-                         (if (< count-x max-count)
-                           (concat (repeat (- max-count count-x) \0) x)
-                           (seq x))))]
+      (let [b-digits (map #(seq (Integer/toBinaryString %1)) xs)
+            b-digits-max (reduce max (map count b-digits))
+            pad-digits #(concat (repeat (- b-digits-max (count %1)) \0) %1)
+            digits (map pad-digits b-digits))]
 
-
-        (map pad-seqs bin-xs)
-        
-        ))
+      )
 
     (= 10 (harvested-minerals [15 15 15 15 15]))
                                             ; 1111      1111
