@@ -1706,6 +1706,7 @@
   (defn continuous-word-chain?
     "Check if words can be arranged into a continuous chain."
     [xs]
+
     )
 
   (clojure.test/testing
@@ -2944,13 +2945,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;;
     ;; </ul>
 
-    (defn harvested-minerals [xs]
-      (let [b-digits (map #(seq (Integer/toBinaryString %1)) xs)
-            b-digits-max (reduce max (map count b-digits))
-            pad-digits #(concat (repeat (- b-digits-max (count %1)) \0) %1)
-            digits (map pad-digits b-digits))]
-
-      )
+    (defn harvested-minerals [xs])
 
     (= 10 (harvested-minerals [15 15 15 15 15]))
                                             ; 1111      1111
@@ -3291,11 +3286,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
     (defn infix-calc
       [& expr]
-      ((fn step [init stmts]
-         (if (< (count stmts) 3)
+      ((fn step [init [a f b & more]]
+         (if-not f
            init
-           (let [[a f b] (take 3 stmts), result (f a b)]
-             (recur result (cons result (nthnext stmts 3))))))
+           (let [r (f a b)]
+             (recur r (cons r more)))))
        0 expr))
 
     (and (= 7  (infix-calc 2 + 5))
@@ -3549,33 +3544,13 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; The most simple solution will exceed the time limit!
 
   (defn palindromic-sieve [n]
-    (letfn [(digits [num radix]
-              ((fn step [r n base]
+    (letfn [(digits [num]
+              ((fn step [r n]
                  (if (pos? n)
-                   (let [d (mod n base), q (quot n base)]
-                     (recur (cons d r) q base))
+                   (let [d (mod n 10), q (quot n 10)]
+                     (recur (cons d r) q 10))
                    (if (empty? r) '(0) r)))
-               '() num radix))
-
-            (median [length]
-              (if (odd? length)
-                (/ (dec length) 2)
-                [(/ length 2) (dec (/ length 2))]))
-                
-            (expand-group [digits-count digits]
-
-              )
-
-            (next-palindrome [ digits]
-              (if (< 9))
-
-              
-            (next-candidate [n]
-              (let [num-digits (digits n 10)
-                    count-digits (count num-digits)]
-                
-                
-              )
+               '() num))
             
             (next-palindromes [n]
               (lazy-seq
