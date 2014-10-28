@@ -1690,7 +1690,7 @@
       (= (set-intersection #{:a :b :c :d} #{:c :e :a :f :d}) #{:a :c :d}))))
 #+end_src
 
-* TODO Problem 82
+* Problem 82
 *Test continuous word chain*
 
 #+begin_src clojure
@@ -1704,10 +1704,42 @@
   ;; and returns true if they can be arranged into one continous word chain, and false if they cannot.
 
   (defn continuous-word-chain?
-    "Check if words can be arranged into a continuous chain."
+    "Check if words can be arranged into a continuous chain.
+  Build a tree of elements combinations for which the edit distance is 1.
+  As we compare elements there might be multiple possibilities, thus a tree.
+  If the tree height is equal to the number of elements we have a word chaivn."
     [xs]
+    (letfn [(combinations-tree [elem xs]
+              (cons elem
+                    (when-not (empty? xs)
+                      (let [r (filter #(= 1 (edit-distance elem %1)) xs)]
+                        (when-not (empty? r)
+                          (loop [items r]
+                            (when-not (empty? items)
+                              (map #(combinations-tree %1 (disj xs %1)) items))))))))
+            
+            (max-tree-height [tree]
+              (if (not (seq? tree)) 0
+                  (+ 1 (reduce max (map max-tree-height tree)))))
 
-    )
+            (edit-distance [w1 w2]
+              (letfn [(cell-value [ch1 ch2 prev-row acc col-idx]
+                        (min  (inc (nth prev-row col-idx))
+                              (inc (last acc))
+                              (+ (nth prev-row (dec col-idx)) (if (= ch1 ch2) 0 1))))]
+                (loop [row-idx 1, max-rows (inc (count w2)), prev (range (inc (count w1)))]
+                  (if (= row-idx max-rows)
+                    (last prev)
+                    (let [ch2 (nth w2 (dec row-idx))
+                          next-prev (reduce (fn [acc i]
+                                              (conj acc (cell-value (nth w1 (dec i)) ch2 prev acc i)))
+                                            [row-idx]
+                                            (range 1 (count prev)))]
+                      (recur (inc row-idx) max-rows, next-prev))))))]
+
+      (->> (map (fn [x] (max-tree-height (combinations-tree x (disj xs x)))) xs)
+           (reduce max)
+           (= (count xs)))))
 
   (clojure.test/testing
       "Word chain"
@@ -1903,26 +1935,61 @@ NOTE: Too much code, need to simplify...
   ;; - You must visit each edge exactly once.
   ;; - All edges are undirected.
 
+  (defn eulerian-walk? [g]
+    (letfn [(mk-set [g] (into #{} g))
 
-  (defn eulerian-walk? [g])
+            (vertices [g] (into #{} (reduce concat g)))
 
-  (and (= true (eulerian-walk?? [[:a :b]]))
-       (= false (eulerian-walk?? [[:a :a] [:b :b]]))
-       (= false (eulerian-walk?? [[:a :b] [:a :b] [:a :c] [:c :a]
-                                  [:a :d] [:b :d] [:c :d]]))
-       (= true (eulerian-walk?? [[1 2] [2 3] [3 4] [4 1]]))
-       (= true (eulerian-walk?? [[:a :b]
-                                 [:a :c]
-                                 [:c :b]
-                                 [:a :e]
-                                 [:b :e]
-                                 [:a :d]
-                                 [:b :d]
-                                 [:c :e]
-                                 [:d :e]
-                                 [:c :f]
-                                 [:d :f]]))
-       (= false (eulerian-walk?? [[1 2] [2 3] [2 4] [2 5]])))
+            (walk [src g]
+              (when-not (empty? g)
+                (loop [neighbours (get-neighbours src g) acc []]
+                  (if (empty? neighbours)
+                    acc
+                    (let [[a b] (first neighbours)
+                          new-origin (find-origin [a b] src)
+                          new-g (reduced-graph [a b] g)]
+                      (recur (rest neighbours)
+                             (conj acc (cons [a b] (walk new-origin new-g)))))))))
+
+            (find-origin [e prev-src]
+              (first (disj (set e) prev-src)))
+
+            (reduced-graph [e g] (disj g e))
+
+            (get-neighbours [src g]
+              (filter (fn [[a b]]
+                        (or (= a src) (= b src)))
+                      g))]
+      (let [edges-len (count g)]
+        (println "\nSTART\n")
+        (if (= edges-len 1)
+          true
+          (let [graph (mk-set g)
+                nodes (vertices g)
+                associations (reduce (fn [acc node]
+                                       (assoc acc node (walk node graph)))
+                                     {}
+                                     nodes)]
+            (doseq [[k v] associations]
+              (println "key:" k  "value:" v))))))))
+
+  (and (= true (eulerian-walk? [[:a :b]]))
+       (= false (eulerian-walk? [[:a :a] [:b :b]]))
+       (= false (eulerian-walk? [[:a :b] [:a :b] [:a :c] [:c :a]
+                                 [:a :d] [:b :d] [:c :d]]))
+       (= true (eulerian-walk? [[1 2] [2 3] [3 4] [4 1]]))
+       (= true (eulerian-walk? [[:a :b]
+                                [:a :c]
+                                [:c :b]
+                                [:a :e]
+                                [:b :e]
+                                [:a :d]
+                                [:b :d]
+                                [:c :e]
+                                [:d :e]
+                                [:c :f]
+                                [:d :f]]))
+       (= false (eulerian-walk? [[1 2] [2 3] [2 4] [2 5]])))
 #+end_src
 
 * Problem 90
@@ -2055,21 +2122,18 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; The result should be a sequence of sequences with only one level of nesting.
 
     (defn flatten-xs [xs]
-      (letfn [(with-values [xs]
-                (when xs
-                  (if (and (coll? xs)
-                           (= 1 (count xs)))
-                    (cons (step (first xs))
-                          (with-values (rest xs)))
-                    xs)))
-              (step [xs]
-                (when xs
-                  (let [x (first xs)]
-                    (if-not (coll? x)
-                      (cons x (step (next xs)))
-                      (cons (trampoline with-values x)
-                            (step (next xs)))))))]
-        (step xs)))
+      (letfn [(step [x in-coll?]
+                (when x
+                  (if (coll? x)
+                    (if in-coll?
+                      (concat (flatten (cons (step (first x) true) (step (next x) true))))
+                      (cons (cons (step (first x) true) (step (next x) true)) nil))
+                    x)))]
+        (reduce (fn [acc x]
+                  (if (coll? x)
+                    (concat acc (step x false))
+                    (conj acc x)))
+                xs)))
 
     (and (= (flatten-xs [["Do"] ["Nothing"]])
             [["Do"] ["Nothing"]])
@@ -2253,10 +2317,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; Because there are multiple shortest paths, you must return the
   ;; length of the shortest path, not the path itself.
 
-  ;; Not using any special tree or such, got off easy :-)
-  ;; We don't need to return the paths themselves per requirement,
-  ;; So we just push results and we deal with possible operations...
-
   (defn num-maze [start end]
     (if (= start end)
       1
@@ -2352,9 +2412,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 #+end_src
 * TODO Problem 109
 
-#+begin_src clojure
+  #+BEGIN_SRC clojure
 
-#+end_src
+  #+END_SRC
+
 
 * TODO Problem 110
 
