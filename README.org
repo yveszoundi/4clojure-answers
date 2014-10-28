@@ -1787,7 +1787,32 @@ NOTE: Too much code, need to simplify...
   ;; Write a function which generates the transitive closure of a binary relation.
   ;; The relation will be represented as a set of 2 item vectors.
 
-  (defn <->closure [col])    
+  (defn <->closure [g]
+    (letfn [(next-origin [prev-origin edge]
+              (first (disj (set edge) prev-origin)))
+
+            (walk [src g visited]
+              (if (empty? g)
+                visited
+                (let [adj-edges (filter (fn [[a b]] (= src a)) g)
+                      fl (filter (fn [x]
+                                   (let [orig (next-origin src x)]
+                                     (not (or (= src orig) (contains? visited orig)))))
+                                 adj-edges)]
+                  (concat visited
+                          (mapcat (fn [edge]
+                                    (let [orig (next-origin src edge)]
+                                      (walk orig (disj g edge) (conj visited orig))))
+                                  fl)))))]
+      (reduce (fn [acc edge]
+                (let [orig (last edge)
+                      root (first edge)
+                      links (set (flatten (walk orig (disj g edge) #{orig})))
+                      f-links (filter #(not (or (contains? g [root %1]) (contains? g [%1 root]))) links)]
+                  (reduce (fn [col x] (conj col [root x])) acc f-links)))
+              g
+              g)))
+
 
   (and
    (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
@@ -1993,7 +2018,7 @@ NOTE: Too much code, need to simplify...
 
 #+end_src
 
-* WAITING Problem 91
+* TODO Problem 91
 
 *Check if a graph is connected*
 
@@ -2005,37 +2030,7 @@ NOTE: Too much code, need to simplify...
   ;; - Each member of a tuple being a vertex/node in the graph.
   ;; - Each edge is undirected (can be traversed either direction).
 
-  (defn graph-connected? [g]
-    (if (= 1 (count g))
-      true
-      (letfn [(vertices [g]
-                (set (reduce concat g)))
-
-              (adjacent-edges [src g]
-                (filter (fn [[a b]] (or (= a src) (= b src))) g))
-
-              (next-origin [edge origin]
-                (first (disj (into #{} edge) origin)))
-
-              (visited-vertices [tree]
-                  (if (not (seq? tree)) 0
-                      (conj (first tree) (reduce max (map max-tree-height tree)))))
-
-              (walk [root src g]
-                  (when (not (empty? g))
-                    (let [neighbours (adjacent-edges src g)]
-                      (when (not (empty? neighbours))
-                        (map (fn [x]
-                               (cons x
-                                     (walk root (next-origin x src) (rem-first g x)))) neighbours)))))]
-
-        (println "\nSTART")
-        (let [nodes (vertices g)]
-          (reduce (fn [acc vertex]
-                    (let [w (walk vertex vertex g)]
-                      (assoc acc vertex w)))
-                  {}
-                  nodes)))))
+  (defn graph-connected? [g])
 
   (and
    (= true (graph-connected? #{[:a :a]}))
@@ -2092,19 +2087,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; (lists, vectors, etc.), but maintains the lowest level sequential items.
     ;; The result should be a sequence of sequences with only one level of nesting.
 
-    (defn flatten-xs [xs]
-      (letfn [(step [x in-coll?]
-                (when x
-                  (if (coll? x)
-                    (if in-coll?
-                      (concat (flatten (cons (step (first x) true) (step (next x) true))))
-                      (cons (cons (step (first x) true) (step (next x) true)) nil))
-                    x)))]
-        (reduce (fn [acc x]
-                  (if (coll? x)
-                    (concat acc (step x false))
-                    (conj acc x)))
-                xs)))
+    (defn flatten-xs [xs])
 
     (and (= (flatten-xs [["Do"] ["Nothing"]])
             [["Do"] ["Nothing"]])
@@ -2167,7 +2150,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
         false))
   #+END_SRC
 
-* Problem 96
+* TODO Problem 96
 
 *Beauty is Symmetry*
 
@@ -2180,8 +2163,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; binary tree is symmetric. (see <a href='/problem/95'>To Tree,
     ;; or not to Tree</a> for a reminder on the tree representation we're using).
 
-    (defn symmetric-binary-tree? [xs]
-      (throw (IllegalArgumentException. "TBD")))
+    (defn symmetric-binary-tree? [xs])
 
     (and
      (= (symmetric-binary-tree? '(:a (:b nil nil) (:b nil nil))) true)
@@ -2391,8 +2373,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * TODO Problem 110
 
 #+begin_src clojure
-  ;; 4Clojure Question 109
-  ;;
   ;; A mad scientist with tenure has created an experiment tracking mice in a maze.
   ;; Several mazes have been randomly generated, and you've been tasked with writing
   ;; a program to determine the mazes in which it's possible for the mouse to reach
@@ -3043,7 +3023,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
           ranks {\A 12 \K 11 \Q 10 \T 10 \J 9}
           get-rank (fn [x]
                      (cond
-                      (Character/isDigit x) (- (Integer/valueOf (str x)) 2)
+                      (Character/isDigit x) (- (Character/getNumericValue x) 2)
                       (= \T x) (- (ranks x) 2)
                       :else (ranks x)))]
       (-> (assoc {} :suit (suits (first code)))
@@ -3058,7 +3038,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                         S8 S9 ST SJ SQ SK SA])))
 #+end_src
 
-* Problem 130
+* TODO Problem 130
 
 *Tree reparenting*
 
@@ -3319,8 +3299,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= 72 (infix-calc 20 / 2 + 2 + 4 + 8 - 6 - 10 * 9)))
   #+END_SRC
 
-* Problem 136
-
 * Problem 137
 
 *Digits and bases*
@@ -3347,15 +3325,84 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= [1 0] (let [n (rand-int 100000)](seq-digits n n)))
          (= [16 18 5 24 15 1] (seq-digits Integer/MAX_VALUE 42)))
   #+END_SRC
-* Problem 138
 
-* Problem 139
+* TODO Problem 138
 
-* Problem 140
+* TODO Problem 139
+
+* TODO Problem 140
 
 * Problem 141
 
-* Problem 142
+*Tricky card games*
+
+#+BEGIN_SRC clojure
+  ;; <p>
+  ;;
+  ;; In <a href="http://en.wikipedia.org/wiki/Trick-taking_game">trick-taking
+  ;;
+  ;; card games</a> such as bridge, spades, or hearts, cards are played
+  ;;
+  ;; in groups known as "tricks" - each player plays a single card, in
+  ;;
+  ;; order; the first player is said to "lead" to the trick. After all
+  ;;
+  ;; players have played, one card is said to have "won" the trick. How
+  ;;
+  ;; the winner is determined will vary by game, but generally the winner
+  ;;
+  ;; is the highest card played <i>in the suit that was
+  ;;
+  ;; led</i>. Sometimes (again varying by game), a particular suit will
+  ;;
+  ;; be designated "trump", meaning that its cards are more powerful than
+  ;;
+  ;; any others: if there is a trump suit, and any trumps are played,
+  ;;
+  ;; then the highest trump wins regardless of what was led.
+  ;;
+  ;; </p>
+  ;;
+  ;; <p>
+  ;;
+  ;; Your goal is to devise a function that can determine which of a
+  ;;
+  ;; number of cards has won a trick. You should accept a trump suit, and
+  ;;
+  ;; return a function <code>winner</code>. Winner will be called on a
+  ;;
+  ;; sequence of cards, and should return the one which wins the
+  ;;
+  ;; trick. Cards will be represented in the format returned
+  ;;
+  ;; by <a href="/problem/128/">Problem 128, Recognize Playing Cards</a>:
+  ;;
+  ;; a hash-map of <code>:suit</code> and a
+  ;;
+  ;; numeric <code>:rank</code>. Cards with a larger rank are stronger.
+  ;;
+  ;; </p>
+
+  (defn tricky-card-game-winner [trump-suit]
+    (fn [args]
+      (let [effective-trump-suit (or trump-suit (:suit (first args)))]
+        (->> (filter #(= (:suit %1) effective-trump-suit) args)
+             (apply max-key :rank)))))
+
+  (and
+   (let [notrump (tricky-card-game-winner nil)]
+     (and (= {:suit :club :rank 9}  (notrump [{:suit :club :rank 4}
+                                              {:suit :club :rank 9}]))
+          (= {:suit :spade :rank 2} (notrump [{:suit :spade :rank 2}
+                                              {:suit :club :rank 10}]))))
+
+   (= {:suit :club :rank 10} ((tricky-card-game-winner :club) [{:suit :spade :rank 2}
+                                                               {:suit :club :rank 10}]))
+
+   (= {:suit :heart :rank 8}
+      ((tricky-card-game-winner :heart) [{:suit :heart :rank 6} {:suit :heart :rank 8}
+                                         {:suit :diamond :rank 10} {:suit :heart :rank 4}])))
+#+END_SRC
 
 * Problem 143
 
@@ -3489,8 +3536,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *Pascal's Trapezoid*
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 147
-    ;;
     ;; <p>Write a function that, for any given input vector of numbers,
     ;; returns an infinite lazy sequence of vectors, where each next one
     ;; is constructed from the previous following the rules used in
@@ -3503,16 +3548,19 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; You can use +' to indicate that you would rather overflow into Clojure's slower,
     ;; arbitrary-precision bigint.</p>
 
-    (= (second (__ [2 3 2])) [2 5 5 2])
+    (defn pascal-triangle [xs]
+      (iterate (fn step [xs]
+                 (into [] (concat [(first xs)] (map #(reduce +' %1N) (partition 2 1 xs)) [(last xs)])))
+               xs))
 
-    (= (take 5 (__ [1])) [[1] [1 1] [1 2 1] [1 3 3 1] [1 4 6 4 1]])
-
-    (= (take 2 (__ [3 1 2])) [[3 1 2] [3 4 3 2]])
-
-    (= (take 100 (__ [2 4 2])) (rest (take 101 (__ [2 2]))))
+    (and
+     (= (second (pascal-triangle [2 3 2])) [2 5 5 2])
+     (= (take 5 (pascal-triangle [1])) [[1] [1 1] [1 2 1] [1 3 3 1] [1 4 6 4 1]])
+     (= (take 2 (pascal-triangle [3 1 2])) [[3 1 2] [3 4 3 2]])
+     (= (take 100 (pascal-triangle [2 4 2])) (rest (take 101 (pascal-triangle [2 2])))))
   #+END_SRC
 
-* Problem 148
+* TODO Problem 148
 
 *The Big Divide*
 
@@ -3526,7 +3574,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; <p>Note: Some test cases have a very large <i>n</i>,
     ;; so the most obvious solution will exceed the time limit.</p>
 
-    ;; We reuse again the gcd function from question 66
     (defn big-divide-sum [n a b])
 
     (and
