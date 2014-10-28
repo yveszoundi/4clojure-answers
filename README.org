@@ -1896,7 +1896,7 @@ NOTE: Too much code, need to simplify...
    (= (symetric-set-diff #{[1 2] [2 3]} #{[2 3] [3 4]}) #{[1 2] [3 4]}))
 #+end_src
 
-* INPROGRESS Problem 89
+* Problem 89
 
 *Graph Tour* 
 
@@ -1912,42 +1912,43 @@ NOTE: Too much code, need to simplify...
   ;; - All edges are undirected.
 
   (defn eulerian-walk? [g]
-    (letfn [(mk-set [g] (into #{} g))
+    (if (= 1 (count g))
+      true
+      (letfn [(vertices [g]
+                (set (reduce concat g)))
 
-            (vertices [g] (into #{} (reduce concat g)))
+              (adjacent-edges [src g]
+                (filter (fn [[a b]] (or (= a src) (= b src))) g))
 
-            (walk [src g]
-              (when-not (empty? g)
-                (loop [neighbours (get-neighbours src g) acc []]
-                  (if (empty? neighbours)
-                    acc
-                    (let [[a b] (first neighbours)
-                          new-origin (find-origin [a b] src)
-                          new-g (reduced-graph [a b] g)]
-                      (recur (rest neighbours)
-                             (conj acc (cons [a b] (walk new-origin new-g)))))))))
+              (next-origin [edge origin]
+                (first (disj (into #{} edge) origin)))
 
-            (find-origin [e prev-src]
-              (first (disj (set e) prev-src)))
+              (rem-first [xs x]
+                (when xs
+                  (if (not= (first xs) x)
+                    (cons (first xs) (rem-first (next xs) x))
+                    (rest xs))))
 
-            (reduced-graph [e g] (disj g e))
+              (max-tree-height [tree]
+                (if (not (seq? tree)) 0
+                    (+ 1 (reduce max (map max-tree-height tree)))))
 
-            (get-neighbours [src g]
-              (filter (fn [[a b]]
-                        (or (= a src) (= b src)))
-                      g))]
-      (let [edges-len (count g)]
-        (println "\nSTART\n")
-        (if (= edges-len 1)
-          true
-          (let [graph (mk-set g)
-                nodes (vertices g)
-                associations (reduce (fn [acc node]
-                                       (assoc acc node (walk node graph)))
-                                     {}
-                                     nodes)]
-            (doseq [[k v] associations]
-              (println "key:" k  "value:" v))))))))
+              (walk [root src g]
+                (when (not (empty? g))
+                  (let [neighbours (adjacent-edges src g)]
+                    (when (not (empty? neighbours))
+                      (map (fn [x]
+                             (cons x
+                                   (walk root (next-origin x src) (rem-first g x)))) neighbours)))))]
+
+        (reduce (fn [init-condition x]
+                  (and init-condition
+                       (->> (walk x x g)
+                            (map #(max-tree-height %1))
+                            (reduce max)
+                            (= (count g)))))
+                true
+                (vertices g)))))
 
   (and (= true (eulerian-walk? [[:a :b]]))
        (= false (eulerian-walk? [[:a :a] [:b :b]]))
@@ -2004,7 +2005,37 @@ NOTE: Too much code, need to simplify...
   ;; - Each member of a tuple being a vertex/node in the graph.
   ;; - Each edge is undirected (can be traversed either direction).
 
-  (defn graph-connected? [g])
+  (defn graph-connected? [g]
+    (if (= 1 (count g))
+      true
+      (letfn [(vertices [g]
+                (set (reduce concat g)))
+
+              (adjacent-edges [src g]
+                (filter (fn [[a b]] (or (= a src) (= b src))) g))
+
+              (next-origin [edge origin]
+                (first (disj (into #{} edge) origin)))
+
+              (visited-vertices [tree]
+                  (if (not (seq? tree)) 0
+                      (conj (first tree) (reduce max (map max-tree-height tree)))))
+
+              (walk [root src g]
+                  (when (not (empty? g))
+                    (let [neighbours (adjacent-edges src g)]
+                      (when (not (empty? neighbours))
+                        (map (fn [x]
+                               (cons x
+                                     (walk root (next-origin x src) (rem-first g x)))) neighbours)))))]
+
+        (println "\nSTART")
+        (let [nodes (vertices g)]
+          (reduce (fn [acc vertex]
+                    (let [w (walk vertex vertex g)]
+                      (assoc acc vertex w)))
+                  {}
+                  nodes)))))
 
   (and
    (= true (graph-connected? #{[:a :a]}))
