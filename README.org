@@ -6,7 +6,25 @@
 #+INFOJS_OPT: view:nil toc:t ltoc:t mouse:underline buttons:0 path:http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.0.3/bootstrap.min.js
 
 * Overview
-  Answers to [[http://4clojure.com/][4clojure.com]] questions.
+  Answers to some of [[http://4clojure.com/][4clojure.com]] questions. I'm done here.
+  
+  It looks like broken questions or content get changed once in a while.
+
+  I did couple of problems and I believe that most of my current basic issues
+
+  are related to :
+
+- writing non idiomatic code (tendency to think in Java)
+- Graph manipulations/traversal in a pure functional way.
+
+* TBD to move forward*
+
+- Do "real" Clojure books reading, as reading is fundamental.
+- I have a basic Compojure application that I should finish:
+I've been looking at it about once a month for a while... (Compojure, Korma, Java JCE, etc.)
+- Need to master about macros well enough.
+- Need to explore stuff such as *core.async*, *transducers*, *transients*, etc.
+- Need to do more puzzles, as my background isn't pure computer science or engineering.
 
 * Problem 1
 
