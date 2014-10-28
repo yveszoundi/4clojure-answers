@@ -1787,31 +1787,7 @@ NOTE: Too much code, need to simplify...
   ;; Write a function which generates the transitive closure of a binary relation.
   ;; The relation will be represented as a set of 2 item vectors.
 
-  (defn <->closure [col]
-    (letfn [(walk-edge [src e g]
-              (next-edges (first src) (last src) (disj g [src])))
-
-            (next-edges [root src g v-src]
-              (when-not (empty? g )
-                (let [adj-edges (filter (fn [[a b]] (or (= a src) (= b src))) g)]
-
-                  (reduce (fn [acc [a b]]
-                            (let [new-src (first (disj #{a b} src))]
-                              (println "new-src:" new-src "root:" root)
-                              (if (or (= new-src root)
-                                      (contains? v-src src))
-                                acc
-                                (conj (conj acc [root new-src])
-                                      (next-edges root new-src (disj g [a b]) (conj v-src new-src))))))
-                          []
-                          adj-edges))))]
-
-
-      (reduce (fn [acc x]
-                (let [result (next-edges (first x) (last x) (disj col x) #{(first x)})]
-                  (println "mapping:" x  "col:" (disj col x) "results:" result)
-                  (conj acc result)))
-              [] col)))
+  (defn <->closure [col])    
 
   (and
    (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
@@ -2028,43 +2004,7 @@ NOTE: Too much code, need to simplify...
   ;; - Each member of a tuple being a vertex/node in the graph.
   ;; - Each edge is undirected (can be traversed either direction).
 
-  (defn graph-connected? [g]
-    (if (= 1 (count g))
-      true
-      (letfn [(vertices [g]
-                (sort (into #{} (reduce concat g))))
-
-              (target-node [v edge]
-                (first (disj (set edge) v)))
-
-              (connected-edges [v g seen]
-                (let [res 
-                (reduce (fn [acc [a b]]                        
-                          (if (and (or (= a v) (= b v))
-                                   (not (contains? seen (target-node v [a b]))))
-                            (conj acc [a b])
-                            acc))
-                        #{} g)]
-                  (println "edges for:" v "res:" res "seen:" seen)
-                  res))
-
-              (walk [v seen g]
-                (if (empty? g)
-                  seen
-                  (let [adjacent-edges (connected-edges v g seen)]
-                    (if (empty? adjacent-edges)
-                      seen
-                      (let [first-edge (first adjacent-edges)
-                            node (first (disj (set first-edge) v))]
-                        (recur node (conj seen node) (disj g first-edge)))))))]
-
-        (let [vs (vertices g)
-              mappings (map (fn [x]
-                              (println "\n---- mappings for:" x)
-                              (assoc {} x (walk x #{x} g))) vs)]
-          (println "\n\n"
-                   "vertices" vs
-                   "mappings" mappings)))))
+  (defn graph-connected? [g])
 
   (and
    (= true (graph-connected? #{[:a :a]}))
@@ -2564,19 +2504,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; from the head whose sum is less than or equal to
   ;; the input integer.
 
-  (defn accum-while-sum-< [n xs]
-    (letfn [(step [sum n xs]
-              (println "sum:" sum)
-              (if (or (> sum n) (empty? xs))
-                nil            
-                (let [cur (first xs)]
-                  (if (coll? cur)
-                    (cons (step sum n cur) (step sum n (rest xs)))
-                    (let [sum-candidate (+ sum cur)]
-                      (if (> sum-candidate n)
-                        xs
-                        (cons cur (step sum-candidate n (rest xs)))))))))]
-      (step 0 n xs)))
+  (defn accum-while-sum-< [n xs])
 
   (and
    (=  (accum-while-sum-< 10 [1 2 [3 [4 5] 6] 7])
@@ -2684,7 +2612,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
       (let [digits (mapv (fn [x] (read-string (str x))) (str n))
             mid (fn [xs] (let [ln (/ (count xs) 2)]
                            (if (odd? (count xs))
-                             [(int ln) (inc ln)]
+                             [(int ln) (inc (int ln))]
                              [(int ln) (int ln)])))
             bounds (mid digits)]
         (= (reduce + (subvec digits 0 (first bounds)))
@@ -3568,16 +3496,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; so the most obvious solution will exceed the time limit.</p>
 
     ;; We reuse again the gcd function from question 66
-    (defn big-divide-sum [n a b]
-      (if (and (> b n) (> a n))
-        0
-        (reduce (fn [sum n]
-                  (if (or  (= 1 (gcd b n)) (= 1 (gcd a n)))
-                    (+ sum n)
-                    sum))
-                0
-                (filter #(and (not (zero? (mod %1 a)))
-                              (not (zero? (mod %1 b)))) (range n)))))
+    (defn big-divide-sum [n a b])
 
     (and
      (= 0 (big-divide-sum 3 17 11))
@@ -3604,23 +3523,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; that are not less than n.
   ;; The most simple solution will exceed the time limit!
 
-  (defn palindromic-sieve [n]
-    (letfn [(digits [num]
-              ((fn step [r n]
-                 (if (pos? n)
-                   (let [d (mod n 10), q (quot n 10)]
-                     (recur (cons d r) q 10))
-                   (if (empty? r) '(0) r)))
-               '() num))
-            
-            (next-palindromes [n]
-              (lazy-seq
-               (if (< n 8)
-                 (cons (inc n) (next-palindromes (inc n)))
-                 (next-candidate n))))]
-
-      (next-palindromes n)))
-
+  (defn palindromic-sieve [n])
 
   (and
    (= (take 26 (palindromic-sieve 0))
