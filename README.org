@@ -2250,19 +2250,13 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; between it and the next keyword in the sequence.
 
   (defn keyword-set[xs]
-    (loop [col xs, result {}]
-      (let [split-xs (split-with keyword? col)
-            remaining-vals (rest split-xs)
-            k (first (first split-xs))]
-        (if (nil? k)
-          result
-          (let [v (case (count (first split-xs))
-                    1 (take-while #(not (keyword? %1)) (first remaining-vals))
-                    [])]
-            (recur (cond
-                    (zero? (count v)) (rest col)
-                    :else (drop (count v) (first remaining-vals)))
-                   (assoc result k (reduce conj [] v))))))))
+    (->> (reduce (fn [acc item]
+                   (if (keyword? item)
+                     (conj acc item [])
+                     (assoc acc (dec (count acc)) (conj (peek acc) item))))
+                 []
+                 xs)
+         (apply hash-map)))
 
   (and
    (= {} (keyword-set []))
@@ -3592,7 +3586,9 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; <p>Note: Some test cases have a very large <i>n</i>,
     ;; so the most obvious solution will exceed the time limit.</p>
 
-    (defn big-divide-sum [n a b])
+    (defn big-divide-sum [n a b]
+
+    )
 
     (and
      (= 0 (big-divide-sum 3 17 11))
