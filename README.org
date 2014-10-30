@@ -2350,12 +2350,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
   ;; Reusing our powerset function from problem 85 and we just reduce it.
   (defn k-distinct-combos [n xs]
-    (let [ln (count xs)]
-      (cond
-       (> n ln) #{}
-       (= n ln) #{xs}
-       :else
-       (into #{} (filter #(= n (count %1)) (power-set xs))))))
+    (case (- n (count xs))
+      pos?  #{}
+      zero? #{xs}
+      (into #{} (filter #(= n (count %1)) (power-set xs)))))
 
   (and
    (= (k-distinct-combos 1 #{4 5 6}) #{#{4} #{5} #{6}})
@@ -2546,12 +2544,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                               (iterate inc 20))) ;; at least as large as 20
    )
 #+end_src
-* TODO Problem 109
-
-  #+BEGIN_SRC clojure
-
-  #+END_SRC
-
 
 * TODO Problem 110
 
@@ -2625,64 +2617,104 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 * TODO Problem 111
 
 #+begin_src clojure
-  ;; 4Clojure Question 111
-  ;;
-  ;; Write a function that takes a string and a partially-filled crossword puzzle board, and determines if the input string can be legally placed onto the board.
-  ;;
-  ;; </br></br>
-  ;;
-  ;; 
-  ;;
-  ;; The crossword puzzle board consists of a collection of partially-filled rows.  Empty spaces are denoted with an underscore (_), unusable spaces are denoted with a hash symbol (#), and pre-filled spaces have a character in place; the whitespace characters are for legibility and should be ignored.
-  ;;
-  ;; </br></br>
+  ;; Write a function that takes a string and a partially-filled
+  ;; crossword puzzle board, and determines if the input string
+  ;; can be legally placed onto the board.
+
+  ;; The crossword puzzle board consists of a collection of
+  ;; partially-filled rows.  Empty spaces are denoted with an
+  ;; underscore (_), unusable spaces are denoted with a hash
+  ;; symbol(#), and pre-filled spaces have a character in place;
+  ;; the whitespace characters are for legibility and should be ignored.
   ;;
   ;; For a word to be legally placed on the board:
-  ;;
-  ;; </br>
-  ;;
   ;; - It may use empty spaces (underscores)
-  ;;
-  ;; </br>
-  ;;
   ;; - It may use but must not conflict with any pre-filled characters.
-  ;;
-  ;; </br>
-  ;;
-  ;; - It must not use any unusable spaces (hashes).
-  ;;
-  ;; </br>
-  ;;
-  ;; - There must be no empty spaces (underscores) or extra characters before or after the word (the word may be bound by unusable spaces though).
-  ;;
-  ;; </br>
-  ;;
-  ;; - Characters are not case-sensitive. 
-  ;;
-  ;; </br>
-  ;;
-  ;; - Words may be placed vertically (proceeding top-down only), or horizontally (proceeding left-right only).
-  ;;
-  ;; Use M-x 4clojure-check-answers when you're done!
+  ;; - It must not use any unusable spaces (hashes).;;
+  ;; - There must be no empty spaces (underscores) or extra characters
+  ;;   before or after the word (the word may be bound by unusable spaces though).
+  ;; - Characters are not case-sensitive.
+  ;; - Words may be placed vertically (proceeding top-down only),
+  ;;   or horizontally (proceeding left-right only).
 
-  (= true  (__ "the" ["_ # _ _ e"]))
+  ;; too much code... oh well this is the first iteration...
+  (defn solveable-crossword-puzzle? [word m]
+    (letfn [(enough-space? [word idx xs]
+              (>= (- (count xs) idx) (count (seq word))))
 
-  (= false (__ "the" ["c _ _ _"
-                      "d _ # e"
-                      "r y _ _"]))
+            (can-place-word? [init-cond word idx xs]
+              (if (or (empty? word) (not init-cond))
+                init-cond
+                (let [ch (nth xs idx)
+                      next-cond (and (not (= \# ch)) (or (= ch \_) (= (first word) ch)))]
+                  (recur next-cond (next word) (inc idx) xs))))
 
-  (= true  (__ "joy" ["c _ _ _"
-                      "d _ # e"
-                      "r y _ _"]))
+            (placeable? [word mode m idx]
+              (let [view (board-view mode m idx)]
+                (if (>= (count view) (count word))
+                  (let [idx-interval (range (inc (- (count view) (count word))))
+                        intervals (narrow-idx-intervals view word idx-interval)
+                        attempts (map (fn [i] (can-place-word? true word i view)) intervals)]
+                    (or (some #(= true %1) attempts) false))
+                  false)))
 
-  (= false (__ "joy" ["c o n j"
-                      "_ _ y _"
-                      "r _ _ #"]))
+            (valid-placement? [xs]
+              (empty? (filter #(or (= \space %1) (not= \# %1)) xs)))
 
-  (= true  (__ "clojure" ["_ _ _ # j o y"
-                          "_ _ o _ _ _ _"
-                          "_ _ f _ # _ _"]))
+            (valid-index? [view word i]
+              (let [board (into [] view), max-index (+ i (count word))]
+                (if (zero? i)
+                  (valid-placement? (subvec board max-index))
+                  (let [before (subvec board (dec i) i), after (subvec board max-index)]
+                    (and (valid-placement? before) (valid-placement? after))))))
 
+            (narrow-idx-intervals [view word intervals]
+              (filter #(and (enough-space? word %1 view) (valid-index? view word %1)) intervals))
+
+            (board-view [mode m idx]
+              (if (= (:name mode) :horizontal)
+                (nth m idx)
+                (map #(nth %1 idx) m)))
+
+            (maybe-add-vertical-mode [modes puzzle]
+              (if (> (count puzzle) 1)
+                (conj modes {:name :vertical :max-idx (count (first puzzle))})
+                modes))
+
+            (next-mode-context [modes m idx]
+              (let [next-idx (inc idx), max-idx (:max-idx (first modes))]
+                (if (< next-idx max-idx)
+                  {:modes modes :idx next-idx}
+                  {:modes (next modes) :idx 0})))]
+
+      (let [puzzle (mapv #(filter (fn [x] (not (Character/isWhitespace x))) %1) m)
+            initial-nav-modes [{:name :horizontal :max-idx (count puzzle)}]
+            nav-modes (maybe-add-vertical-mode initial-nav-modes puzzle)]
+        (loop [idx 0, modes nav-modes, solution false]
+          (if (or (nil? modes) solution)
+            solution
+            (let [cur-mode (first modes)
+                  cur-sol (placeable? word cur-mode puzzle idx)
+                  ctx (next-mode-context modes puzzle idx)]
+              (recur (:idx ctx) (:modes ctx) cur-sol)))))))
+
+  (and (= true  (solveable-crossword-puzzle? "the" ["_ # _ _ e"]))
+
+       (= false (solveable-crossword-puzzle? "the" ["c _ _ _"
+                                                    "d _ # e"
+                                                    "r y _ _"]))
+
+       (= true  (solveable-crossword-puzzle? "joy" ["c _ _ _"
+                                                    "d _ # e"
+                                                    "r y _ _"]))
+
+       (= false (solveable-crossword-puzzle? "joy" ["c o n j"
+                                                    "_ _ y _"
+                                                    "r _ _ #"]))
+
+       (= true  (solveable-crossword-puzzle? "clojure" ["_ _ _ # j o y"
+                                                        "_ _ o _ _ _ _"
+                                                        "_ _ f _ # _ _"])))
 #+end_src
 * TODO Problem 112
 
@@ -3063,7 +3095,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
       (and (= (class x) x) x))
   #+END_SRC
 
-* Problem 127
+* TODO Problem 127
 
 *Love Triangle*
 
@@ -3128,7 +3160,20 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;;
     ;; </ul>
 
-    (defn harvested-minerals [xs])
+    (defn harvested-minerals [xs]
+      (letfn [(binary-int-xs [max-digits x]
+                (let [bin-xs (map #(Character/getNumericValue %1) (Integer/toBinaryString x))
+                      padding (- max-digits (count bin-xs))]
+                  (concat (repeat padding 0) bin-xs)))
+
+              (digits [xs]
+                (let [max-digits (->> (reduce max xs) (Integer/toBinaryString) count)]
+                  (map #(binary-int-xs max-digits %1) xs)))]
+
+        (let [bin-xs (digits xs)]
+          
+          )))
+
 
     (= 10 (harvested-minerals [15 15 15 15 15]))
                                             ; 1111      1111
