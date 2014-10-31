@@ -6,9 +6,9 @@
 #+INFOJS_OPT: view:nil toc:t ltoc:t mouse:underline buttons:0 path:http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.0.3/bootstrap.min.js
 
 * Overview
-  Answers to some of [[http://4clojure.com/][4clojure.com]] questions. I'm done here.
+  Answers to some of [[http://4clojure.com/][4clojure.com]] questions.
   
-  It looks like broken questions or content get changed once in a while.
+  It looks like there are some broken questions or gaps between questions sometimes.
 
   I did couple of problems and I believe that most of my current basic issues
 
@@ -17,7 +17,7 @@
 - writing non idiomatic code (tendency to think in Java)
 - Graph manipulations/traversal in a pure functional way.
 
-* TBD to move forward*
+* TBD to move forward
 
 - Do "real" Clojure books reading, as reading is fundamental.
 - I have a basic Compojure application that I should finish:
@@ -1856,23 +1856,18 @@ NOTE: Too much code, need to simplify...
   ;;
   ;; http://www.mathsisfun.com/sets/power-set.html
 
-  (defn power-set [col]
-    (let [col-count (count col)
-          col-v (into [] col)
-          power-set-bin-size (Math/pow 2 col-count)]
-      (set
-       (for [i (range power-set-bin-size)]
-         (set
-          (for [j (range col-count) :when (pos? (bit-and i (bit-shift-left 1 j)))]
-            (col-v j)))))))
+  (defn powerset [xs]
+    (let [ln (count xs), col (into [] xs), set-size (Math/pow 2 ln)]
+      (into #{} (for [i (range set-size)]
+                  (into #{} (for [j (range ln) :when (pos? (bit-and i (bit-shift-left 1 j)))]
+                              (col j)))))))
 
-  (time
-   (and
-    (= (power-set #{1 :a}) #{#{1 :a} #{:a} #{} #{1}})
-    (= (power-set #{}) #{#{}})
-    (= (power-set #{1 2 3})
-       #{#{} #{1} #{2} #{3} #{1 2} #{1 3} #{2 3} #{1 2 3}})
-    (= (count (power-set (into #{} (range 10)))) 1024)))
+  (and
+   (= (powerset #{1 :a}) #{#{1 :a} #{:a} #{} #{1}})
+   (= (powerset #{}) #{#{}})
+   (= (powerset #{1 2 3})
+      #{#{} #{1} #{2} #{3} #{1 2} #{1 3} #{2 3} #{1 2 3}})
+   (= (count (powerset (into #{} (range 10)))) 1024))
 
 #+end_src
 
@@ -1890,13 +1885,8 @@ NOTE: Too much code, need to simplify...
 
   (defn happy-num? [n]
     {:pre [(pos? n)]}
-    (letfn [(digits [n]
-              (lazy-seq
-               (loop [x n r '()]
-                 (if (< x 10) (cons x r)
-                     (recur (quot x 10) (cons (mod x 10) r))))))
-            (square-sum [xs]
-              (long (reduce  #(+ %1 (Math/pow %2 2)) 0 xs)))]
+    (letfn [(digits [n] (map #(Character/getNumericValue %1) (str n)))
+            (square-sum [xs] (long (reduce  #(+ %1 (Math/pow %2 2)) 0 xs)))]
       (loop [loop-detection #{}, i n]
         (let [sum (square-sum (digits i))]
           (cond
@@ -2258,7 +2248,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
    (== (lcm 7 5/7 2 3/5) 210))
 #+END_SRC
 
-
 * Problem 101
 
 *Levenshtein Distance*
@@ -2338,7 +2327,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     (case (- n (count xs))
       pos?  #{}
       zero? #{xs}
-      (into #{} (filter #(= n (count %1)) (power-set xs)))))
+      (into #{} (filter #(= n (count %1)) (powerset xs)))))
 
   (and
    (= (k-distinct-combos 1 #{4 5 6}) #{#{4} #{5} #{6}})
@@ -2355,7 +2344,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
    (= (k-distinct-combos 2 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a} #{[1 2 3] "abc"} #{[1 2 3] "efg"}
                                                         #{:a "abc"} #{:a "efg"} #{"abc" "efg"}}))
 #+END_SRC
-
 
 * Problem 104
 
@@ -2530,76 +2518,33 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
    )
 #+end_src
 
-* TODO Problem 110
+* Problem 110
 
 #+begin_src clojure
-  ;; A mad scientist with tenure has created an experiment tracking mice in a maze.
-  ;; Several mazes have been randomly generated, and you've been tasked with writing
-  ;; a program to determine the mazes in which it's possible for the mouse to reach
-  ;; the cheesy endpoint.
-  ;;
-  ;; Write a function which accepts a maze in the form of a collection of rows,
-  ;; each row is a string where:
-  ;;
-  ;; <ul>
-  ;;
-  ;; <li>spaces represent areas where the mouse can walk freely</li>
-  ;;
-  ;; <li>hashes (#) represent walls where the mouse can not walk</li>
-  ;;
-  ;; <li>M represents the mouse's starting point</li>
-  ;;
-  ;; <li>C represents the cheese which the mouse must reach</li>
-  ;;
-  ;; </ul>
-  ;;
-  ;; The mouse is not allowed to travel diagonally in the maze
-  ;; (only up/down/left/right), nor can he escape the edge of the maze.
-  ;; Your function must return true iff the maze is solvable by the mouse.
+  ;; <p>Write a function that returns a lazy sequence of "pronunciations"
+  ;; of a sequence of numbers. A pronunciation of each element in the
+  ;; sequence consists of the number of repeating identical numbers
+  ;; and the number itself. For example, <code>[1 1]</code> is
+  ;; pronounced as <code>[2 1]</code> ("two ones"), which in turn is
+  ;; pronounced as <code>[1 2 1 1]</code> ("one two, one one").</p>
 
-  (= true  (__ ["M   C"]))
+  ;; <p>Your function should accept an initial sequence of numbers,
+  ;; and return an infinite lazy sequence of pronunciations,
+  ;; each element being a pronunciation of the previous element.</p>
 
-  (= false (__ ["M # C"]))
+  (defn pronunciations [xs]
+    (lazy-seq
+     (let [r (->> (partition-by identity xs)
+                  (reduce (fn [acc x] (-> (conj acc (count x)) (conj (first x)))) []))]
+       (cons r (pronunciations r)))))
 
-  (= true  (__ ["#######"
-                "#     #"
-                "#  #  #"
-                "#M # C#"
-                "#######"]))
-
-  (= false (__ ["########"
-                "#M  #  #"
-                "#   #  #"
-                "# # #  #"
-                "#   #  #"
-                "#  #   #"
-                "#  # # #"
-                "#  #   #"
-                "#  #  C#"
-                "########"]))
-
-  (= false (__ ["M     "
-                "      "
-                "      "
-                "      "
-                "    ##"
-                "    #C"]))
-
-  (= true  (__ ["C######"
-                " #     "
-                " #   # "
-                " #   #M"
-                "     # "]))
-
-  (= true  (__ ["C# # # #"
-                "        "
-                "# # # # "
-                "        "
-                " # # # #"
-                "        "
-                "# # # #M"]))
+  (and
+   (= [[1 1] [2 1] [1 2 1 1]] (take 3 (pronunciations [1])))
+   (= [3 1 2 4] (first (pronunciations [1 1 1 4 4])))
+   (= [1 1 1 3 2 1 3 2 1 1] (nth (pronunciations [1]) 6))
+   (= 338 (count (nth (pronunciations [3 2]) 15))))
 #+end_src
-* TODO Problem 111
+* Problem 111
 
 #+begin_src clojure
   ;; Write a function that takes a string and a partially-filled
@@ -3373,10 +3318,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; create a function which returns true iff all of
     ;; the sets have a non-empty subset with an equivalent summation.
 
-    ;; Reusing power-set function from Question 85
+    ;; Reusing powerset function from Question 85
     (defn common-subset-sum? [& xs]
       (letfn [(non-empty-subsets [col]
-                (keep #(not-empty %1) (power-set col)))
+                (keep #(not-empty %1) (powerset col)))
 
               (subsets-sum [col]
                 (into #{} (map #(reduce + %1) col)))
