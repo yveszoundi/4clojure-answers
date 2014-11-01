@@ -2051,7 +2051,7 @@ NOTE: Too much code, need to simplify...
 
       (let [nodes (vertices g), nodes-count (count nodes)]
         (loop [v nodes, can-continue? true]
-          (if (or (empty? v) (not can-continue?))
+          (if (or (nil? v) (not can-continue?))
             can-continue?
             (let [visits (walk (first v) g #{})
                   r      (->> (into #{} (apply concat (map flatten visits)))
@@ -2105,7 +2105,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 #+end_src
 
-* TODO Problem 93
+* Problem 93
 
 *Partially Flatten a Sequence*
  
@@ -2116,14 +2116,17 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
     (defn flatten-xs [xs]
       (letfn [(all-coll? [col]
-                (and (coll? col)
-                     (every? coll? col)))]
-        (reduce (fn [acc x]
+                (and (coll? col) (every? coll? col)))
+
+              (do-flatten [x]
+                (when x
+                  (println "X is:" x)
                   (cond
-                   (all-coll? x) (conj acc (flatten-xs (first x)))
-                   (coll? x) (-> (conj acc (flatten-xs (first x))) (conj (flatten-xs (rest x))))
-                   :else (conj acc x)))
-                (empty xs) xs)))
+                   (all-coll? x) (concat (do-flatten (first x)) (do-flatten (next x)))
+                   (coll? x)  (concat (do-flatten (first x)) (do-flatten (next x)))
+                   :else [x])))]
+        
+        (reduce (fn [acc x] (conj acc (do-flatten x))) (empty xs) xs)))
 
     (and (= (flatten-xs [["Do"] ["Nothing"]])
             [["Do"] ["Nothing"]])
@@ -2229,19 +2232,21 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
     (defn pascal-triangle-row [n]
       (letfn [(step [xs]
-                (into [] (concat [(first xs)] (map #(reduce +' %1N) (partition 2 1 xs)) [(last xs)])))]
-        (last (take n (iterate step [1])))))    
+                (into [] (concat [(first xs)]
+                                 (map #(reduce +' %1N) (partition 2 1 xs))
+                                 [(last xs)])))]
+        (last (take n (iterate step [1])))))
 
     (and
-      (= (pascal-triangle-row 1) [1])
-      (= (map pascal-triangle-row (range 1 6))
-       [     [1]
-            [1 1]
-           [1 2 1]
-          [1 3 3 1]
-         [1 4 6 4 1]])
-      (= (pascal-triangle-row 11)
-       [1 10 45 120 210 252 210 120 45 10 1]))
+     (= (pascal-triangle-row 1) [1])
+     (= (map pascal-triangle-row (range 1 6))
+        [     [1]
+              [1 1]
+              [1 2 1]
+              [1 3 3 1]
+              [1 4 6 4 1]])
+     (= (pascal-triangle-row 11)
+        [1 10 45 120 210 252 210 120 45 10 1]))
   #+END_SRC
 
 * Problem 99
