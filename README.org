@@ -2134,8 +2134,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= (flatten-xs [[[[:a :b]]] [[:c :d]] [:e :f]])
             [[:a :b] [:c :d] [:e :f]])
 
-         (= (flatten-xs '((1 2)((3 4)((((5 6)))))))
+         (= (#(remove % (tree-seq % seq %2)) '((1 2)((3 4)((((5 6)))))))
             '((1 2)(3 4)(5 6))))
+
+    (tree-seq sequential? '(1 2) '((1 2)((3 4)((((5 6)))))))
+
   #+END_SRC
 
 * Problem 95
@@ -2685,7 +2688,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                                                         "_ _ o _ _ _ _"
                                                         "_ _ f _ # _ _"])))
 #+end_src
-* TODO Problem 112
+* Problem 112
 
 *Sequs Horribilis*
 
@@ -2699,28 +2702,46 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; from the head whose sum is less than or equal to
   ;; the input integer.
 
-  (defn accum-while-sum-< [n xs])
+  (defn sequs-horribilis [n xs]
+    (letfn [(mk-ctx [q cur sum limit]
+              (if (coll? cur)
+                (let [pending (enqueue [] cur sum limit)
+                      new-sum (+ sum (reduce + (flatten pending)))]
+                  {:queue (conj q pending) :sum new-sum})
+                {:queue (maybe-add-num q cur sum limit) :sum (+ sum cur)}))
+
+            (maybe-add-num [q cur sum limit]
+              (if (> (+ cur sum) limit)
+                q
+                (conj q cur)))
+
+            (enqueue [q xs sum limit]
+              (if (or (empty? xs) (> sum limit))
+                q
+                (let [cur (first xs), ctx (mk-ctx q cur sum limit)]
+                  (recur (:queue ctx) (next xs) (:sum ctx) limit))))]
+      (enqueue [] xs 0 n)))
 
   (and
-   (=  (accum-while-sum-< 10 [1 2 [3 [4 5] 6] 7])
+   (=  (sequs-horribilis 10 [1 2 [3 [4 5] 6] 7])
        '(1 2 (3 (4))))
 
-   (=  (accum-while-sum-< 30 [1 2 [3 [4 [5 [6 [7 8]] 9]] 10] 11])
+   (=  (sequs-horribilis 30 [1 2 [3 [4 [5 [6 [7 8]] 9]] 10] 11])
        '(1 2 (3 (4 (5 (6 (7)))))))
 
-   (=  (accum-while-sum-< 9 (range))
+   (=  (sequs-horribilis 9 (range))
        '(0 1 2 3))
 
-   (=  (accum-while-sum-< 1 [[[[[1]]]]])
+   (=  (sequs-horribilis 1 [[[[[1]]]]])
        '(((((1))))))
 
-   (=  (accum-while-sum-< 0 [1 2 [3 [4 5] 6] 7])
+   (=  (sequs-horribilis 0 [1 2 [3 [4 5] 6] 7])
        '())
 
-   (=  (accum-while-sum-< 0 [0 0 [0 [0]]])
+   (=  (sequs-horribilis 0 [0 0 [0 [0]]])
        '(0 0 (0 (0))))
 
-   (=  (accum-while-sum-< 1 [-10 [1 [2 3 [4 5 [6 7 [8]]]]]])
+   (=  (sequs-horribilis 1 [-10 [1 [2 3 [4 5 [6 7 [8]]]]]])
        '(-10 (1 (2 3 (4))))))
 #+end_src
 
