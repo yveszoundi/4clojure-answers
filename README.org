@@ -2186,7 +2186,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
         false))
   #+END_SRC
 
-* TODO Problem 96
+* Problem 96
 
 *Beauty is Symmetry*
 
@@ -2199,7 +2199,23 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; binary tree is symmetric. (see <a href='/problem/95'>To Tree,
     ;; or not to Tree</a> for a reminder on the tree representation we're using).
 
-    (defn symmetric-binary-tree? [xs])
+    ;; Reusing our binary-tree? function from problem 95.
+    (defn symmetric-binary-tree? [xs]
+      (letfn [(symmetric? [left right]
+                (cond
+                 (or (coll? left) (coll? right)) (and (and (coll? left) (coll? right))
+
+                                                      (= (first left) (first right))
+
+                                                      (symmetric? (second (rest left))
+                                                                  (first (rest right)))
+
+                                                      (symmetric? (first (rest left))
+                                                                  (second (rest right))))
+                 (or (nil? left) (nil? right)) (and (nil? left) (nil? right))
+                 :else (= left right)))]
+        (and (binary-tree? xs)
+             (symmetric? (first (rest xs)) (second (rest xs))))))
 
     (and
      (= (symmetric-binary-tree? '(:a (:b nil nil) (:b nil nil))) true)
@@ -2930,8 +2946,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                 (let [r (nth (m row-idx) col-idx)]
                   (or (Character/isWhitespace r) (= \C r))))
 
-              (is-cheese? [m [row-idx col-idx]]
-                (= \C (nth (m row-idx) col-idx)))
+              (is-cheese? [m [row-idx col-idx]] (= \C (nth (m row-idx) col-idx)))
 
               (try-move [m [row-idx col-idx]]
                 ;; left, right, up, down
@@ -2962,7 +2977,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                       new-visits      (reduce conj marked unvisited-paths)
                       navigable-paths (filter #(traversable? m %1) unvisited-paths)]
                   (recur navigable-paths new-visits))))))))
-
 
     (and
      (= true  (cheese-reachable? ["M   C"]))
