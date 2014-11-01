@@ -2034,8 +2034,11 @@ NOTE: Too much code, need to simplify...
     (letfn [(vertices [g] (into [] (set (reduce concat g))))
 
             (adjacent-vertices [v g marked]
-              (->> (filter (fn [[a b]] (or (= v a) (= v b))) g)
-                   (filter (fn [[a b]] (not (contains? marked (next-origin v [a b])))))))
+              (filter (fn [[a b]]
+                        (and
+                         (or (= v a) (= v b))
+                         (not (contains? marked (next-origin v [a b])))))
+                      g))
 
             (next-origin [root v] (first (disj (set v) root)))
 
