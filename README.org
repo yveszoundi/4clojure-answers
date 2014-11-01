@@ -2925,47 +2925,87 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; the maze is solvable by the mouse.
     ;;
 
-    (= true  (__ ["M   C"]))
+    (defn cheese-reachable? [m]
+      (letfn [(traversable? [m [row-idx col-idx]]
+                (let [r (nth (m row-idx) col-idx)]
+                  (or (Character/isWhitespace r) (= \C r))))
 
-    (= false (__ ["M # C"]))
+              (is-cheese? [m [row-idx col-idx]]
+                (= \C (nth (m row-idx) col-idx)))
 
-    (= true  (__ ["#######"
-                  "#     #"
-                  "#  #  #"
-                  "#M # C#"
-                  "#######"]))
+              (try-move [m [row-idx col-idx]]
+                ;; left, right, up, down
+                (-> (moves [] m row-idx       (dec col-idx))
+                    (moves    m row-idx       (inc col-idx))
+                    (moves    m (dec row-idx) col-idx)
+                    (moves    m (inc row-idx) col-idx)))
 
-    (= false (__ ["########"
-                  "#M  #  #"
-                  "#   #  #"
-                  "# # #  #"
-                  "#   #  #"
-                  "#  #   #"
-                  "#  # # #"
-                  "#  #   #"
-                  "#  #  C#"
-                  "########"]))
+              (moves [acc m row-idx col-idx]
+                (if (and (and (>= row-idx 0) (< row-idx (count m)))
+                         (and (>= col-idx 0) (< col-idx (count (first m)))))
+                  (conj acc [row-idx col-idx])
+                  acc))
 
-    (= false (__ ["M     "
-                  "      "
-                  "      "
-                  "      "
-                  "    ##"
-                  "    #C"]))
+              (mouse-position [m]
+                (flatten (for [i (range (count m))]
+                           (for [j (range (count (first m))) :when (= \M (nth (m i) j))]
+                             [i j]))))]
 
-    (= true  (__ ["C######"
-                  " #     "
-                  " #   # "
-                  " #   #M"
-                  "     # "]))
+        (let [start (mouse-position m), visited [start]]
+          (loop [init-paths visited, marked (set visited)]
+            (if (empty? init-paths)
+              false
+              (if (some #(is-cheese? m %1) init-paths)
+                true
+                (let [new-init-paths  (into #{} (mapcat #(try-move m %1) init-paths))
+                      unvisited-paths (filter #(not (contains? marked %1)) new-init-paths)
+                      new-visits      (reduce conj marked unvisited-paths)
+                      navigable-paths (filter #(traversable? m %1) unvisited-paths)]
+                  (recur navigable-paths new-visits))))))))
 
-    (= true  (__ ["C# # # #"
-                  "        "
-                  "# # # # "
-                  "        "
-                  " # # # #"
-                  "        "
-                  "# # # #M"]))
+
+    (and
+     (= true  (cheese-reachable? ["M   C"]))
+
+     (= false (cheese-reachable? ["M # C"]))
+
+     (= true  (cheese-reachable? ["#######"
+                                  "#     #"
+                                  "#  #  #"
+                                  "#M # C#"
+                                  "#######"]))
+
+     (= false (cheese-reachable? ["########"
+                                  "#M  #  #"
+                                  "#   #  #"
+                                  "# # #  #"
+                                  "#   #  #"
+                                  "#  #   #"
+                                  "#  # # #"
+                                  "#  #   #"
+                                  "#  #  C#"
+                                  "########"]))
+
+     (= false (cheese-reachable? ["M     "
+                                  "      "
+                                  "      "
+                                  "      "
+                                  "    ##"
+                                  "    #C"]))
+
+     (= true  (cheese-reachable? ["C######"
+                                  " #     "
+                                  " #   # "
+                                  " #   #M"
+                                  "     # "]))
+
+     (= true  (cheese-reachable? ["C# # # #"
+                                  "        "
+                                  "# # # # "
+                                  "        "
+                                  " # # # #"
+                                  "        "
+                                  "# # # #M"])))
   #+END_SRC
 
 * Problem 118
