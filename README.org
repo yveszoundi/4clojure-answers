@@ -1912,8 +1912,7 @@ NOTE: Too much code, need to simplify...
   ;; but not both of the two sets.
 
   (defn symetric-set-diff [s1 s2]
-    (let [not-in-s1 (filter #(not (s1 %1)) s2)
-          not-in-s2 (filter #(not (s2 %1)) s1)]
+    (let [not-in-s1 (filter #(not (s1 %1)) s2), not-in-s2 (filter #(not (s2 %1)) s1)]
       (set (concat not-in-s1 not-in-s2))))
 
   (and
@@ -2005,8 +2004,7 @@ NOTE: Too much code, need to simplify...
   ;; http://en.wikipedia.org/wiki/Cartesian_product
 
   (defn cartesian-product [s1 s2]
-    (set (for [x-s1 s1, x-s2 s2]
-           [x-s1 x-s2])))
+    (set (for [x-s1 s1, x-s2 s2] [x-s1 x-s2])))
 
   (and
    (= (cartesian-product #{"ace" "king" "queen"} #{"&#9824;" "&#9829;" "&#9830;" "&#9827;"})
@@ -2020,7 +2018,7 @@ NOTE: Too much code, need to simplify...
 
 #+end_src
 
-* TODO Problem 91
+* Problem 91
 
 *Check if a graph is connected*
 
@@ -2032,7 +2030,31 @@ NOTE: Too much code, need to simplify...
   ;; - Each member of a tuple being a vertex/node in the graph.
   ;; - Each edge is undirected (can be traversed either direction).
 
-  (defn graph-connected? [g])
+  (defn graph-connected? [g]
+    (letfn [(vertices [g] (into [] (set (reduce concat g))))
+
+            (adjacent-vertices [v g marked]
+              (->> (filter (fn [[a b]] (or (= v a) (= v b))) g)
+                   (filter (fn [[a b]] (not (contains? marked (next-origin v [a b])))))))
+
+            (next-origin [root v] (first (disj (set v) root)))
+
+            (walk [v g marked]
+              (let [new-marked (conj marked v)]
+                (reduce (fn [acc x]
+                          (let [origin (next-origin v x)]
+                            (conj acc (concat (walk origin (disj g x) acc)))))
+                        new-marked (adjacent-vertices v g new-marked))))]
+
+      (let [nodes (vertices g), nodes-count (count nodes)]
+        (loop [v nodes, can-continue? true]
+          (if (or (empty? v) (not can-continue?))
+            can-continue?
+            (let [visits (walk (first v) g #{})
+                  r      (->> (into #{} (apply concat (map flatten visits)))
+                              (filter (complement nil?)))
+                  all-visited? (= nodes-count (count r))]
+              (recur (next v) all-visited?)))))))
 
   (and
    (= true (graph-connected? #{[:a :a]}))
@@ -2089,7 +2111,16 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; (lists, vectors, etc.), but maintains the lowest level sequential items.
     ;; The result should be a sequence of sequences with only one level of nesting.
 
-    (defn flatten-xs [xs])
+    (defn flatten-xs [xs]
+      (letfn [(all-coll? [col]
+                (and (coll? col)
+                     (every? coll? col)))]
+        (reduce (fn [acc x]
+                  (cond
+                   (all-coll? x) (conj acc (flatten-xs (first x)))
+                   (coll? x) (-> (conj acc (flatten-xs (first x))) (conj (flatten-xs (rest x))))
+                   :else (conj acc x)))
+                (empty xs) xs)))
 
     (and (= (flatten-xs [["Do"] ["Nothing"]])
             [["Do"] ["Nothing"]])
