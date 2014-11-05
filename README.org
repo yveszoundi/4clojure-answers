@@ -876,7 +876,7 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
     ;; An increasing sub-sequence must have a length of 2 or greater to qualify.
     ;;
 
-    (defn lcis [col]
+    (defn lis [col]
       (let [results (map (fn [xs]
                            ((comp sort set) (mapcat identity xs)))
                          (filter #(not (every? nil? %))
@@ -888,10 +888,10 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                                                            (partition 2 1 col)))))]
         (reduce #(if (> (count %2) (count %1)) %2 %1) [] results)))
 
-    (and (= (lcis [1 0 1 2 3 0 4 5]) [0 1 2 3])
-         (= (lcis [5 6 1 3 2 7]) [5 6])
-         (= (lcis [2 3 3 4 5]) [3 4 5])
-         (= (lcis [7 6 5 4]) []))
+    (and (= (lis [1 0 1 2 3 0 4 5]) [0 1 2 3])
+         (= (lis [5 6 1 3 2 7]) [5 6])
+         (= (lis [2 3 3 4 5]) [3 4 5])
+         (= (lis [7 6 5 4]) []))
   #+END_SRC
 
 * Problem 54
@@ -2114,30 +2114,25 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; (lists, vectors, etc.), but maintains the lowest level sequential items.
     ;; The result should be a sequence of sequences with only one level of nesting.
 
-    (defn flatten-xs [xs]
-      (letfn [(all-coll? [col]
-                (and (coll? col) (every? coll? col)))
+    ;; bottom up approach seems easier here for me at least here...
+    (defn flatten-1 [xs]
+      (letfn [(stepper [xs]
+                (when (not (empty? xs))
+                  (let [cur (last xs)]
+                    (if-not (and (coll? cur) (every? coll? cur))
+                      (cons cur (stepper (butlast xs)))
+                      (recur (concat (butlast xs) cur))))))]
 
-              (do-flatten [x]
-                (when x
-                  (println "X is:" x)
-                  (cond
-                   (all-coll? x) (concat (do-flatten (first x)) (do-flatten (next x)))
-                   (coll? x)  (concat (do-flatten (first x)) (do-flatten (next x)))
-                   :else [x])))]
-        
-        (reduce (fn [acc x] (conj acc (do-flatten x))) (empty xs) xs)))
+        (into '() (stepper xs))))
 
-    (and (= (flatten-xs [["Do"] ["Nothing"]])
+    (and (= (flatten-1 [["Do"] ["Nothing"]])
             [["Do"] ["Nothing"]])
 
-         (= (flatten-xs [[[[:a :b]]] [[:c :d]] [:e :f]])
+         (= (flatten-1 [[[[:a :b]]] [[:c :d]] [:e :f]])
             [[:a :b] [:c :d] [:e :f]])
 
-         (= (#(remove % (tree-seq % seq %2)) '((1 2)((3 4)((((5 6)))))))
+         (= (flatten-1 '((1 2)((3 4)((((5 6)))))))
             '((1 2)(3 4)(5 6))))
-
-    (tree-seq sequential? '(1 2) '((1 2)((3 4)((((5 6)))))))
 
   #+END_SRC
 
@@ -2202,20 +2197,13 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; Reusing our binary-tree? function from problem 95.
     (defn symmetric-binary-tree? [xs]
       (letfn [(symmetric? [left right]
-                (cond
-                 (or (coll? left) (coll? right)) (and (and (coll? left) (coll? right))
-
-                                                      (= (first left) (first right))
-
-                                                      (symmetric? (second (rest left))
-                                                                  (first (rest right)))
-
-                                                      (symmetric? (first (rest left))
-                                                                  (second (rest right))))
-                 (or (nil? left) (nil? right)) (and (nil? left) (nil? right))
-                 :else (= left right)))]
-        (and (binary-tree? xs)
-             (symmetric? (first (rest xs)) (second (rest xs))))))
+                (if (or (coll? left) (coll? right))
+                  (and (and (coll? left) (coll? right))
+                       (= (first left) (first right))
+                       (symmetric? (second (rest left)) (first (rest right)))
+                       (symmetric? (first (rest left))  (second (rest right))))
+                  (= left right)))]
+        (and (binary-tree? xs) (symmetric? (first (rest xs)) (second (rest xs))))))
 
     (and
      (= (symmetric-binary-tree? '(:a (:b nil nil) (:b nil nil))) true)
@@ -3116,12 +3104,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
   #+END_SRC
 
-* Problem 123
-
-  #+BEGIN_SRC clojure
-
-  #+END_SRC
-
 * Problem 125
 
   #+BEGIN_SRC clojure
@@ -3846,7 +3828,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; <p>Note: Some test cases have a very large <i>n</i>,
     ;; so the most obvious solution will exceed the time limit.</p>
 
-    (defn big-divide-sum [n a b])
+    (defn big-divide-sum [n a b]
+      
+     )
+
 
     (and
      (= 0 (big-divide-sum 3 17 11))
