@@ -3186,6 +3186,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;;
     ;; </ul>
 
+    ;; INCOMPLETE
     (defn harvested-minerals [xs]
       (letfn [(binary-int-xs [max-digits x]
                 (let [bin-xs (map #(Character/getNumericValue %1) (Integer/toBinaryString x))
