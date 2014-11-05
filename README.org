@@ -2308,15 +2308,17 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; if you write an inefficient solution!
 
     (defn levenshtein [w1 w2]
-      (letfn [(cell-value [ch1 ch2 prev-row acc col-idx]
-                (min  (inc (nth prev-row col-idx))
-                      (inc (last acc))
-                      (+ (nth prev-row (dec col-idx)) (if (= ch1 ch2) 0 1))))]
+      (letfn [(cell-value [same-char? prev-row acc col-idx]
+                (min (inc (nth prev-row col-idx))
+                     (inc (last acc))
+                     (+ (nth prev-row (dec col-idx)) (if same-char? 0 1))))]
         (loop [row-idx 1, max-rows (inc (count w2)), prev (range (inc (count w1)))]
           (if (= row-idx max-rows)
             (last prev)
-            (let [next-prev (reduce (fn [acc i]
-                                      (conj acc (cell-value (nth w1 (dec i)) (nth w2 (dec row-idx)) prev acc i)))
+            (let [ch2 (nth w2 (dec row-idx))
+                  next-prev (reduce (fn [acc i]
+                                      (let [same-char? (= (nth w1 (dec i)) ch2)]
+                                        (conj acc (cell-value same-char? prev acc i))))
                                     [row-idx]
                                     (range 1 (count prev)))]
               (recur (inc row-idx) max-rows, next-prev))))))
