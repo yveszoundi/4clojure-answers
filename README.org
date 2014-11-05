@@ -2579,10 +2579,9 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; each element being a pronunciation of the previous element.</p>
 
   (defn pronunciations [xs]
-    (lazy-seq
-     (let [r (->> (partition-by identity xs)
-                  (reduce (fn [acc x] (-> (conj acc (count x)) (conj (first x)))) []))]
-       (cons r (pronunciations r)))))
+    (letfn [(stepper [xs]
+              (mapcat #(vector (count %1) (first %1)) (partition-by identity xs)))]
+      (iterate stepper (stepper xs))))
 
   (and
    (= [[1 1] [2 1] [1 2 1 1]] (take 3 (pronunciations [1])))
@@ -3121,138 +3120,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
       (and (= (class x) x) x))
   #+END_SRC
 
-* TODO Problem 127
-
-*Love Triangle*
-
-  #+BEGIN_SRC clojure
-    ;; 4Clojure Question 127
-    ;;
-    ;; Everyone loves triangles, and it's easy to understand
-    ;; why&mdash;they're so wonderfully symmetric (except scalenes, they suck).
-    ;;
-    ;; <br/><br/>
-    ;;
-    ;; Your passion for triangles has led you to become a miner
-    ;; (and part-time Clojure programmer) where you work all day
-    ;; to chip out isosceles-shaped minerals from rocks gathered
-    ;; in a nearby open-pit mine.
-
-    ;; There are too many rocks coming from the mine to harvest
-    ;; them all so you've been tasked with writing a program
-    ;; to analyze the mineral patterns of each rock,
-    ;; and determine which rocks have the biggest minerals.
-    ;;
-    ;; <br/><br/>
-    ;;
-    ;; Someone has already written a
-    ;; <a href="http://en.wikipedia.org/wiki/Computer_vision">computer-vision</a>
-    ;; system for the mine.  It images each rock as it comes into the processing centre
-    ;; and creates a cross-sectional
-    ;; <a href="http://en.wikipedia.org/wiki/Bit_array">bitmap</a> of mineral (1)
-    ;; and rock (0) concentrations for each one.
-    ;;
-    ;; <br/><br/>
-    ;;
-    ;; You must now create a function which accepts a collection of integers,
-    ;; each integer when read in base-2 gives the bit-representation of the rock
-    ;; (again, 1s are mineral and 0s are worthless scalene-like rock).
-    ;; You must return the cross-sectional area of the largest harvestable
-    ;; mineral from the input rock, as follows:
-    ;;
-    ;; <br>
-    ;;
-    ;; <ul>
-    ;;
-    ;; <li>The minerals only have smooth faces when sheared vertically or
-    ;; horizontally from the rock's cross-section</li>
-    ;;
-    ;; <li>The mine is only concerned with harvesting isosceles triangles
-    ;; (such that one or two sides can be sheared)</li>
-    ;;
-    ;; <li>If only one face of the mineral is sheared, its opposing vertex must be a
-    ;; point (ie. the smooth face must be of odd length), and its two equal-length sides
-    ;; must intersect the shear face at 45&deg; (ie. those sides must cut even-diagonally)</li>
-    ;;
-    ;; <li>The harvested mineral may not contain any traces of rock</li>
-    ;;
-    ;; <li>The mineral may lie in any orientation in the plane</li>
-    ;;
-    ;; <li>Area should be calculated as the sum of 1s that comprise the mineral</li>
-    ;;
-    ;; <li>Minerals must have a minimum of three measures of area to be harvested</li>
-    ;;
-    ;; <li>If no minerals can be harvested from the rock, your function should return nil</li>
-    ;;
-    ;; </ul>
-
-    ;; INCOMPLETE
-    (defn harvested-minerals [xs]
-      (letfn [(binary-int-xs [max-digits x]
-                (let [bin-xs (map #(Character/getNumericValue %1) (Integer/toBinaryString x))
-                      padding (- max-digits (count bin-xs))]
-                  (concat (repeat padding 0) bin-xs)))
-
-              (digits [xs]
-                (let [max-digits (->> (reduce max xs) (Integer/toBinaryString) count)]
-                  (map #(binary-int-xs max-digits %1) xs)))]
-
-        (let [bin-xs (digits xs)]
-          
-          )))
-
-
-    (= 10 (harvested-minerals [15 15 15 15 15]))
-                                            ; 1111      1111
-                                            ; 1111      *111
-                                            ; 1111  ->  **11
-                                            ; 1111      ***1
-                                            ; 1111      ****
-
-    (= 15 (harvested-minerals [1 3 7 15 31]))
-                                            ; 00001      0000*
-                                            ; 00011      000**
-                                            ; 00111  ->  00***
-                                            ; 01111      0****
-                                            ; 11111      *****
-
-    (= 3 (__ [3 3]))
-                                            ; 11      *1
-                                            ; 11  ->  **
-
-    (= 4 (__ [7 3]))
-                                            ; 111      ***
-                                            ; 011  ->  0*1
-
-    (= 6 (__ [17 22 6 14 22]))
-                                            ; 10001      10001
-                                            ; 10110      101*0
-                                            ; 00110  ->  00**0
-                                            ; 01110      0***0
-                                            ; 10110      10110
-
-    (= 9 (__ [18 7 14 14 6 3]))
-                                            ; 10010      10010
-                                            ; 00111      001*0
-                                            ; 01110      01**0
-                                            ; 01110  ->  0***0
-                                            ; 00110      00**0
-                                            ; 00011      000*1
-
-    (= nil (__ [21 10 21 10]))
-                                            ; 10101      10101
-                                            ; 01010      01010
-                                            ; 10101  ->  10101
-                                            ; 01010      01010
-
-    (= nil (__ [0 31 0 31 0]))
-                                            ; 00000      00000
-                                            ; 11111      11111
-                                            ; 00000  ->  00000
-                                            ; 11111      11111
-                                            ; 00000      00000
-  #+END_SRC
-
 * Problem 128
 
 *Recognize Playing Cards*
@@ -3292,119 +3159,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                       '[S2 S3 S4 S5 S6 S7
                         S8 S9 ST SJ SQ SK SA])))
 #+end_src
-
-* TODO Problem 130
-
-*Tree reparenting*
-
-  #+BEGIN_SRC clojure
-    ;; 4Clojure Question 130
-    ;;
-    ;; Every node of a tree is connected to each of its children as
-    ;;
-    ;; well as its parent.  One can imagine grabbing one node of
-    ;;
-    ;; a tree and dragging it up to the root position, leaving all
-    ;;
-    ;; connections intact.  For example, below on the left is
-    ;;
-    ;; a binary tree.  By pulling the "c" node up to the root, we
-    ;;
-    ;; obtain the tree on the right.
-    ;;
-    ;; <br/>
-    ;;
-    ;; <img src="http://i.imgur.com/UtD2T.png">
-    ;;
-    ;; <br/>
-    ;;
-    ;; Note it is no longer binary as "c" had three connections
-    ;;
-    ;; total -- two children and one parent.
-    ;;
-    ;; 
-    ;;
-    ;; Each node is represented as a vector, which always has at
-    ;;
-    ;; least one element giving the name of the node as a symbol.
-    ;;
-    ;; Subsequent items in the vector represent the children of the
-    ;;
-    ;; node.  Because the children are ordered it's important that
-    ;;
-    ;; the tree you return keeps the children of each node in order
-    ;;
-    ;; and that the old parent node, if any, is appended on the
-    ;;
-    ;; right.
-    ;;
-    ;; 
-    ;;
-    ;; Your function will be given two args -- the name of the node
-    ;;
-    ;; that should become the new root, and the tree to transform.
-
-    (= '(n)
-       (__ 'n '(n)))
-
-    (= '(a (t (e)))
-       (__ 'a '(t (e) (a))))
-
-    (= '(e (t (a)))
-       (__ 'e '(a (t (e)))))
-
-    (= '(a (b (c)))
-       (__ 'a '(c (b (a)))))
-
-    (= '(d 
-          (b
-            (c)
-            (e)
-            (a 
-              (f 
-                (g) 
-                (h)))))
-      (__ 'd '(a
-                (b 
-                  (c) 
-                  (d) 
-                  (e))
-                (f 
-                  (g)
-                  (h)))))
-
-    (= '(c 
-          (d) 
-          (e) 
-          (b
-            (f 
-              (g) 
-              (h))
-            (a
-              (i
-              (j
-                (k)
-                (l))
-              (m
-                (n)
-                (o))))))
-       (__ 'c '(a
-                 (b
-                   (c
-                     (d)
-                     (e))
-                   (f
-                     (g)
-                     (h)))
-                 (i
-                   (j
-                     (k)
-                     (l))
-                   (m
-                     (n)
-                     (o))))))
-
-  #+END_SRC
 
 * Problem 131
 
@@ -3580,12 +3334,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= [1 0] (let [n (rand-int 100000)](seq-digits n n)))
          (= [16 18 5 24 15 1] (seq-digits Integer/MAX_VALUE 42)))
   #+END_SRC
-
-* TODO Problem 138
-
-* TODO Problem 139
-
-* TODO Problem 140
 
 * Problem 141
 
@@ -3813,38 +3561,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
      (= (take 5 (pascal-triangle [1])) [[1] [1 1] [1 2 1] [1 3 3 1] [1 4 6 4 1]])
      (= (take 2 (pascal-triangle [3 1 2])) [[3 1 2] [3 4 3 2]])
      (= (take 100 (pascal-triangle [2 4 2])) (rest (take 101 (pascal-triangle [2 2])))))
-  #+END_SRC
-
-* TODO Problem 148
-
-*The Big Divide*
-
-  #+BEGIN_SRC clojure
-    ;; <p>Write a function which calculates the sum of all natural numbers
-    ;; under <i>n</i> (first argument) which are evenly divisible by at
-    ;; least one of <i>a</i> and <i>b</i> (second and third argument).
-    ;; Numbers <i>a</i> and <i>b</i> are guaranteed to be
-    ;; <a href="http://en.wikipedia.org/wiki/Coprime">coprimes</a>.</p>
-    ;;
-    ;; <p>Note: Some test cases have a very large <i>n</i>,
-    ;; so the most obvious solution will exceed the time limit.</p>
-
-    (defn big-divide-sum [n a b]
-      
-     )
-
-
-    (and
-     (= 0 (big-divide-sum 3 17 11))
-     (= 23 (big-divide-sum 10 3 5))
-     (= 233168 (big-divide-sum 1000 3 5))
-     (= "2333333316666668" (str (big-divide-sum 100000000 3 5)))
-     (= "110389610389889610389610"
-        (str (big-divide-sum (* 10000 10000 10000) 7 11)))
-     (= "1277732511922987429116"
-        (str (big-divide-sum (* 10000 10000 10000) 757 809)))
-     (= "4530161696788274281"
-        (str (big-divide-sum (* 10000 10000 1000) 1597 3571))))
   #+END_SRC
 
 * WAITING Problem 150
