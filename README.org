@@ -876,17 +876,17 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
     ;; An increasing sub-sequence must have a length of 2 or greater to qualify.
     ;;
 
-    (defn lis [col]
-      (let [results (map (fn [xs]
-                           ((comp sort set) (mapcat identity xs)))
-                         (filter #(not (every? nil? %))
-                                 (partition-by (fn [x]
-                                                 (nil? x))
-                                               (reductions (fn [m b]
-                                                             (when (> (last b) (first b)) b))
-                                                           nil
-                                                           (partition 2 1 col)))))]
-        (reduce #(if (> (count %2) (count %1)) %2 %1) [] results)))
+    (defn lis [xs]
+      (letfn [(make-piles [col]
+                (reduce (fn [acc num]
+                          (let [xs (last acc)]
+                            (if (or (nil? xs) (<= num (peek xs)))
+                              (conj acc [num])
+                              (assoc acc (dec (count acc)) (conj xs num)))))
+                        [] col))          
+              (max-seq [piles]
+                (or (first (filter #(>= (count %1) 2) (sort-by count > piles))) '()))]
+        (-> (make-piles xs) (max-seq))))
 
     (and (= (lis [1 0 1 2 3 0 4 5]) [0 1 2 3])
          (= (lis [5 6 1 3 2 7]) [5 6])
