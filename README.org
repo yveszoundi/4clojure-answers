@@ -2122,7 +2122,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                     (if-not (and (coll? cur) (every? coll? cur))
                       (cons cur (stepper (butlast xs)))
                       (recur (concat (butlast xs) cur))))))]
-
         (into '() (stepper xs))))
 
     (and (= (flatten-1 [["Do"] ["Nothing"]])
@@ -2627,7 +2626,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                   (recur next-cond (next word) (inc idx) xs))))
 
             (placeable? [word mode m idx]
-              (let [view (board-view mode m idx)]
+              (let [view ((:fn mode) m idx)]
                 (if (>= (count view) (count word))
                   (let [idx-interval (range (inc (- (count view) (count word))))
                         intervals (narrow-idx-intervals view word idx-interval)
@@ -2648,14 +2647,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
             (narrow-idx-intervals [view word intervals]
               (filter #(and (enough-space? word %1 view) (valid-index? view word %1)) intervals))
 
-            (board-view [mode m idx]
-              (if (= (:name mode) :horizontal)
-                (nth m idx)
-                (map #(nth %1 idx) m)))
-
             (maybe-add-vertical-mode [modes puzzle]
               (if (> (count puzzle) 1)
-                (conj modes {:name :vertical :max-idx (count (first puzzle))})
+                (conj modes {:name :vertical
+                             :max-idx (count (first puzzle))
+                             :fn (fn [m idx] (map #(nth %1 idx) m) )})
                 modes))
 
             (next-mode-context [modes m idx]
@@ -2665,7 +2661,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                   {:modes (next modes) :idx 0})))]
 
       (let [puzzle (mapv #(filter (fn [x] (not (Character/isWhitespace x))) %1) m)
-            initial-nav-modes [{:name :horizontal :max-idx (count puzzle)}]
+            initial-nav-modes [{:name :horizontal :max-idx (count puzzle) :fn (partial nth)}]
             nav-modes (maybe-add-vertical-mode initial-nav-modes puzzle)]
         (loop [idx 0, modes nav-modes, solution false]
           (if (or (nil? modes) solution)
