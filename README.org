@@ -3553,38 +3553,41 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
             (get-mid-index [digits]
               (let [ln (count digits)]
                 (if (= 1 ln)
-                  -1
+                  -1 ;; marker, we do not want to replicate for 1 digit
                   (bigint (Math/ceil (/ ln 2))))))
 
-            (mirror-digits [left-digits mid-index total]
+            (mirror-digits [left-digits mid-index to-replicate]
               (if (neg? mid-index)
+                ;; only 1 digit
                 left-digits
-                (reduce conj left-digits (reverse (take (max total 1) left-digits)))))
+                ;; Take up to the number of digits to replicate and reverse
+                (reduce conj left-digits (reverse (take to-replicate left-digits)))))
 
             (inc-digits [digits pos]
               (if (neg? pos)
+                ;; we have to grow the left side
                 (reduce conj [1] (repeat (count digits) 0))
                 (let [num-at-pos (digits pos)]
                   (if (< num-at-pos 9)
                     (assoc digits pos (inc num-at-pos))
                     (recur (assoc digits pos 0) (dec pos) )))))
 
-            (maybe-ensure-match [digits diff]
-              (if (pos? diff)
+            (maybe-match-first-last-digits [digits diff-count-previous-left-side]
+              (if (pos? diff-count-previous-left-side)
                 (assoc digits (dec (count digits)) (first digits))
                 digits))
 
-            (cur-palindrome [pal-number do-inc]
+            (cur-palindrome [pal-number inc-left-side?]
               (let [pal (num->digits pal-number)
                     mid-index (get-mid-index pal)
                     left-digits (if (neg? mid-index) pal (subvec pal 0 mid-index))
-                    next-left-digits (if do-inc
+                    next-left-digits (if inc-left-side?
                                        (inc-digits left-digits (dec (count left-digits)))
                                        left-digits)
                     to-replicate (bigint (Math/floor (/ (count pal) 2)))
                     diff (- (count next-left-digits) (count left-digits))]
                 (-> (mirror-digits next-left-digits mid-index to-replicate)
-                    (maybe-ensure-match diff)
+                    (maybe-match-first-last-digits diff)
                     digits->num)))
 
             (next-palindrome [pal-number]
