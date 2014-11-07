@@ -1895,6 +1895,10 @@ NOTE: Too much code, need to simplify...
    (= (happy-num? 3) false))
 #+end_src
 
+* Problem 87
+
+*THERE IS NO PROBLEM 87*
+
 * Problem 88
 
 *Symmetric difference of two sets*
@@ -2128,6 +2132,100 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
   #+END_SRC
 
+* Problem 94
+
+*Game of Life* - INPROGRESS
+
+  #+BEGIN_SRC clojure
+    ;; The <a href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">game of life</a>
+    ;; is a cellular automaton devised by mathematician John Conway.
+
+    ;; The 'board' consists of both live (#) and dead ( ) cells.
+    ;; Each cell interacts with its eight neighbours (horizontal, vertical, diagonal),
+    ;; and its next state is dependent on the following rules:<br/><br/>
+
+    ;; 1) Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+
+    ;; 2) Any live cell with two or three live neighbours lives on to the next generation.
+
+    ;; 3) Any live cell with more than three live neighbours dies, as if by overcrowding.
+
+    ;; 4) Any dead cell with exactly three live neighbours becomes a live cell,
+    ;; as if by reproduction.
+
+    ;; Write a function that accepts a board, and returns a board representing
+    ;; the next generation of cells.
+
+    (defn game-of-life [m]
+      (letfn [(get-live-cells [m cols-ln rows-ln]
+                  (->> (for [i (range cols-ln)]
+                         (for [j (range rows-ln) :when (= \# (nth (m i) j))]
+                           [i j]))
+                       (reduce concat)))
+
+              (neighbours [[i j] max-i max-j]
+                ;; T-L-diagNL-diagSL-B-R-diagNR-diagSR
+                (concat []
+                        (if (pos? j)                      [[i (dec j)]])         ;; T
+                        (if (pos? i)                      [[(dec i) j]])         ;; L
+                        (if (and (pos? i) (pos? j))       [[(dec i) (dec j)]])   ;; diagNL
+                        (if (and (pos? i) (< j max-j))    [[(dec i) (inc j)]])   ;; diagSL
+                        (if (< j max-j)                   [[i (inc j)]])         ;; B
+                        (if (< i max-i)                   [[(inc i) j]])         ;; R
+                        (if (and (< i max-i) (pos? j))    [[(inc i) (dec j)]])   ;; diagNR
+                        (if (and (< i max-i) (< j max-j)) [[(inc i) (inc j)]])   ;; diagSR
+                        ))
+
+              (assoc-neighbours [live-cells max-i max-j]
+                (reduce (fn [acc coords]
+                          (assoc acc coords (neighbours coords max-i max-j)))
+                        {} live-cells))
+              ]
+
+        (let [max-i (count m), max-j (count (first m))]
+          (-> (get-live-cells m max-i max-j)
+              (assoc-neighbours max-i max-j))
+        )))
+
+    (and
+     (= (game-of-life ["      "
+                       " ##   "
+                       " ##   "
+                       "   ## "
+                       "   ## "
+                       "      "])
+        ["      "
+         " ##   "
+         " #    "
+         "    # "
+         "   ## "
+         "      "])
+
+     (= (game-of-life ["     "
+                       "     "
+                       " ### "
+                       "     "
+                       "     "])
+        ["     "
+         "  #  "
+         "  #  "
+         "  #  "
+         "     "])
+
+     (= (game-of-life ["      "
+                       "      "
+                       "  ### "
+                       " ###  "
+                       "      "
+                       "      "])
+        ["      "
+         "   #  "
+         " #  # "
+         " #  # "
+         "  #   "
+         "      "]))
+  #+END_SRC
+
 * Problem 95
 
 *To Tree, or not to Tree*
@@ -2247,6 +2345,35 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
      (= (pascal-triangle-row 11)
         [1 10 45 120 210 252 210 120 45 10 1]))
   #+END_SRC
+
+* Problem 98
+
+*Equivalence Classes-TODO*
+
+#+BEGIN_SRC clojure
+  ;; A function f defined on a domain D induces an
+  ;; <a href="http://en.wikipedia.org/wiki/Equivalence_relation">equivalence relation</a>
+  ;; on D, as follows: a is equivalent to b with respect to f if and only if (f a)
+  ;; is equal to (f b).
+
+  ;; Write a function with arguments f and D that computes the
+  ;; <a href="http://en.wikipedia.org/wiki/Equivalence_class">equivalence classes</a>
+  ;; of D with respect to f.
+
+  (= (__ #(* % %) #{-2 -1 0 1 2})
+     #{#{0} #{1 -1} #{2 -2}})
+
+  (= (__ #(rem % 3) #{0 1 2 3 4 5 })
+     #{#{0 3} #{1 4} #{2 5}})
+
+  (= (__ identity #{0 1 2 3 4})
+     #{#{0} #{1} #{2} #{3} #{4}})
+
+  (= (__ (constantly true) #{0 1 2 3 4})
+     #{#{0 1 2 3 4}})
+
+#+END_SRC
+
 
 * Problem 99
 
@@ -2553,6 +2680,9 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                               (iterate inc 20))) ;; at least as large as 20
    )
 #+end_src
+* Problem 109
+
+*THERE IS NO PROBLEM 109*
 
 * Problem 110
 
@@ -3016,6 +3146,49 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                  (take 2))))
   #+END_SRC
 
+* Problem 119
+
+*Win at Tic-Tac-Toe-TODO*
+
+  #+BEGIN_SRC clojure
+    ;; <p>As in <a href="/problem/73">Problem 73</a>, a tic-tac-toe board
+    ;; is represented by a two dimensional vector.
+    ;; X is represented by :x, O is represented by :o,
+    ;; and empty is represented by :e.
+
+    ;; Create a function that accepts a game piece and board as arguments,
+    ;; and returns a set (possibly empty) of all valid board placements
+    ;; of the game piece which would result in an immediate win.</p>
+
+    ;; <p>Board coordinates should be as in calls to <code>get-in</code>.
+    ;; For example, <code>[0 1]</code> is the topmost row, center position.</p>
+
+    (= (__ :x [[:o :e :e] 
+               [:o :x :o] 
+               [:x :x :e]])
+       #{[2 2] [0 1] [0 2]})
+
+    (= (__ :x [[:x :o :o] 
+               [:x :x :e] 
+               [:e :o :e]])
+       #{[2 2] [1 2] [2 0]})
+
+    (= (__ :x [[:x :e :x] 
+               [:o :x :o] 
+               [:e :o :e]])
+       #{[2 2] [0 1] [2 0]})
+
+    (= (__ :x [[:x :x :o] 
+               [:e :e :e] 
+               [:e :e :e]])
+       #{})
+
+    (= (__ :o [[:x :x :o] 
+               [:o :e :o] 
+               [:x :e :e]])
+       #{[2 2] [1 1]})
+  #+END_SRC
+
 * Problem 120
 
 *Sum of square of digits*
@@ -3053,6 +3226,37 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= 50 (cnt-<-x2-sum-digits (range 1000))))
   #+END_SRC
 
+* Problem 121
+
+*Universal Computation Engine-TODO*
+
+  #+BEGIN_SRC clojure
+    ;; Given a mathematical formula in prefix notation, return a function that calculates
+    ;; the value of the formula.
+    ;; The formula can contain nested calculations using the four basic
+    ;; mathematical operators, numeric constants, and symbols representing variables.
+    ;; The returned function has to accept a single parameter containing the map
+    ;; of variable names to their values.
+
+    (= 2 ((__ '(/ a b))
+          '{b 8 a 16}))
+
+    (= 8 ((__ '(+ a b 2))
+          '{a 2 b 4}))
+
+    (= [6 0 -4]
+         (map (__ '(* (+ 2 a)
+                          (- 10 b)))
+                    '[{a 1 b 8}
+                      {b 5 a -2}
+                      {a 2 b 11}]))
+
+    (= 1 ((__ '(/ (+ x 2)
+                  (* 3 (+ y 1))))
+          '{x 4 y 1}))
+
+  #+END_SRC
+
 * Problem 122
 
 *Read a binary number*
@@ -3077,10 +3281,71 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
   #+END_SRC
 
+* Problem 123
+
+*THERE IS NO PROBLEM 123*
+
+* Problem 124
+
+*Analyze Reversi-TODO*
+
+#+BEGIN_SRC clojure
+  ;; <p><a href="http://en.wikipedia.org/wiki/Reversi">Reversi</a>
+  ;; is normally played on an 8 by 8 board.
+
+  ;; In this problem, a 4 by 4 board is represented as a two-dimensional
+  ;; vector with black, white, and empty pieces represented by 'b, 'w, and 'e,
+  ;; respectively.
+
+  ;; Create a function that accepts a game board and color as arguments,
+  ;; and returns a map of legal moves for that color.
+  ;; Each key should be the coordinates of a legal move,
+  ;; and its value a set of the coordinates of the pieces flipped by that move.</p>
+
+  ;; <p>Board coordinates should be as in calls to get-in.
+  ;; For example, <code>[0 1]</code> is the topmost row, second column from the left.</p>
+
+  (= {[1 3] #{[1 2]}, [0 2] #{[1 2]}, [3 1] #{[2 1]}, [2 0] #{[2 1]}}
+     (__ '[[e e e e]
+           [e w b e]
+           [e b w e]
+           [e e e e]] 'w))
+
+  (= {[3 2] #{[2 2]}, [3 0] #{[2 1]}, [1 0] #{[1 1]}}
+     (__ '[[e e e e]
+           [e w b e]
+           [w w w e]
+           [e e e e]] 'b))
+
+  (= {[0 3] #{[1 2]}, [1 3] #{[1 2]}, [3 3] #{[2 2]}, [2 3] #{[2 2]}}
+     (__ '[[e e e e]
+           [e w b e]
+           [w w b e]
+           [e e b e]] 'w))
+
+  (= {[0 3] #{[2 1] [1 2]}, [1 3] #{[1 2]}, [2 3] #{[2 1] [2 2]}}
+     (__ '[[e e w e]
+           [b b w e]
+           [b w w e]
+           [b w w w]] 'b))
+
+#+END_SRC
+
 * Problem 125
 
+*Gus' Quinundrum-TODO*
+ 
   #+BEGIN_SRC clojure
+    ;; Create a function of no arguments which returns a string that
+    ;; is an <i>exact</i> copy of the function itself.
 
+    ;; Hint: read <a href="http://en.wikipedia.org/wiki/Quine_(computing)">this</a>
+    ;; if you get stuck (this question is harder than it first appears);
+    ;; but it's worth the effort to solve it independently if you can!
+
+    ;; Fun fact: Gus is the name of the <a href="http://i.imgur.com/FBd8z.png">4Clojure dragon</a>.
+
+    (= (str '__) (__))
   #+END_SRC
 
 * Problem 126
@@ -3092,6 +3357,100 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
     (let [x Class]
       (and (= (class x) x) x))
+  #+END_SRC
+
+* Problem 127
+
+*Love Triangle-TODO*
+
+  #+BEGIN_SRC clojure
+    ;; Everyone loves triangles, and it's easy to understand why&mdash;they're so wonderfully symmetric (except scalenes, they suck).
+    ;;
+    ;; <br/><br/>
+    ;;
+    ;; Your passion for triangles has led you to become a miner (and part-time Clojure programmer) where you work all day to chip out isosceles-shaped minerals from rocks gathered in a nearby open-pit mine.  There are too many rocks coming from the mine to harvest them all so you've been tasked with writing a program to analyze the mineral patterns of each rock, and determine which rocks have the biggest minerals.
+    ;;
+    ;; <br/><br/>
+    ;;
+    ;; Someone has already written a <a href="http://en.wikipedia.org/wiki/Computer_vision">computer-vision</a> system for the mine.  It images each rock as it comes into the processing centre and creates a cross-sectional <a href="http://en.wikipedia.org/wiki/Bit_array">bitmap</a> of mineral (1) and rock (0) concentrations for each one.
+    ;;
+    ;; <br/><br/>
+    ;;
+    ;; You must now create a function which accepts a collection of integers, each integer when read in base-2 gives the bit-representation of the rock (again, 1s are mineral and 0s are worthless scalene-like rock).  You must return the cross-sectional area of the largest harvestable mineral from the input rock, as follows:
+    ;;
+    ;; <br>
+    ;;
+    ;; <ul>
+    ;;
+    ;; <li>The minerals only have smooth faces when sheared vertically or horizontally from the rock's cross-section</li>
+    ;;
+    ;; <li>The mine is only concerned with harvesting isosceles triangles (such that one or two sides can be sheared)</li>
+    ;;
+    ;; <li>If only one face of the mineral is sheared, its opposing vertex must be a point (ie. the smooth face must be of odd length), and its two equal-length sides must intersect the shear face at 45&deg; (ie. those sides must cut even-diagonally)</li>
+    ;;
+    ;; <li>The harvested mineral may not contain any traces of rock</li>
+    ;;
+    ;; <li>The mineral may lie in any orientation in the plane</li>
+    ;;
+    ;; <li>Area should be calculated as the sum of 1s that comprise the mineral</li>
+    ;;
+    ;; <li>Minerals must have a minimum of three measures of area to be harvested</li>
+    ;;
+    ;; <li>If no minerals can be harvested from the rock, your function should return nil</li>
+    ;;
+    ;; </ul>
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (= 10 (__ [15 15 15 15 15]))
+    ; 1111      1111
+    ; 1111      *111
+    ; 1111  ->  **11
+    ; 1111      ***1
+    ; 1111      ****
+
+    (= 15 (__ [1 3 7 15 31]))
+    ; 00001      0000*
+    ; 00011      000**
+    ; 00111  ->  00***
+    ; 01111      0****
+    ; 11111      *****
+
+    (= 3 (__ [3 3]))
+    ; 11      *1
+    ; 11  ->  **
+
+    (= 4 (__ [7 3]))
+    ; 111      ***
+    ; 011  ->  0*1
+
+    (= 6 (__ [17 22 6 14 22]))
+    ; 10001      10001
+    ; 10110      101*0
+    ; 00110  ->  00**0
+    ; 01110      0***0
+    ; 10110      10110
+
+    (= 9 (__ [18 7 14 14 6 3]))
+    ; 10010      10010
+    ; 00111      001*0
+    ; 01110      01**0
+    ; 01110  ->  0***0
+    ; 00110      00**0
+    ; 00011      000*1
+
+    (= nil (__ [21 10 21 10]))
+    ; 10101      10101
+    ; 01010      01010
+    ; 10101  ->  10101
+    ; 01010      01010
+
+    (= nil (__ [0 31 0 31 0]))
+    ; 00000      00000
+    ; 11111      11111
+    ; 00000  ->  00000
+    ; 11111      11111
+    ; 00000      00000
   #+END_SRC
 
 * Problem 128
@@ -3133,6 +3492,127 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                       '[S2 S3 S4 S5 S6 S7
                         S8 S9 ST SJ SQ SK SA])))
 #+end_src
+
+* Problem 129
+
+*THERE IS NO PROBLEM 129*
+
+* Problem 130
+
+*Tree reparenting-TODO*
+
+  #+BEGIN_SRC clojure
+    ;; 4Clojure Question 130
+    ;;
+    ;; Every node of a tree is connected to each of its children as
+    ;;
+    ;; well as its parent.  One can imagine grabbing one node of
+    ;;
+    ;; a tree and dragging it up to the root position, leaving all
+    ;;
+    ;; connections intact.  For example, below on the left is
+    ;;
+    ;; a binary tree.  By pulling the "c" node up to the root, we
+    ;;
+    ;; obtain the tree on the right.
+    ;;
+    ;; <br/>
+    ;;
+    ;; <img src="http://i.imgur.com/UtD2T.png">
+    ;;
+    ;; <br/>
+    ;;
+    ;; Note it is no longer binary as "c" had three connections
+    ;;
+    ;; total -- two children and one parent.
+    ;;
+    ;; 
+    ;;
+    ;; Each node is represented as a vector, which always has at
+    ;;
+    ;; least one element giving the name of the node as a symbol.
+    ;;
+    ;; Subsequent items in the vector represent the children of the
+    ;;
+    ;; node.  Because the children are ordered it's important that
+    ;;
+    ;; the tree you return keeps the children of each node in order
+    ;;
+    ;; and that the old parent node, if any, is appended on the
+    ;;
+    ;; right.
+    ;;
+    ;; 
+    ;;
+    ;; Your function will be given two args -- the name of the node
+    ;;
+    ;; that should become the new root, and the tree to transform.
+    ;;
+    ;; 
+    ;;
+    ;; Use M-x 4clojure-check-answers when you're done!
+
+    (= '(n)
+       (__ 'n '(n)))
+
+    (= '(a (t (e)))
+       (__ 'a '(t (e) (a))))
+
+    (= '(e (t (a)))
+       (__ 'e '(a (t (e)))))
+
+    (= '(a (b (c)))
+       (__ 'a '(c (b (a)))))
+
+    (= '(d 
+          (b
+            (c)
+            (e)
+            (a 
+              (f 
+                (g) 
+                (h)))))
+      (__ 'd '(a
+                (b 
+                  (c) 
+                  (d) 
+                  (e))
+                (f 
+                  (g)
+                  (h)))))
+
+    (= '(c 
+          (d) 
+          (e) 
+          (b
+            (f 
+              (g) 
+              (h))
+            (a
+              (i
+              (j
+                (k)
+                (l))
+              (m
+                (n)
+                (o))))))
+       (__ 'c '(a
+                 (b
+                   (c
+                     (d)
+                     (e))
+                   (f
+                     (g)
+                     (h)))
+                 (i
+                   (j
+                     (k)
+                     (l))
+                   (m
+                     (n)
+                     (o))))))
+
+  #+END_SRC
 
 * Problem 131
 
@@ -3231,6 +3711,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 #+end_src
 
+* Problem 133
+
+*THERE IS NO PROBLEM 133*
+
 * Problem 134
 
 *A nil key*
@@ -3277,6 +3761,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= 72 (infix-calc 20 / 2 + 2 + 4 + 8 - 6 - 10 * 9)))
   #+END_SRC
 
+* Problem 136
+
+*THERE IS NO PROBLEM 136*
+
 * Problem 137
 
 *Digits and bases*
@@ -3303,6 +3791,143 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
          (= [1 0] (let [n (rand-int 100000)](seq-digits n n)))
          (= [16 18 5 24 15 1] (seq-digits Integer/MAX_VALUE 42)))
   #+END_SRC
+
+* Problem 138
+
+*Squares Squared-TODO*
+
+#+BEGIN_SRC clojure
+  ;; 4Clojure Question 138
+  ;;
+  ;; Create a function of two integer arguments: the start and end, respectively.  You must create a vector of strings which renders a 45&deg; rotated square of integers which are successive squares from the start point up to and including the end point.  If a number comprises multiple digits, wrap them around the shape individually.  If there are not enough digits to complete the shape, fill in the rest with asterisk characters.  The direction of the drawing should be clockwise, starting from the center of the shape and working outwards, with the initial direction being down and to the right.
+  ;;
+  ;; Use M-x 4clojure-check-answers when you're done!
+
+  (= (__ 2 2) ["2"])
+
+  (= (__ 2 4) [" 2 "
+               "* 4"
+               " * "])
+
+  (= (__ 3 81) [" 3 "
+                "1 9"
+                " 8 "])
+
+  (= (__ 4 20) [" 4 "
+                "* 1"
+                " 6 "])
+
+  (= (__ 2 256) ["  6  "
+                 " 5 * "
+                 "2 2 *"
+                 " 6 4 "
+                 "  1  "])
+
+  (= (__ 10 10000) ["   0   "
+                    "  1 0  "
+                    " 0 1 0 "
+                    "* 0 0 0"
+                    " * 1 * "
+                    "  * *  "
+                    "   *   "])
+#+END_SRC
+
+* Problem 139
+
+*THERE IS NO PROBLEM 139*
+
+* Problem 140
+
+*Veitch, Please!-TODO*
+
+#+BEGIN_SRC clojure
+  ;; 4Clojure Question 140
+  ;;
+  ;; Create a function which accepts as input a boolean algebra function in the form of a set of sets, where the inner sets are collections of symbols corresponding to the input boolean variables which satisfy the function (the inputs of the inner sets are conjoint, and the sets themselves are disjoint... also known as canonical minterms).  Note:&nbsp;capitalized symbols represent truth, and lower-case symbols represent negation of the inputs.  Your function must return the minimal function which is logically equivalent to the input.
+  ;;
+  ;; </br></br>
+  ;;
+  ;; PS &mdash; You may want to give this a read before proceeding: <a href="http://en.wikipedia.org/wiki/K_map">K-Maps</a>
+  ;;
+  ;; Use M-x 4clojure-check-answers when you're done!
+
+  (= (__ #{#{'a 'B 'C 'd}
+           #{'A 'b 'c 'd}
+           #{'A 'b 'c 'D}
+           #{'A 'b 'C 'd}
+           #{'A 'b 'C 'D}
+           #{'A 'B 'c 'd}
+           #{'A 'B 'c 'D}
+           #{'A 'B 'C 'd}})
+     #{#{'A 'c} 
+       #{'A 'b}
+       #{'B 'C 'd}})
+
+  (= (__ #{#{'A 'B 'C 'D}
+           #{'A 'B 'C 'd}})
+     #{#{'A 'B 'C}})
+
+  (= (__ #{#{'a 'b 'c 'd}
+           #{'a 'B 'c 'd}
+           #{'a 'b 'c 'D}
+           #{'a 'B 'c 'D}
+           #{'A 'B 'C 'd}
+           #{'A 'B 'C 'D}
+           #{'A 'b 'C 'd}
+           #{'A 'b 'C 'D}})
+     #{#{'a 'c}
+       #{'A 'C}})
+
+  (= (__ #{#{'a 'b 'c} 
+           #{'a 'B 'c}
+           #{'a 'b 'C}
+           #{'a 'B 'C}})
+     #{#{'a}})
+
+  (= (__ #{#{'a 'B 'c 'd}
+           #{'A 'B 'c 'D}
+           #{'A 'b 'C 'D}
+           #{'a 'b 'c 'D}
+           #{'a 'B 'C 'D}
+           #{'A 'B 'C 'd}})
+     #{#{'a 'B 'c 'd}
+       #{'A 'B 'c 'D}
+       #{'A 'b 'C 'D}
+       #{'a 'b 'c 'D}
+       #{'a 'B 'C 'D}
+       #{'A 'B 'C 'd}})
+
+  (= (__ #{#{'a 'b 'c 'd}
+           #{'a 'B 'c 'd}
+           #{'A 'B 'c 'd}
+           #{'a 'b 'c 'D}
+           #{'a 'B 'c 'D}
+           #{'A 'B 'c 'D}})
+     #{#{'a 'c}
+       #{'B 'c}})
+
+  (= (__ #{#{'a 'B 'c 'd}
+           #{'A 'B 'c 'd}
+           #{'a 'b 'c 'D}
+           #{'a 'b 'C 'D}
+           #{'A 'b 'c 'D}
+           #{'A 'b 'C 'D}
+           #{'a 'B 'C 'd}
+           #{'A 'B 'C 'd}})
+     #{#{'B 'd}
+       #{'b 'D}})
+
+  (= (__ #{#{'a 'b 'c 'd}
+           #{'A 'b 'c 'd}
+           #{'a 'B 'c 'D}
+           #{'A 'B 'c 'D}
+           #{'a 'B 'C 'D}
+           #{'A 'B 'C 'D}
+           #{'a 'b 'C 'd}
+           #{'A 'b 'C 'd}})
+     #{#{'B 'D}
+       #{'b 'd}})
+#+END_SRC
 
 * Problem 141
 
@@ -3375,6 +4000,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
       ((tricky-card-game-winner :heart) [{:suit :heart :rank 6} {:suit :heart :rank 8}
                                          {:suit :diamond :rank 10} {:suit :heart :rank 4}])))
 #+END_SRC
+
+* Problem 142
+
+*THERE IS NO PROBLEM 142*
 
 * Problem 143
 
@@ -3530,6 +4159,43 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
      (= (take 2 (pascal-triangle [3 1 2])) [[3 1 2] [3 4 3 2]])
      (= (take 100 (pascal-triangle [2 4 2])) (rest (take 101 (pascal-triangle [2 2])))))
   #+END_SRC
+
+* Problem 148
+
+*The Big Divide-TODO*
+
+#+BEGIN_SRC clojure
+  ;; 4Clojure Question 148
+  ;;
+  ;; <p>Write a function which calculates the sum of all natural numbers under <i>n</i> (first argument) which are evenly divisible by at least one of <i>a</i> and <i>b</i> (second and third argument). Numbers <i>a</i> and <i>b</i> are guaranteed to be <a href="http://en.wikipedia.org/wiki/Coprime">coprimes</a>.</p>
+  ;;
+  ;; 
+  ;;
+  ;; <p>Note: Some test cases have a very large <i>n</i>, so the most obvious solution will exceed the time limit.</p>
+  ;;
+  ;; Use M-x 4clojure-check-answers when you're done!
+
+  (= 0 (__ 3 17 11))
+
+  (= 23 (__ 10 3 5))
+
+  (= 233168 (__ 1000 3 5))
+
+  (= "2333333316666668" (str (__ 100000000 3 5)))
+
+  (= "110389610389889610389610"
+    (str (__ (* 10000 10000 10000) 7 11)))
+
+  (= "1277732511922987429116"
+    (str (__ (* 10000 10000 10000) 757 809)))
+
+  (= "4530161696788274281"
+    (str (__ (* 10000 10000 1000) 1597 3571)))
+#+END_SRC
+
+* Problem 149
+
+*THERE IS NO PROBLEM 149*
 
 * Problem 150
 
