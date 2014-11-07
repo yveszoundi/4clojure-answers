@@ -883,7 +883,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                             (if (or (nil? xs) (<= num (peek xs)))
                               (conj acc [num])
                               (assoc acc (dec (count acc)) (conj xs num)))))
-                        [] col))          
+                        [] col))
+
               (max-seq [piles]
                 (or (first (filter #(>= (count %1) 2) (sort-by count > piles))) '()))]
         (-> (make-piles xs) (max-seq))))
@@ -945,12 +946,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   ;; Difficulty:  Medium
   ;; Topics:      seqs core-functions
   (defn only-distinct [col]
-    (reduce (fn [xs item]
-              (if (some #(= item %1) xs)
-                xs
-                (conj xs item)))
-            []
-            col))
+    (reduce (fn [xs item] (if (some #(= item %1) xs) xs (conj xs item)))
+            [] col))
 
   (clojure.test/testing
       "Write a function which removes the duplicates from a sequence.
@@ -1233,11 +1230,11 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   (defn prime-sieve
     "Prime sieve"
     ([]
-       (letfn [(add-prime? [candidate prime-set]
-                 (let [narrowed-primes-set (reduce-primes-set candidate prime-set)]
-                 (if (empty? narrowed-primes-set)
+       (letfn [(add-prime? [candidate primes]
+                 (let [narrowed-primes (reduce-primes-set candidate primes)]
+                   (if (empty? narrowed-primes)
                      candidate
-                     (recur (next-prime-candidate candidate) prime-set))))
+                     (recur (next-prime-candidate candidate) primes))))
 
                (reduce-primes-set [candidate primes-set]
                  (let [max-val (inc (long (Math/ceil (Math/sqrt candidate))))]
@@ -1250,10 +1247,9 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                  (lazy-seq
                   (let [next-prime (add-prime? candidate acc)]
                     (cons next-prime
-                          (gen-primes (next-prime-candidate next-prime)
-                                      (conj acc next-prime))))))]
-         (cons 2
-               (gen-primes 3 [2]))))
+                          (gen-primes (next-prime-candidate next-prime) (conj acc next-prime))))))]
+         
+         (cons 2 (gen-primes 3 [2]))))
     ([n]
        (take n (prime-sieve))))
 
@@ -1624,9 +1620,7 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
     ;; move to an adjacent number on the next row until the
     ;; bottom of the triangle is reached.
     (defn min-triangle-path  [col]
-      (letfn [(triangle-vec [col] (into [] col))
-
-              (current-row-min-path [cur-row]
+      (letfn [(current-row-min-path [cur-row]
                 (->> (partition 2 1 cur-row) (mapv #(reduce min %))))
 
               (update-triangle-base [last-row min-path]
@@ -1642,12 +1636,11 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                         new-base (last new-triangle)
                         new-base-idx (dec (count new-triangle))
                         prev-base (peek triangle)]                
-                    (recur
-                     (->> (current-row-min-path prev-base)
-                          (update-triangle-base new-base)
-                          (update-triangle new-triangle new-base-idx))))))]
+                    (recur (->> (current-row-min-path prev-base)
+                                (update-triangle-base new-base)
+                                (update-triangle new-triangle new-base-idx))))))]
 
-        (min-path-sum (triangle-vec col))))
+        (min-path-sum (into [] col))))
 
     (and
      (= 7 (min-triangle-path '([1]
@@ -2483,16 +2476,12 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                     (vals (dissoc all-operations :halve)))))
 
               (apply-operations [nums]
-                (into []
-                      (mapcat (fn [n]
-                                (map #(%1 n) (possible-operations n)))
-                              nums)))]
+                (mapcat (fn [n] (map #(%1 n) (possible-operations n))) nums))]
 
         (loop [nodes [[start]] at-the-end? false]
           (if at-the-end?
             (count nodes)
-            (let [results (apply-operations (peek nodes))
-                  result-found? (some #(= end %) results)]
+            (let [results (apply-operations (peek nodes)), result-found? (some #(= end %) results)]
               (recur (conj nodes results) result-found?)))))))
 
   (and
@@ -2712,9 +2701,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                 {:queue (maybe-add-num q cur sum limit) :sum (+ sum cur)}))
 
             (maybe-add-num [q cur sum limit]
-              (if (> (+ cur sum) limit)
-                q
-                (conj q cur)))
+              (if (> (+ cur sum) limit) q (conj q cur)))
 
             (enqueue [q xs sum limit]
               (if (or (empty? xs) (> sum limit))
@@ -2794,8 +2781,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   (defn take-up-to [n pred? xs]
     (lazy-seq
      (when (and (pos? n) (not (empty? xs)))
-       (let [cur (first xs)
-             next-n (if (pred? cur) (dec n) n)]
+       (let [cur (first xs), next-n (if (pred? cur) (dec n) n)]
          (when-not (zero? next-n)
            (cons cur (take-up-to next-n pred? (rest xs))))))))
 
@@ -3170,12 +3156,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
         (if (= 1 (count xs))
           true
-          (->> (map non-empty-subsets xs)
-               (map subsets-sum)
-               find-common-subsets
-               count
-               pos?))))
-
+          (->> (map non-empty-subsets xs) (map subsets-sum) find-common-subsets count pos?))))
 
     (and
      (= true  (common-subset-sum? #{-1 1 99}
@@ -3503,10 +3484,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
       (reduce (fn [acc [k v]]
                 (reduce (fn step [p [ke ve]]
                           (assoc p [k ke] ve))
-                        acc
-                        (seq v)))
-              {}
-              m))
+                        acc (seq v)))
+              {} m))
 
     (and (= (tree->table '{a {p 1, q 2}
                            b {m 3, n 4}})
@@ -3541,7 +3520,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
     (defn pascal-triangle [xs]
       (iterate (fn step [xs]
-                 (into [] (concat [(first xs)] (map #(reduce +' %1N) (partition 2 1 xs)) [(last xs)])))
+                 (->> (concat [(first xs)] (map #(reduce +' %1N) (partition 2 1 xs)) [(last xs)])
+                      (into [])))
                xs))
 
     (and
@@ -3551,7 +3531,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
      (= (take 100 (pascal-triangle [2 4 2])) (rest (take 101 (pascal-triangle [2 2])))))
   #+END_SRC
 
-* WAITING Problem 150
+* Problem 150
 
 *Palindromic number*
 
@@ -3563,7 +3543,62 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; that are not less than n.
   ;; The most simple solution will exceed the time limit!
 
-  (defn palindromic-sieve [n])
+  (defn palindromic-sieve [n]
+    (letfn [(num->digits [n]
+              (mapv #(Character/getNumericValue %1) (str n)))
+
+            (digits->num [digits]
+              (bigint (apply str digits)))
+
+            (get-mid-index [digits]
+              (let [ln (count digits)]
+                (if (= 1 ln)
+                  -1
+                  (bigint (Math/ceil (/ ln 2))))))
+
+            (mirror-digits [left-digits mid-index total]
+              (if (neg? mid-index)
+                left-digits
+                (reduce conj left-digits (reverse (take (max total 1) left-digits)))))
+
+            (inc-digits [digits pos]
+              (if (neg? pos)
+                (reduce conj [1] (repeat (count digits) 0))
+                (let [num-at-pos (digits pos)]
+                  (if (< num-at-pos 9)
+                    (assoc digits pos (inc num-at-pos))
+                    (recur (assoc digits pos 0) (dec pos) )))))
+
+            (maybe-ensure-match [digits diff]
+              (if (pos? diff)
+                (assoc digits (dec (count digits)) (first digits))
+                digits))
+
+            (cur-palindrome [pal-number do-inc]
+              (let [pal (num->digits pal-number)
+                    mid-index (get-mid-index pal)
+                    left-digits (if (neg? mid-index) pal (subvec pal 0 mid-index))
+                    next-left-digits (if do-inc
+                                       (inc-digits left-digits (dec (count left-digits)))
+                                       left-digits)
+                    to-replicate (bigint (Math/floor (/ (count pal) 2)))
+                    diff (- (count next-left-digits) (count left-digits))]
+                (-> (mirror-digits next-left-digits mid-index to-replicate)
+                    (maybe-ensure-match diff)
+                    digits->num)))
+
+            (next-palindrome [pal-number]
+              (cur-palindrome pal-number true))
+
+            (ensure-palindrome [cur-num target]
+              (if (< cur-num 9)
+                cur-num
+                (let [next-num (cur-palindrome cur-num false)]
+                  (if (< next-num target)
+                    (cur-palindrome cur-num true)
+                    next-num))))]
+
+      (iterate next-palindrome (ensure-palindrome n n))))
 
   (and
    (= (take 26 (palindromic-sieve 0))
@@ -3577,6 +3612,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
        252 262 272 282
        292 303 313 323])
 
+   ;;
    (= (take 6 (palindromic-sieve 1234550000))
       [1234554321 1234664321 1234774321
        1234884321 1234994321 1235005321])
