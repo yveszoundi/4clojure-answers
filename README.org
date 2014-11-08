@@ -4232,11 +4232,9 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; The most simple solution will exceed the time limit!
 
   (defn palindromic-sieve [n]
-    (letfn [(num->digits [n]
-              (mapv #(Character/getNumericValue %1) (str n)))
+    (letfn [(num->digits [n] (mapv #(Character/getNumericValue %1) (str n)))
 
-            (digits->num [digits]
-              (bigint (apply str digits)))
+            (digits->num [digits] (bigint (apply str digits)))
 
             (get-mid-index [digits]
               (let [ln (count digits)]
