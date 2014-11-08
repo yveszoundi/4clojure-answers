@@ -1383,7 +1383,6 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 *Analyze a Tic-Tac-Toe Board*
 
 #+begin_src clojure
-  ;;
   ;; A tic-tac-toe board is represented by a two dimensional vector.
   ;; X is represented by :x,
   ;; O is represented by :o,
@@ -1404,10 +1403,16 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   ;; - Leave number as is for :o
   ;; - Multiply the number by 2 for :x
   ;; - If the total of a row adds up to 15 :o wins, 30 :x wins otherwise nobody
-  (defn tic-tac-toe-winner [boards]
+  (defn tic-tac-toe-winner [board]
     (let [magic-square [[8 1 6] [3 5 7] [4 9 2]]
-          boards-count (count boards)
-          boards-count-range (range boards-count)
+
+          make-groups (fn [board]
+                        (let [max-col (count board), max-row (count (first board))]
+                          (concat
+                           (for [i (range max-col)] (for [j (range max-row)] ((board i) j)))
+                           (for [j (range max-row)] (for [i (range max-col)] ((board i) j)))
+                           [(for [i (range max-row)] ((board i) i))]
+                           [(for [i (reverse (range max-row))] ((board i) (dec (- max-row i))))])))
 
           row-winner (fn [row]
                        (case (reduce + row) 15 :o, 30 :x, nil))
@@ -1416,32 +1421,15 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                         (case cell :o mapped-cell, :x (* mapped-cell 2), 0))
 
           transform-row (fn [matrix mapped-matrix]
-                          (map (fn [row mapped-row] (cell-to-num row mapped-row))
-                               matrix
-                               mapped-matrix))]
+                          (mapv (fn [row mapped-row] (cell-to-num row mapped-row)) matrix mapped-matrix))
 
-      (let [num-matrix (map transform-row boards magic-square)
-            num-matrix-with-cols-and-diags (concat num-matrix
-                                                   ;; columns
-                                                   (map (fn [i]
-                                                          (map (fn [x]
-                                                                 (nth (nth num-matrix x) i))
-                                                               boards-count-range))
-                                                        boards-count-range)
-
-                                                   ;; diagonal towards right
-                                                   (list (map #(nth (nth num-matrix %1) %1)
-                                                              boards-count-range))
-
-                                                   ;; diagonal towards left
-                                                   (list (map #(nth (nth num-matrix %1)
-                                                                    (- (dec boards-count) %1))
-                                                              boards-count-range)))]
-
-        (loop [winner nil, rows num-matrix-with-cols-and-diags]
-          (if (or winner (empty? rows))
-            winner
-            (recur (row-winner (first rows)) (rest rows)))))))
+          game-winner (fn [cell-groups winner]
+                        (if (or winner (empty? cell-groups))
+                          winner
+                          (recur (next cell-groups) (row-winner (first cell-groups)))))]
+      
+      (let [num-matrix (mapv transform-row board magic-square), cell-groups (make-groups num-matrix)]
+        (game-winner cell-groups nil))))
 
   (and
    (= nil (tic-tac-toe-winner [[:e :e :e]
@@ -2654,7 +2642,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;;
   ;; <p>It can be hard to follow in the abstract, so let's build a
   ;; simple closure. Given a positive integer <i>n</i>, return a
-  ;; function <code>(f x)</code> which computes <i>x<sup>n</sup></i>.
+  ;;'' function <code>(f x)</code> which computes <i>x<sup>n</sup></i>.
   ;; Observe that the effect of this is to preserve the value of
   ;; <i>n</i> for use outside the scope in which it is defined.</p>
 
@@ -3165,7 +3153,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 119
 
-*Win at Tic-Tac-Toe-TODO*
+*Win at Tic-Tac-Toe*
 
   #+BEGIN_SRC clojure
     ;; <p>As in <a href="/problem/73">Problem 73</a>, a tic-tac-toe board
@@ -3180,30 +3168,53 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; <p>Board coordinates should be as in calls to <code>get-in</code>.
     ;; For example, <code>[0 1]</code> is the topmost row, center position.</p>
 
-    (= (__ :x [[:o :e :e] 
-               [:o :x :o] 
-               [:x :x :e]])
-       #{[2 2] [0 1] [0 2]})
+    (defn win-tic-tac-toe-moves [piece board]
+      (letfn [(winning-moves [piece board cell-groups]
+                (reduce (fn [acc cell-group]
+                          (let [group-vals (mapv (fn [[i j]] ((board i) j)) cell-group)]
+                            (if (and (= 1 (count (filter #(= :e %1) group-vals)))
+                                     (= 2 (count (filter #(= piece %1) group-vals))))
+                              (let [idxs (keep-indexed #(when (= %2 :e) %1) group-vals)]
+                                (conj acc (nth cell-group (first idxs))))
+                              acc)))
+                        #{} cell-groups))
 
-    (= (__ :x [[:x :o :o] 
-               [:x :x :e] 
-               [:e :o :e]])
-       #{[2 2] [1 2] [2 0]})
+              (make-groups [board]
+                (let [max-col (count board), max-row (count (first board))]
+                  (concat
+                   (for [i (range max-col)] (for [j (range max-row)] [i j]))
+                   (for [j (range max-row)] (for [i (range max-col)] [i j]))
+                   [(for [i (range max-row)] [i i])]
+                   [(for [i (reverse (range max-row))] [i (dec (- max-row i))])])))]
 
-    (= (__ :x [[:x :e :x] 
-               [:o :x :o] 
-               [:e :o :e]])
-       #{[2 2] [0 1] [2 0]})
+        (->> (make-groups board) (winning-moves piece board))))
 
-    (= (__ :x [[:x :x :o] 
-               [:e :e :e] 
-               [:e :e :e]])
-       #{})
+    (and
+     (= (win-tic-tac-toe-moves :x
+                               [[:o :e :e]
+                                [:o :x :o]
+                                [:x :x :e]])
+        #{[2 2] [0 1] [0 2]})
 
-    (= (__ :o [[:x :x :o] 
-               [:o :e :o] 
-               [:x :e :e]])
-       #{[2 2] [1 1]})
+     (= (win-tic-tac-toe-moves :x [[:x :o :o]
+                                   [:x :x :e]
+                                   [:e :o :e]])
+        #{[2 2] [1 2] [2 0]})
+
+     (= (win-tic-tac-toe-moves :x [[:x :e :x]
+                                   [:o :x :o]
+                                   [:e :o :e]])
+        #{[2 2] [0 1] [2 0]})
+
+     (= (win-tic-tac-toe-moves :x [[:x :x :o]
+                                   [:e :e :e]
+                                   [:e :e :e]])
+        #{})
+
+     (= (win-tic-tac-toe-moves :o [[:x :x :o]
+                                   [:o :e :o]
+                                   [:x :e :e]])
+        #{[2 2] [1 1]}))
   #+END_SRC
 
 * Problem 120
@@ -4197,22 +4208,29 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; <p>Note: Some test cases have a very large <i>n</i>,
   ;; so the most obvious solution will exceed the time limit.</p>
 
-  (= 0 (__ 3 17 11))
+  (defn big-divide [n a b]
 
-  (= 23 (__ 10 3 5))
 
-  (= 233168 (__ 1000 3 5))
+    )
 
-  (= "2333333316666668" (str (__ 100000000 3 5)))
 
-  (= "110389610389889610389610"
-    (str (__ (* 10000 10000 10000) 7 11)))
+  (and
+   (= 0 (big-divide 3 17 11))
 
-  (= "1277732511922987429116"
-    (str (__ (* 10000 10000 10000) 757 809)))
+   (= 23 (big-divide 10 3 5))
 
-  (= "4530161696788274281"
-    (str (__ (* 10000 10000 1000) 1597 3571)))
+   (= 233168 (big-divide 1000 3 5))
+
+   (= "2333333316666668" (str (big-divide 100000000 3 5)))
+
+   (= "110389610389889610389610"
+      (str (big-divide (* 10000 10000 10000) 7 11)))
+
+   (= "1277732511922987429116"
+      (str (big-divide (* 10000 10000 10000) 757 809)))
+
+   (= "4530161696788274281"
+      (str (big-divide (* 10000 10000 1000) 1597 3571))))
 #+END_SRC
 
 * Problem 149
