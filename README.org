@@ -2157,11 +2157,12 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; the next generation of cells.
 
     (defn game-of-life [m]
-      (letfn [(get-live-cells [m cols-ln rows-ln]
-                  (->> (for [i (range cols-ln)]
-                         (for [j (range rows-ln) :when (= \# (nth (m i) j))]
-                           [i j]))
-                       (reduce concat)))
+      (letfn [(get-cells [pred m cols-ln rows-ln]
+                (->> (for [i (range cols-ln)]
+                       (for [j (range rows-ln) :when (pred m i j)] [i j]))
+                     (reduce concat)))
+
+              (live-cell-only [m i j](= \# (nth (m i) j)))
 
               (neighbours [[i j] max-i max-j]
                 ;; T-L-diagNL-diagSL-B-R-diagNR-diagSR
@@ -2176,16 +2177,32 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                         (if (and (< i max-i) (< j max-j)) [[(inc i) (inc j)]])   ;; diagSR
                         ))
 
-              (assoc-neighbours [live-cells max-i max-j]
-                (reduce (fn [acc coords]
-                          (assoc acc coords (neighbours coords max-i max-j)))
-                        {} live-cells))
-              ]
+              (live-neighbours-only [associations m]
+                (reduce (fn [acc [cell neighbours]]
+                          (let [alive-neighbours (filter (fn [[i j]] (= \# (nth (m i) j))) neighbours)]
+                            (assoc acc cell (count alive-neighbours))))
+                        associations associations))
 
-        (let [max-i (count m), max-j (count (first m))]
-          (-> (get-live-cells m max-i max-j)
-              (assoc-neighbours max-i max-j))
-        )))
+              (assoc-neighbours [live-cells max-i max-j]
+                (reduce (fn [acc coords] (assoc acc coords (neighbours coords max-i max-j))) {} live-cells))
+
+              (do-work [[i j] live-neighbours-count board-state]
+                (let [row-data (into [] (board-state i))]
+                  (if (or (> live-neighbours-count 3) (< live-neighbours-count 2))
+                    (assoc board-state i (apply str (assoc row-data j \space)))
+                    board-state)))
+
+              (maybe-revive-dead-cells? [m] m)]
+        (let [max-i (count m), max-j (count (first m))
+              associations  (-> (get-cells live-cell-only m max-i max-j)
+                                (assoc-neighbours max-i max-j)
+                                (live-neighbours-only m))]
+          (loop [board-state m, acc associations]
+            (if (empty? acc)
+              (maybe-revive-dead-cells? board-state)
+              (let [[cell live-neighbours-count] (apply max-key #(last %1) acc)
+                    next-board-state (do-work cell live-neighbours-count board-state)]
+                (recur next-board-state (dissoc acc cell))))))))
 
     (and
      (= (game-of-life ["      "
@@ -3797,11 +3814,16 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *Squares Squared-TODO*
 
 #+BEGIN_SRC clojure
-  ;; 4Clojure Question 138
-  ;;
-  ;; Create a function of two integer arguments: the start and end, respectively.  You must create a vector of strings which renders a 45&deg; rotated square of integers which are successive squares from the start point up to and including the end point.  If a number comprises multiple digits, wrap them around the shape individually.  If there are not enough digits to complete the shape, fill in the rest with asterisk characters.  The direction of the drawing should be clockwise, starting from the center of the shape and working outwards, with the initial direction being down and to the right.
-  ;;
-  ;; Use M-x 4clojure-check-answers when you're done!
+  ;; Create a function of two integer arguments: the start and end,
+  ;;  respectively.
+  ;; You must create a vector of strings which renders a 45&deg; rotated square
+  ;; of integers which are successive squares from the start point up to and including the end point.
+
+  ;; If a number comprises multiple digits, wrap them around the shape individually.
+  ;; If there are not enough digits to complete the shape, fill in the rest with asterisk characters.
+
+  ;; The direction of the drawing should be clockwise, starting from the center
+  ;; of the shape and working outwards, with the initial direction being down and to the right.
 
   (= (__ 2 2) ["2"])
 
@@ -4165,15 +4187,15 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *The Big Divide-TODO*
 
 #+BEGIN_SRC clojure
-  ;; 4Clojure Question 148
-  ;;
-  ;; <p>Write a function which calculates the sum of all natural numbers under <i>n</i> (first argument) which are evenly divisible by at least one of <i>a</i> and <i>b</i> (second and third argument). Numbers <i>a</i> and <i>b</i> are guaranteed to be <a href="http://en.wikipedia.org/wiki/Coprime">coprimes</a>.</p>
-  ;;
-  ;; 
-  ;;
-  ;; <p>Note: Some test cases have a very large <i>n</i>, so the most obvious solution will exceed the time limit.</p>
-  ;;
-  ;; Use M-x 4clojure-check-answers when you're done!
+  ;; <p>Write a function which calculates the sum of all natural numbers
+  ;; under <i>n</i> (first argument) which are evenly divisible by at
+  ;; least one of <i>a</i> and <i>b</i> (second and third argument).
+
+  ;; Numbers <i>a</i> and <i>b</i> are guaranteed to be
+  ;; <a href="http://en.wikipedia.org/wiki/Coprime">coprimes</a>.</p>
+
+  ;; <p>Note: Some test cases have a very large <i>n</i>,
+  ;; so the most obvious solution will exceed the time limit.</p>
 
   (= 0 (__ 3 17 11))
 
