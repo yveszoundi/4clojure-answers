@@ -4276,12 +4276,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                     (maybe-match-first-last-digits diff)
                     digits->num)))
 
-            (next-palindrome [pal-number]
-              (cur-palindrome pal-number true))
+            (next-palindrome [pal-number] (cur-palindrome pal-number true))
 
             (ensure-palindrome [cur-num target]
               (if (< cur-num 9)
-                cur-num
+                (bigint cur-num)
                 (let [next-num (cur-palindrome cur-num false)]
                   (if (< next-num target)
                     (cur-palindrome cur-num true)
