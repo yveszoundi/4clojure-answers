@@ -3171,11 +3171,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     (defn win-tic-tac-toe-moves [piece board]
       (letfn [(winning-moves [piece board cell-groups]
                 (reduce (fn [acc cell-group]
-                          (let [group-vals (mapv (fn [[i j]] ((board i) j)) cell-group)]
-                            (if (and (= 1 (count (filter #(= :e %1) group-vals)))
+                          (let [group-vals (mapv (fn [[i j]] ((board i) j)) cell-group)
+                                empty-idxs (keep-indexed #(when (= %2 :e) %1) group-vals)]
+                            (if (and (= 1 (count empty-idxs))
                                      (= 2 (count (filter #(= piece %1) group-vals))))
-                              (let [idxs (keep-indexed #(when (= %2 :e) %1) group-vals)]
-                                (conj acc (nth cell-group (first idxs))))
+                              (conj acc (nth cell-group (first empty-idxs)))
                               acc)))
                         #{} cell-groups))
 
