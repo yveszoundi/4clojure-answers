@@ -1770,8 +1770,6 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 * Problem 84
 
 *Transitive Closure*
- 
-NOTE: Too much code, need to simplify...
 
 #+begin_src clojure
   ;; http://en.wikipedia.org/wiki/Transitive_closure
@@ -1780,46 +1778,46 @@ NOTE: Too much code, need to simplify...
   ;; Write a function which generates the transitive closure of a binary relation.
   ;; The relation will be represented as a set of 2 item vectors.
 
-  (defn <->closure [g]
-    (letfn [(next-origin [prev-origin edge]
-              (first (disj (set edge) prev-origin)))
+  (defn transitive-closure [g]
+    (letfn [(adjacent-vertices [v g]
+              (keep (fn [[a b]] (when (= v a) b)) g))
 
-            (walk [src g visited]
-              (if (empty? g)
-                visited
-                (let [adj-edges (filter (fn [[a b]] (= src a)) g)
-                      fl (filter (fn [x]
-                                   (let [orig (next-origin src x)]
-                                     (not (or (= src orig) (contains? visited orig)))))
-                                 adj-edges)]
-                  (concat visited
-                          (mapcat (fn [edge]
-                                    (let [orig (next-origin src edge)]
-                                      (walk orig (disj g edge) (conj visited orig))))
-                                  fl)))))]
-      (reduce (fn [acc edge]
-                (let [orig (last edge)
-                      root (first edge)
-                      links (set (flatten (walk orig (disj g edge) #{orig})))
-                      f-links (filter #(not (or (contains? g [root %1]) (contains? g [%1 root]))) links)]
-                  (reduce (fn [col x] (conj col [root x])) acc f-links)))
-              g
-              g)))
+            (bfs-iter [v g]
+              (loop [queue (-> (clojure.lang.PersistentQueue/EMPTY) (conj v))
+                     visited #{v}]
+                (if (empty? queue)
+                  (disj visited v)
+                  (let [node (peek queue)
+                        cur-queue (pop queue)
+                        neighbours (adjacent-vertices node g)
+                        unseen (reduce disj (set neighbours) visited)
+                        next-queue (reduce conj cur-queue unseen)]
+                    (recur next-queue (reduce conj visited unseen))))))
 
+            (add-transitive-edges [v connections g]
+              (reduce (fn [graph connection]
+                        (let [transitive-edge [v connection]]
+                          (if (not (contains? graph transitive-edge))
+                            (conj graph transitive-edge)
+                            graph))) g connections))]
+
+      (reduce (fn [acc vertex]
+                (add-transitive-edges vertex (bfs-iter vertex g) acc))
+              g (set (reduce concat g)))))
 
   (and
    (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
-     (= (<->closure divides) #{[4 2] [8 4] [8 2] [9 3] [27 9] [27 3]}))
+     (= (transitive-closure divides) #{[4 2] [8 4] [8 2] [9 3] [27 9] [27 3]}))
 
    (let [more-legs
          #{["cat" "man"] ["man" "snake"] ["spider" "cat"]}]
-     (= (<->closure more-legs)
+     (= (transitive-closure more-legs)
         #{["cat" "man"] ["cat" "snake"] ["man" "snake"]
           ["spider" "cat"] ["spider" "man"] ["spider" "snake"]}))
 
    (let [progeny
          #{["father" "son"] ["uncle" "cousin"] ["son" "grandson"]}]
-     (= (<->closure progeny)
+     (= (transitive-closure progeny)
         #{["father" "son"] ["father" "grandson"]
           ["uncle" "cousin"] ["son" "grandson"]})))
 #+end_src
@@ -2016,33 +2014,27 @@ NOTE: Too much code, need to simplify...
   ;; - Each edge is undirected (can be traversed either direction).
 
   (defn graph-connected? [g]
-    (letfn [(vertices [g] (into [] (set (reduce concat g))))
+    (letfn [(adjacent-nodes [v g]
+              (keep (fn [[a b]] (cond (= v a) b, (= v b) a)) g))
 
-            (adjacent-vertices [v g marked]
-              (filter (fn [[a b]]
-                        (and
-                         (or (= v a) (= v b))
-                         (not (contains? marked (next-origin v [a b])))))
-                      g))
+            (dfs-iter [v g]
+              (loop [stack (cons v nil) visited #{}]
+                (if (empty? stack)
+                  visited
+                  (let [node (peek stack)
+                        col (pop stack)
+                        not-visited? (not (contains? visited node))
+                        next-visited (if not-visited?
+                                       (conj visited node)
+                                       visited)
+                        next-stack (if not-visited?
+                                     (reduce #(conj %1 %2) col (adjacent-nodes node g))
+                                     col)]
+                    (recur next-stack next-visited)))))]
 
-            (next-origin [root v] (first (disj (set v) root)))
-
-            (walk [v g marked]
-              (let [new-marked (conj marked v)]
-                (reduce (fn [acc x]
-                          (let [origin (next-origin v x)]
-                            (conj acc (concat (walk origin (disj g x) acc)))))
-                        new-marked (adjacent-vertices v g new-marked))))]
-
-      (let [nodes (vertices g), nodes-count (count nodes)]
-        (loop [v nodes, can-continue? true]
-          (if (or (nil? v) (not can-continue?))
-            can-continue?
-            (let [visits (walk (first v) g #{})
-                  r      (->> (into #{} (apply concat (map flatten visits)))
-                              (filter (complement nil?)))
-                  all-visited? (= nodes-count (count r))]
-              (recur (next v) all-visited?)))))))
+      (let [nodes (set (reduce concat g))
+            connections (reduce (fn [acc v] (assoc acc v (dfs-iter v g))) {} nodes)]
+        (every? #(= (count nodes) (count (last %1))) connections))))
 
   (and
    (= true (graph-connected? #{[:a :a]}))
@@ -4181,10 +4173,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; arbitrary-precision bigint.</p>
 
     (defn pascal-triangle [xs]
-      (iterate (fn step [xs]
-                 (->> (concat [(first xs)] (map #(reduce +' %1N) (partition 2 1 xs)) [(last xs)])
-                      (into [])))
-               xs))
+      (letfn [(stepper [xs]
+                (-> [(first xs)]
+                    (into (map #(reduce +' %1N) (partition 2 1 xs)))
+                    (conj (last xs))))]
+        (iterate stepper xs)))
 
     (and
      (= (second (pascal-triangle [2 3 2])) [2 5 5 2])
@@ -4209,8 +4202,13 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; so the most obvious solution will exceed the time limit.</p>
 
   (defn big-divide [n a b]
-
-
+    ;; know the solution and fast approaches
+    ;; but need to implement it on my own
+    ;; efficient sum of all factors of a and b under n
+    ;; a dummy solution is the following
+    ;; have a multiplier from 1 and increase it in a loop
+    ;; sum the multiplication of a and b by the multiplier
+    ;; remove duplicates (multiples of (a * b)) counted twice.
     )
 
 
