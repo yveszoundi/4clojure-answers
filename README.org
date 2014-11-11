@@ -2588,33 +2588,28 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; Because there are multiple shortest paths, you must return the
   ;; length of the shortest path, not the path itself.
 
-  (defn num-maze [start end]
-    (if (= start end)
-      1
-      (letfn [(possible-operations [x]
-                (let [all-operations {:add-two #(+ %1 2)
-                                      :halve #(/ %1 2)
-                                      :double #(* %1 2)}]
-                  (if (even? x)
-                    (vals all-operations)
-                    (vals (dissoc all-operations :halve)))))
+  (defn num-maze-steps [start end]
+    (letfn [(possible-operations [n]
+              (let [ops [#(+ %1 2), #(* %1 2)]]
+                (if (even? n)
+                  (conj ops #(/ %1 2))
+                  ops)))
 
-              (apply-operations [nums]
-                (mapcat (fn [n] (map #(%1 n) (possible-operations n))) nums))]
+            (apply-operations [nums]
+              (mapcat (fn [n] (map #(%1 n) (possible-operations n))) nums))]
 
-        (loop [nodes [[start]] at-the-end? false]
-          (if at-the-end?
-            (count nodes)
-            (let [results (apply-operations (peek nodes)), result-found? (some #(= end %) results)]
-              (recur (conj nodes results) result-found?)))))))
+      (loop [nodes [start], step 1]
+        (if (some #(= end %) nodes)
+          step
+          (recur (apply-operations nodes), (inc step))))))
 
   (and
-   (= 1 (num-maze 1 1))  ; 1
-   (= 3 (num-maze 3 12)) ; 3 6 12
-   (= 3 (num-maze 12 3)) ; 12 6 3
-   (= 3 (num-maze 5 9))  ; 5 7 9
-   (= 9 (num-maze 9 2))  ; 9 18 20 10 12 6 8 4 2
-   (= 5 (num-maze 9 12)) ; 9 11 22 24 12
+   (= 1 (num-maze-steps 1 1))  ; 1
+   (= 3 (num-maze-steps 3 12)) ; 3 6 12
+   (= 3 (num-maze-steps 12 3)) ; 12 6 3
+   (= 3 (num-maze-steps 5 9))  ; 5 7 9
+   (= 9 (num-maze-steps 9 2))  ; 9 18 20 10 12 6 8 4 2
+   (= 5 (num-maze-steps 9 12)) ; 9 11 22 24 12
    )
 #+end_src
 * Problem 107
