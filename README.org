@@ -2729,81 +2729,72 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; - Words may be placed vertically (proceeding top-down only),
   ;;   or horizontally (proceeding left-right only).
 
-  ;; too much code... oh well this is the first iteration...
-  (defn solveable-crossword-puzzle? [word m]
-    (letfn [(enough-space? [word idx xs]
-              (>= (- (count xs) idx) (count (seq word))))
+  ;; Rewrite using plain stupid brute force instead of smarter code.
+  ;;
+  ;; 0. always go down, check right and down, switch column as needed .
+  ;; 1. If the placement is valid (nothing other than # before and after), just go to 2.
+  ;; 2. Replace non spaces or overwritable chars by #.
+  ;; 3. If we have a range without # we have a solution.
+  (defn solved-crossword? [word board]
+    (let [wc (count word)
+          puzzle (mapv (fn [col] (into [] (filter #(not= \space %1) col))) board)
+          max-i (count puzzle)
+          max-j (count (first puzzle))]
 
-            (can-place-word? [init-cond word idx xs]
-              (if (or (empty? word) (not init-cond))
-                init-cond
-                (let [ch (nth xs idx)
-                      next-cond (and (not (= \# ch)) (or (= ch \_) (= (first word) ch)))]
-                  (recur next-cond (next word) (inc idx) xs))))
+      (letfn [(solved? [puzzle i j]
+                (if (= \# ((puzzle i) j))
+                  false
+                  (or
+                   ;; right
+                   (and (>= (- max-j j wc) 0)
+                        (valid-position? puzzle i (dec j))
+                        (valid-position? puzzle i (+ j wc))
+                        (not (some #(= \# %1)
+                                   (transform (subvec (puzzle i) j (+ j wc))))))
+                   ;; down
+                   (and (>= (- max-i i wc) 0)
+                        (valid-position? puzzle (dec i) j)
+                        (valid-position? puzzle (+ i wc) j)
+                        (not (some #(= \# %1)
+                                   (transform (subvec (mapv (fn [m] (nth m j)) puzzle) i (+ i wc)))))))))
 
-            (placeable? [word mode m idx]
-              (let [view ((:fn mode) m idx)]
-                (if (>= (count view) (count word))
-                  (let [idx-interval (range (inc (- (count view) (count word))))
-                        intervals (narrow-idx-intervals view word idx-interval)
-                        attempts (map (fn [i] (can-place-word? true word i view)) intervals)]
-                    (or (some #(= true %1) attempts) false))
-                  false)))
+              (valid-position? [puzzle i j]
+                (if (or (neg? i) (neg? j) (>= j max-j) (>= i max-i))
+                  true
+                  (= \# ((puzzle i) j))))
 
-            (valid-placement? [xs]
-              (empty? (filter #(or (= \space %1) (not= \# %1)) xs)))
+              (transform [view]
+                (map-indexed #(if (and (not= %2 \_) (not= (nth word %1) %2)) \# %2) view))
 
-            (valid-index? [view word i]
-              (let [board (into [] view), max-index (+ i (count word))]
-                (if (zero? i)
-                  (valid-placement? (subvec board max-index))
-                  (let [before (subvec board (dec i) i), after (subvec board max-index)]
-                    (and (valid-placement? before) (valid-placement? after))))))
+              (next-move [puzzle i j]
+                (let [next-i (mod (inc i) max-i), next-j (if (>= (inc i) max-i) (inc j) j)]
+                  [next-i next-j]))
 
-            (narrow-idx-intervals [view word intervals]
-              (filter #(and (enough-space? word %1 view) (valid-index? view word %1)) intervals))
+              (solve-puzzle [puzzle [i j] cur-iter max-iter]
+                (if (solved? puzzle i j)
+                  true
+                  (if (= cur-iter max-iter)
+                    false
+                    (recur puzzle (next-move puzzle i j) (inc cur-iter) max-iter))))]
+        (solve-puzzle puzzle [0 0] 1 (* max-i max-j)))))
 
-            (maybe-add-vertical-mode [modes puzzle]
-              (if (> (count puzzle) 1)
-                (conj modes {:name :vertical
-                             :max-idx (count (first puzzle))
-                             :fn (fn [m idx] (map #(nth %1 idx) m) )})
-                modes))
+  (and (= true  (solved-crossword? "the" ["_ # _ _ e"]))
 
-            (next-mode-context [modes m idx]
-              (let [next-idx (inc idx), max-idx (:max-idx (first modes))]
-                (if (< next-idx max-idx)
-                  {:modes modes :idx next-idx}
-                  {:modes (next modes) :idx 0})))]
+       (= false (solved-crossword? "the" ["c _ _ _"
+                                          "d _ # e"
+                                          "r y _ _"]))
 
-      (let [puzzle (mapv #(filter (fn [x] (not (Character/isWhitespace x))) %1) m)
-            initial-nav-modes [{:name :horizontal :max-idx (count puzzle) :fn (partial nth)}]
-            nav-modes (maybe-add-vertical-mode initial-nav-modes puzzle)]
-        (loop [idx 0, modes nav-modes, solution false]
-          (if (or (nil? modes) solution)
-            solution
-            (let [cur-mode (first modes)
-                  cur-sol (placeable? word cur-mode puzzle idx)
-                  ctx (next-mode-context modes puzzle idx)]
-              (recur (:idx ctx) (:modes ctx) cur-sol)))))))
+       (= true  (solved-crossword? "joy" ["c _ _ _"
+                                          "d _ # e"
+                                          "r y _ _"]))
 
-  (and (= true  (solveable-crossword-puzzle? "the" ["_ # _ _ e"]))
+       (= false (solved-crossword? "joy" ["c o n j"
+                                          "_ _ y _"
+                                          "r _ _ #"]))
 
-       (= false (solveable-crossword-puzzle? "the" ["c _ _ _"
-                                                    "d _ # e"
-                                                    "r y _ _"]))
-
-       (= true  (solveable-crossword-puzzle? "joy" ["c _ _ _"
-                                                    "d _ # e"
-                                                    "r y _ _"]))
-
-       (= false (solveable-crossword-puzzle? "joy" ["c o n j"
-                                                    "_ _ y _"
-                                                    "r _ _ #"]))
-
-       (= true  (solveable-crossword-puzzle? "clojure" ["_ _ _ # j o y"
-                                                        "_ _ o _ _ _ _"
-                                                        "_ _ f _ # _ _"])))
+       (= true  (solved-crossword? "clojure" ["_ _ _ # j o y"
+                                              "_ _ o _ _ _ _"
+                                              "_ _ f _ # _ _"])))
 #+end_src
 * Problem 112
 
