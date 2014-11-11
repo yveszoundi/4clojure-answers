@@ -4186,14 +4186,14 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; so the most obvious solution will exceed the time limit.</p>
 
   (defn big-divide [n a b]
-    ;; know the solution and fast approaches
-    ;; but need to implement it on my own
-    ;; efficient sum of all factors of a and b under n
-    ;; a dummy solution is the following
-    ;; have a multiplier from 1 and increase it in a loop
-    ;; sum the multiplication of a and b by the multiplier
-    ;; remove duplicates (multiples of (a * b)) counted twice.
-    )
+    (letfn [(n-sum [x limit]
+              (let [n-val (quot limit x)]
+                (if (pos? n-val)
+                  (-> (inc n-val) (*' n-val) (/ 2) (*' x) bigint)
+                  0)))]
+      (let [limit (dec n)]
+        (-> (+' (n-sum a limit) (n-sum b limit))
+            (- (n-sum (*' a b) limit))))))
 
 
   (and
