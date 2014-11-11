@@ -1554,12 +1554,10 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
     ;; Words without any anagrams should not be included in the result.
 
     (defn anagrams [xs]
-      (->> (set xs)
-           (group-by (fn [x] (sort x)))
-           (vals)
-           (keep (fn [x] (when (> (count x) 1) x)))
+      (->> (vals (group-by #(sort %1) (set xs)))
+           (filter #(> (count %1) 1))
            (map set)
-           set))
+           (into #{})))
 
     (and
      (= (anagrams ["meat" "mat" "team" "mate" "eat"])
