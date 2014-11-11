@@ -1793,15 +1793,9 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                     (recur next-queue (reduce conj visited unseen))))))
 
             (add-transitive-edges [v connections g]
-              (reduce (fn [graph connection]
-                        (let [transitive-edge [v connection]]
-                          (if (not (contains? graph transitive-edge))
-                            (conj graph transitive-edge)
-                            graph))) g connections))]
+              (reduce #(conj %1 [v %2]) g connections))]
 
-      (reduce (fn [acc vertex]
-                (add-transitive-edges vertex (bfs-iter vertex g) acc))
-              g (set (reduce concat g)))))
+      (reduce #(add-transitive-edges %2 (bfs-iter %2 g) %1) g (set (reduce concat g)))))
 
   (and
    (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
@@ -1835,9 +1829,12 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 
   (defn powerset [xs]
     (let [ln (count xs), col (into [] xs), set-size (Math/pow 2 ln)]
-      (into #{} (for [i (range set-size)]
-                  (into #{} (for [j (range ln) :when (pos? (bit-and i (bit-shift-left 1 j)))]
-                              (col j)))))))
+      (->> (for [i (range set-size)]
+             (->> (for [j (range ln)
+                        :when (pos? (bit-and i (bit-shift-left 1 j)))]
+                    (col j))
+                  (into #{})))
+           (into #{}))))
 
   (and
    (= (powerset #{1 :a}) #{#{1 :a} #{:a} #{} #{1}})
@@ -2324,9 +2321,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
     (defn pascal-triangle-row [n]
       (letfn [(step [xs]
-                (into [] (concat [(first xs)]
-                                 (map #(reduce +' %1N) (partition 2 1 xs))
-                                 [(last xs)])))]
+                (-> (into [(first xs)] (map #(reduce +' %1N) (partition 2 1 xs)))
+                    (conj (last xs))))]
         (last (take n (iterate step [1])))))
 
     (and
@@ -3242,23 +3238,54 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; The returned function has to accept a single parameter containing the map
     ;; of variable names to their values.
 
-    (= 2 ((__ '(/ a b))
-          '{b 8 a 16}))
+    (defn uce [expr]
+      (letfn [(walk-list [li mapping]
+                (seq
+                 (reduce (fn [acc x]
+                           (if (coll? x)
+                             (conj acc (walk-list x mapping))
+                             (conj acc (or (mapping x) x))))
+                         '[] li)))
+              
+              (augment-args [args]
+                (conj args ['+ +] ['- -] ['* *] ['/ /]))
 
-    (= 8 ((__ '(+ a b 2))
-          '{a 2 b 4}))
+              (recur-apply [li]
+                (when-not (empty? li)
+                  (let [cur (last li)]
+                    (if-not (coll? li)
+                      (cons li (recur-apply (rest li)))
+                      (if (fn? (first cur))
+                        (apply (first cur) (recur-apply (rest cur)))
+                        cur)))))
+              
+              (do-apply [op arguments]
+                (if-not (empty? arguments)
+                  (recur-apply (cons op arguments))
+                  (recur (first op) (rest op))))]
+        (fn [& args]
+          (let [r (reduce (fn [acc x]
+                    (conj acc (walk-list expr (augment-args x))))
+                          [] args)]
+            (do-apply (first r) (rest r))))))
 
-    (= [6 0 -4]
-         (map (__ '(* (+ 2 a)
-                          (- 10 b)))
-                    '[{a 1 b 8}
-                      {b 5 a -2}
-                      {a 2 b 11}]))
+    (and
+     (= 2 ((uce '(/ a b))
+           '{b 8 a 16}))
 
-    (= 1 ((__ '(/ (+ x 2)
-                  (* 3 (+ y 1))))
-          '{x 4 y 1}))
+     (= 8 ((uce '(+ a b 2))
+           '{a 2 b 4}))
 
+     (= [6 0 -4]
+        (map (uce '(* (+ 2 a)
+                      (- 10 b)))
+             '[{a 1 b 8}
+               {b 5 a -2}
+               {a 2 b 11}]))
+
+     (= 1 ((uce '(/ (+ x 2)
+                    (* 3 (+ y 1))))
+           '{x 4 y 1})))
   #+END_SRC
 
 * Problem 122
@@ -3304,11 +3331,14 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; Create a function that accepts a game board and color as arguments,
   ;; and returns a map of legal moves for that color.
   ;; Each key should be the coordinates of a legal move,
-  ;; and its value a set of the coordinates of the pieces flipped by that move.</p>
+  ;; and its value a set of the coordinates of the pieces flipped by that move.
 
   ;; <p>Board coordinates should be as in calls to get-in.
-  ;; For example, <code>[0 1]</code> is the topmost row, second column from the left.</p>
+  ;; For example, <code>[0 1]</code> is the topmost row, second column from the left.
 
+  (defn reversi [board color]
+
+    )
   (= {[1 3] #{[1 2]}, [0 2] #{[1 2]}, [3 1] #{[2 1]}, [2 0] #{[2 1]}}
      (__ '[[e e e e]
            [e w b e]
@@ -4172,7 +4202,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 148
 
-*The Big Divide-TODO*
+*The Big Divide*
 
 #+BEGIN_SRC clojure
   ;; <p>Write a function which calculates the sum of all natural numbers
