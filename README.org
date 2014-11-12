@@ -1433,7 +1433,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 
   (defn tic-tac-toe-winner [board]
     (letfn [(make-groups [board]
-              (let [max-col (count board), max-row (count (first board))]
+              (let [max-col (count board)
+                    max-row (count (first board))]
                 (concat
                  (for [i (range max-col)]
                    (for [j (range max-row)] ((board i) j)))
