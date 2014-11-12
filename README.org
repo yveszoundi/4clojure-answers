@@ -1489,12 +1489,12 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 
 #+begin_src clojure
   ;; Perfect square numbers
-  ;; http://www.mathwarehouse.com/arithmetic/numbers/what-is-a-perfect-square.php
+  ;; http://en.wikipedia.org/wiki/Square_number
   (defn perfect-sqrt-nums [num-seq]
-    (let [pred-fn (fn [s]
-                    (let [x-sqrt (Math/sqrt (Integer/valueOf s))]
-                      (= (double 0) (double (- x-sqrt (Math/floor x-sqrt))))))]
-      (->> (interpose "," (filter pred-fn (re-seq #"\d+" num-seq)))
+    (letfn [(perfect-square? [s]
+              (let [n-sqrt (Math/sqrt (Integer/valueOf s))]
+                (= (double 0) (double (- n-sqrt (Math/floor n-sqrt))))))]
+      (->> (interpose "," (filter perfect-square? (re-seq #"\d+" num-seq)))
            (apply str))))
 
   (clojure.test/testing
