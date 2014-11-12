@@ -1916,43 +1916,31 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   ;; - All edges are undirected.
 
   (defn eulerian-walk? [g]
-    (if (= 1 (count g))
-      true
-      (letfn [(vertices [g]
-                (set (reduce concat g)))
+    (letfn [(vertices [g] (set (reduce concat g)))
 
-              (adjacent-edges [src g]
-                (filter (fn [[a b]] (or (= a src) (= b src))) g))
+            (adjacent-edges [v g] (filter (fn [[a b]] (or (= a v) (= b v))) g))
 
-              (next-origin [edge origin]
-                (first (disj (into #{} edge) origin)))
+            (next-vertex [e u] (first (disj (into #{} e) u)))
 
-              (rem-first [xs x]
-                (when xs
-                  (if (not= (first xs) x)
-                    (cons (first xs) (rem-first (next xs) x))
-                    (rest xs))))
+            (rem-first [xs x]
+              (when xs
+                (if (not= (first xs) x)
+                  (cons (first xs) (rem-first (next xs) x))
+                  (rest xs))))
 
-              (max-tree-height [tree]
-                (if (not (seq? tree)) 0
-                    (+ 1 (reduce max (map max-tree-height tree)))))
-
-              (walk [root src g]
-                (when (not (empty? g))
-                  (let [neighbours (adjacent-edges src g)]
-                    (when (not (empty? neighbours))
-                      (map (fn [x]
-                             (cons x
-                                   (walk root (next-origin x src) (rem-first g x)))) neighbours)))))]
-
-        (reduce (fn [init-condition x]
-                  (and init-condition
-                       (->> (walk x x g)
-                            (map #(max-tree-height %1))
-                            (reduce max)
-                            (= (count g)))))
-                true
-                (vertices g)))))
+            (get-paths [v g q]
+              (let [edges (adjacent-edges v g)]
+                (if (empty? edges)
+                  (cons q nil)
+                  (->> (mapcat #(reduce conj [] (get-paths (next-vertex %1 v)
+                                                           (rem-first g %1)
+                                                           (conj q %1)))
+                               edges)
+                       (map seq)))))]
+      (let [nodes (vertices g), node (first nodes)
+            eulerian-trail? (->> (get-paths node g (clojure.lang.PersistentQueue/EMPTY))
+                                 (some #(= (count g) (count %1))))]
+        (or eulerian-trail? false))))
 
   (and (= true (eulerian-walk? [[:a :b]]))
        (= false (eulerian-walk? [[:a :a] [:b :b]]))
@@ -2016,19 +2004,22 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
               (loop [stack (cons v nil) visited #{}]
                 (if (empty? stack)
                   visited
-                  (let [node (peek stack)
-                        col (pop stack)
+                  (let [node         (peek stack)
+                        col          (pop stack)
                         not-visited? (not (contains? visited node))
                         next-visited (if not-visited?
                                        (conj visited node)
                                        visited)
-                        next-stack (if not-visited?
-                                     (reduce #(conj %1 %2) col (adjacent-nodes node g))
-                                     col)]
+                        next-stack   (if not-visited?
+                                       (reduce #(conj %1 %2)
+                                               col (adjacent-nodes node g))
+                                       col)]
                     (recur next-stack next-visited)))))]
 
-      (let [nodes (set (reduce concat g))
-            connections (reduce (fn [acc v] (assoc acc v (dfs-iter v g))) {} nodes)]
+      (let [nodes       (set (reduce concat g))
+            connections (reduce (fn [acc v]
+                                  (assoc acc v (dfs-iter v g)))
+                                {} nodes)]
         (every? #(= (count nodes) (count (last %1))) connections))))
 
   (and
@@ -2131,53 +2122,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; Write a function that accepts a board, and returns a board representing
     ;; the next generation of cells.
 
-    (defn game-of-life [m]
-      (letfn [(get-cells [pred m cols-ln rows-ln]
-                (->> (for [i (range cols-ln)]
-                       (for [j (range rows-ln) :when (pred m i j)] [i j]))
-                     (reduce concat)))
-
-              (live-cell-only [m i j](= \# (nth (m i) j)))
-
-              (neighbours [[i j] max-i max-j]
-                ;; T-L-diagNL-diagSL-B-R-diagNR-diagSR
-                (concat []
-                        (if (pos? j)                      [[i (dec j)]])         ;; T
-                        (if (pos? i)                      [[(dec i) j]])         ;; L
-                        (if (and (pos? i) (pos? j))       [[(dec i) (dec j)]])   ;; diagNL
-                        (if (and (pos? i) (< j max-j))    [[(dec i) (inc j)]])   ;; diagSL
-                        (if (< j max-j)                   [[i (inc j)]])         ;; B
-                        (if (< i max-i)                   [[(inc i) j]])         ;; R
-                        (if (and (< i max-i) (pos? j))    [[(inc i) (dec j)]])   ;; diagNR
-                        (if (and (< i max-i) (< j max-j)) [[(inc i) (inc j)]])   ;; diagSR
-                        ))
-
-              (live-neighbours-only [associations m]
-                (reduce (fn [acc [cell neighbours]]
-                          (let [alive-neighbours (filter (fn [[i j]] (= \# (nth (m i) j))) neighbours)]
-                            (assoc acc cell (count alive-neighbours))))
-                        associations associations))
-
-              (assoc-neighbours [live-cells max-i max-j]
-                (reduce (fn [acc coords] (assoc acc coords (neighbours coords max-i max-j))) {} live-cells))
-
-              (do-work [[i j] live-neighbours-count board-state]
-                (let [row-data (into [] (board-state i))]
-                  (if (or (> live-neighbours-count 3) (< live-neighbours-count 2))
-                    (assoc board-state i (apply str (assoc row-data j \space)))
-                    board-state)))
-
-              (maybe-revive-dead-cells? [m] m)]
-        (let [max-i (count m), max-j (count (first m))
-              associations  (-> (get-cells live-cell-only m max-i max-j)
-                                (assoc-neighbours max-i max-j)
-                                (live-neighbours-only m))]
-          (loop [board-state m, acc associations]
-            (if (empty? acc)
-              (maybe-revive-dead-cells? board-state)
-              (let [[cell live-neighbours-count] (apply max-key #(last %1) acc)
-                    next-board-state (do-work cell live-neighbours-count board-state)]
-                (recur next-board-state (dissoc acc cell))))))))
+    (defn game-of-life [m])
 
     (and
      (= (game-of-life ["      "
@@ -2980,8 +2925,6 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *For Science!*
 
   #+BEGIN_SRC clojure
-    ;; 4Clojure Question 117
-    ;;
     ;; A mad scientist with tenure has created an experiment
     ;; tracking mice in a maze.  Several mazes have been
     ;; randomly generated, and you've been tasked with
