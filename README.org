@@ -1238,7 +1238,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 
                (reduce-primes-set [candidate primes-set]
                  (let [max-val (inc (long (Math/ceil (Math/sqrt candidate))))]
-                   (for [i primes-set :while (< i max-val) :when (zero? (mod candidate i))] i)))
+                   (for [i primes-set :while (< i max-val)
+                         :when (zero? (mod candidate i))] i)))
 
                (next-prime-candidate [current-candidate]
                  (+ 2 current-candidate))
@@ -1247,8 +1248,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                  (lazy-seq
                   (let [next-prime (add-prime? candidate acc)]
                     (cons next-prime
-                          (gen-primes (next-prime-candidate next-prime) (conj acc next-prime))))))]
-         
+                          (gen-primes (next-prime-candidate next-prime)
+                                      (conj acc next-prime))))))]       
          (cons 2 (gen-primes 3 [2]))))
     ([n]
        (take n (prime-sieve))))
@@ -2901,19 +2902,16 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;;
 
     ;; requires previous prime-sieve function from problem 67
-    (defn balanced-prime? [num]
-      (letfn [(primes-list [n]
+    (defn balanced-prime? [n]
+      (letfn [(primes-interval [n]
                 (let [[a b c & more] (prime-sieve)]
                   (loop [acc [a b c] primes more]
                     (if (> (last acc) n)
                       acc
-                      (recur (conj (vec (rest acc)) (first primes)) (rest primes))))))
+                      (recur (conj (vec (rest acc)) (first primes)) (rest primes))))))]
 
-              (last-n-primes [n max-until-prime-value]
-                (into [] (take-last n (primes-list max-until-prime-value))))]
-
-        (let [ [a b c] (last-n-primes 3 num)]
-          (and (= num b) (= num (/ (+ a c) 2))))))
+        (let [ [a b c] (primes-interval n)]
+          (and (= n b) (= n (/ (+ a c) 2))))))
 
     (and (= false (balanced-prime? 4))
          (= true (balanced-prime? 563))
