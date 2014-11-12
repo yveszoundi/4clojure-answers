@@ -2368,7 +2368,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                      (inc (last cur-row))
                      (+ (nth prev-row (dec col-idx)) (if same-char? 0 1))))]
         (loop [row-idx  1
-               max-rows (inc (count w2)),
+               max-rows (inc (count w2))
                prev     (range (inc (count w1)))]
           (if (= row-idx max-rows)
             (last prev)
