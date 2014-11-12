@@ -2354,9 +2354,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *Levenshtein Distance*
 
   #+BEGIN_SRC clojure
-    ;; Given two sequences x and y, calculate the
-    ;; <a href="https://secure.wikimedia.org/wikipedia/en/wiki/Levenshtein_distance">Levenshtein distance</a>
-    ;; of x and y, i. e. the minimum number of edits needed to transform x into y.
+    ;; https://secure.wikimedia.org/wikipedia/en/wiki/Levenshtein_distance
+
+    ;; Given two sequences x and y, calculate the Levenshtein distance of x
+    ;; and y, i. e. the minimum number of edits needed to transform x into y.
+
     ;; The allowed edits are:<br/><br/>- insert a single item<br/>-
     ;; delete a single item<br/>- replace a single item with another item
     ;; <br/><br/>WARNING: Some of the test cases may timeout
@@ -2369,18 +2371,18 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                      (+ (nth prev-row (dec col-idx)) (if same-char? 0 1))))]
         (loop [row-idx  1
                max-rows (inc (count w2))
-               prev     (range (inc (count w1)))]
+               prev-row (range (inc (count w1)))]
           (if (= row-idx max-rows)
-            (last prev)
+            (last prev-row)
             (let [ch2       (nth w2 (dec row-idx))
                   next-prev (reduce (fn [cur-row i]
                                       (let [same-char? (= (nth w1 (dec i)) ch2)]
                                         (conj cur-row (cell-value same-char?
-                                                                  prev
+                                                                  prev-row
                                                                   cur-row
                                                                   i))))
                                     [row-idx]
-                                    (range 1 (count prev)))]
+                                    (range 1 (count prev-row)))]
               (recur (inc row-idx) max-rows, next-prev))))))
 
     (and
