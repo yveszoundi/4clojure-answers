@@ -1469,13 +1469,12 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 #+begin_src clojure
   ;; Perfect square numbers
   ;; http://www.mathwarehouse.com/arithmetic/numbers/what-is-a-perfect-square.php
-  (defn perfect-sqrt-nums [str]
-    (let [num-xs (map #(Integer/valueOf %) (.split str ","))
-          pred-fn (fn [x]
-                    (let [x-sqrt (Math/sqrt x)]
-                      (= (double 0) (double (- x-sqrt (Math/floor x-sqrt))))))
-          fl-xs (filter pred-fn num-xs)]
-      (clojure.string/join "," fl-xs)))
+  (defn perfect-sqrt-nums [num-seq]
+    (let [pred-fn (fn [s]
+                    (let [x-sqrt (Math/sqrt (Integer/valueOf s))]
+                      (= (double 0) (double (- x-sqrt (Math/floor x-sqrt))))))]
+      (->> (interpose "," (filter pred-fn (re-seq #"\d+" num-seq)))
+           (apply str))))
 
   (clojure.test/testing
       "Given a string of comma separated integers,
@@ -2368,13 +2367,18 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                 (min (inc (nth prev-row col-idx))
                      (inc (last cur-row))
                      (+ (nth prev-row (dec col-idx)) (if same-char? 0 1))))]
-        (loop [row-idx 1, max-rows (inc (count w2)), prev (range (inc (count w1)))]
+        (loop [row-idx  1
+               max-rows (inc (count w2)),
+               prev     (range (inc (count w1)))]
           (if (= row-idx max-rows)
             (last prev)
-            (let [ch2 (nth w2 (dec row-idx))
+            (let [ch2       (nth w2 (dec row-idx))
                   next-prev (reduce (fn [cur-row i]
                                       (let [same-char? (= (nth w1 (dec i)) ch2)]
-                                        (conj cur-row (cell-value same-char? prev cur-row i))))
+                                        (conj cur-row (cell-value same-char?
+                                                                  prev
+                                                                  cur-row
+                                                                  i))))
                                     [row-idx]
                                     (range 1 (count prev)))]
               (recur (inc row-idx) max-rows, next-prev))))))
