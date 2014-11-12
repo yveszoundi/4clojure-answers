@@ -1394,43 +1394,63 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   ;; tic-tac-toe board and returns :x if X has won, :o if O has won,
   ;; and nil if neither player has won.
 
-  ;; Rewrite with Magic Square approach
-  ;; - My initial version was a loop with 'apply = collection'
-  ;;   *  loop on rows, then columns, then diagonals
-  ;;   *  for each set possibility check winner with apply = collection
-  ;;
-  ;; New approach http://mathworld.wolfram.com/MagicSquare.html
+  ;; Other approach http://mathworld.wolfram.com/MagicSquare.html
   ;; - Map number to 0 for empty cells
   ;; - Leave number as is for :o
   ;; - Multiply the number by 2 for :x
   ;; - If the total of a row adds up to 15 :o wins, 30 :x wins otherwise nobody
+  ;; (defn tic-tac-toe-winner-magic-square [board]
+  ;;   (let [magic-square [[8 1 6] [3 5 7] [4 9 2]]
+
+  ;;         make-groups (fn [board]
+  ;;                       (let [max-col (count board), max-row (count (first board))]
+  ;;                         (concat
+  ;;                          (for [i (range max-col)]
+  ;;                            (for [j (range max-row)] ((board i) j)))
+  ;;                          (for [j (range max-row)]
+  ;;                            (for [i (range max-col)] ((board i) j)))
+  ;;                          [(for [i (range max-row)] ((board i) i))]
+  ;;                          [(for [i (reverse (range max-row))]
+  ;;                             ((board i) (dec (- max-row i))))])))
+
+  ;;         row-winner (fn [row] (case (reduce + row) 15 :o, 30 :x, nil))
+
+  ;;         cell-to-num (fn [cell mapped-cell]
+  ;;                       (case cell :o mapped-cell, :x (* mapped-cell 2), 0))
+
+  ;;         transform-row (fn [matrix mapped-matrix]
+  ;;                         (mapv (fn [row mapped-row] (cell-to-num row mapped-row))
+  ;;                               matrix mapped-matrix))
+
+  ;;         game-winner (fn [cell-groups winner]
+  ;;                       (if (or winner (empty? cell-groups))
+  ;;                         winner
+  ;;                         (recur (next cell-groups) (row-winner (first cell-groups)))))]
+
+  ;;     (let [num-matrix (mapv transform-row board magic-square)
+  ;;           cell-groups (make-groups num-matrix)]
+  ;;       (game-winner cell-groups nil))))
+
   (defn tic-tac-toe-winner [board]
-    (let [magic-square [[8 1 6] [3 5 7] [4 9 2]]
+    (letfn [(make-groups [board]
+              (let [max-col (count board), max-row (count (first board))]
+                (concat
+                 (for [i (range max-col)]
+                   (for [j (range max-row)] ((board i) j)))
+                 (for [j (range max-row)]
+                   (for [i (range max-col)] ((board i) j)))
+                 [(for [i (range max-row)] ((board i) i))]
+                 [(for [i (reverse (range max-row))]
+                    ((board i) (dec (- max-row i))))])))
 
-          make-groups (fn [board]
-                        (let [max-col (count board), max-row (count (first board))]
-                          (concat
-                           (for [i (range max-col)] (for [j (range max-row)] ((board i) j)))
-                           (for [j (range max-row)] (for [i (range max-col)] ((board i) j)))
-                           [(for [i (range max-row)] ((board i) i))]
-                           [(for [i (reverse (range max-row))] ((board i) (dec (- max-row i))))])))
+            (game-winner [[cell-grp & cell-grps]]
+              (if-not cell-grp
+                nil
+                (if (and (not (some #(= :e %1) cell-grp)) (apply = cell-grp))
+                  (first cell-grp)
+                  (recur cell-grps))))]
 
-          row-winner (fn [row]
-                       (case (reduce + row) 15 :o, 30 :x, nil))
-
-          cell-to-num (fn [cell mapped-cell]
-                        (case cell :o mapped-cell, :x (* mapped-cell 2), 0))
-
-          transform-row (fn [matrix mapped-matrix]
-                          (mapv (fn [row mapped-row] (cell-to-num row mapped-row)) matrix mapped-matrix))
-
-          game-winner (fn [cell-groups winner]
-                        (if (or winner (empty? cell-groups))
-                          winner
-                          (recur (next cell-groups) (row-winner (first cell-groups)))))]
-      
-      (let [num-matrix (mapv transform-row board magic-square), cell-groups (make-groups num-matrix)]
-        (game-winner cell-groups nil))))
+      (game-winner (make-groups board))))
 
   (and
    (= nil (tic-tac-toe-winner [[:e :e :e]
