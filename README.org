@@ -1801,22 +1801,29 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
     (letfn [(adjacent-vertices [v g]
               (keep (fn [[a b]] (when (= v a) b)) g))
 
+            (vertices [g]
+              (set (reduce concat g)))
+
             (bfs-iter [v g]
               (loop [queue (-> (clojure.lang.PersistentQueue/EMPTY) (conj v))
                      visited #{v}]
                 (if (empty? queue)
                   (disj visited v)
-                  (let [node (peek queue)
-                        cur-queue (pop queue)
+                  (let [node       (peek queue)
+                        cur-queue  (pop queue)
                         neighbours (adjacent-vertices node g)
-                        unseen (reduce disj (set neighbours) visited)
+                        unseen     (reduce disj (set neighbours) visited)
                         next-queue (reduce conj cur-queue unseen)]
                     (recur next-queue (reduce conj visited unseen))))))
 
-            (add-transitive-edges [v connections g]
-              (reduce #(conj %1 [v %2]) g connections))]
+            (transitive-edges [v connections]
+              (reduce #(conj %1 [v %2]) connections))]
 
-      (reduce #(add-transitive-edges %2 (bfs-iter %2 g) %1) g (set (reduce concat g)))))
+      (reduce (fn [graph vertex]
+                (let [reachable-nodes  (bfs-iter vertex g)
+                      transitive-links (transitive-edges vertex reachable-nodes)]
+                  (reduce #(conj %1 %2) graph transitive-links)))
+              g (vertices g))))
 
   (and
    (let [divides #{[8 4] [9 3] [4 2] [27 9]}]
@@ -2500,7 +2507,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
         (if (zero? remainder)
           (apply str result)
           (let [min-num-sym (reduce max (filter #(<= %1 remainder) sym-keys))
-                min-sym (sym-table min-num-sym)]
+                min-sym     (sym-table min-num-sym)]
             (recur (- remainder min-num-sym) (conj result min-sym)))))))
 
 
@@ -2861,7 +2868,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   (defn take-up-to [n pred? xs]
     (lazy-seq
      (when (and (pos? n) (not (empty? xs)))
-       (let [cur (first xs), next-n (if (pred? cur) (dec n) n)]
+       (let [cur    (first xs)
+             next-n (if (pred? cur)
+                      (dec n)
+                      n)]
          (when-not (zero? next-n)
            (cons cur (take-up-to next-n pred? (rest xs))))))))
 
@@ -3214,26 +3224,26 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                              (conj acc (walk-list x mapping))
                              (conj acc (or (mapping x) x))))
                          '[] li)))
-              
+
               (augment-args [args]
                 (conj args ['+ +] ['- -] ['* *] ['/ /]))
 
-              (recur-apply [li]
-                (when-not (empty? li)
-                  (let [cur (last li)]
-                    (if-not (coll? li)
-                      (cons li (recur-apply (rest li)))
-                      (if (fn? (first cur))
-                        (apply (first cur) (recur-apply (rest cur)))
-                        cur)))))
-              
+              (all-seq? [expr]
+                (and (coll? expr) (every? coll? expr)))
+
               (do-apply [op arguments]
-                (if-not (empty? arguments)
-                  (recur-apply (cons op arguments))
-                  (recur (first op) (rest op))))]
+                (println "op:" op "arguments:" arguments "all-seq?:" (all-seq? arguments))
+                (if (empty? arguments)
+                  (recur (first op) (rest op))
+                  (if-not (all-seq? arguments)
+                    (apply op arguments)
+                    (let [p (first arguments)
+                          r (reduce op (first p) (rest p))]
+                      r
+                    ))))]
         (fn [& args]
           (let [r (reduce (fn [acc x]
-                    (conj acc (walk-list expr (augment-args x))))
+                            (conj acc (walk-list expr (augment-args x))))
                           [] args)]
             (do-apply (first r) (rest r))))))
 
@@ -3848,15 +3858,20 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *Veitch, Please!-TODO*
 
 #+BEGIN_SRC clojure
-  ;; 4Clojure Question 140
+  ;; Create a function which accepts as input a boolean algebra function
+  ;; in the form of a set of sets, where the inner sets are collections
+  ;; of symbols corresponding to the input boolean variables which
+  ;; satisfy the function (the inputs of the inner sets are conjoint,
+  ;; and the sets themselves are disjoint... also known as canonical minterms).
+
+  ;; Note:&nbsp;capitalized symbols represent truth, and lower-case symbols
+  ;; represent negation of the inputs.
+
+  ;; Your function must return the minimal function which is logically
+  ;; equivalent to the input.
   ;;
-  ;; Create a function which accepts as input a boolean algebra function in the form of a set of sets, where the inner sets are collections of symbols corresponding to the input boolean variables which satisfy the function (the inputs of the inner sets are conjoint, and the sets themselves are disjoint... also known as canonical minterms).  Note:&nbsp;capitalized symbols represent truth, and lower-case symbols represent negation of the inputs.  Your function must return the minimal function which is logically equivalent to the input.
-  ;;
-  ;; </br></br>
-  ;;
-  ;; PS &mdash; You may want to give this a read before proceeding: <a href="http://en.wikipedia.org/wiki/K_map">K-Maps</a>
-  ;;
-  ;; Use M-x 4clojure-check-answers when you're done!
+  ;; You may want to give this a read before proceeding:
+  ;; <a href="http://en.wikipedia.org/wiki/K_map">K-Maps</a>
 
   (= (__ #{#{'a 'B 'C 'd}
            #{'A 'b 'c 'd}
@@ -4156,8 +4171,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
     (defn pascal-triangle [xs]
       (letfn [(stepper [xs]
-                (-> [(first xs)]
-                    (into (map #(reduce +' %1N) (partition 2 1 xs)))
+                (-> (into [(first xs)] (map #(reduce +' %1N) (partition 2 1 xs)))
                     (conj (last xs))))]
         (iterate stepper xs)))
 
@@ -4191,7 +4205,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                   0)))]
       (let [limit (dec n)]
         (-> (+' (n-sum a limit) (n-sum b limit))
-            (- (n-sum (*' a b) limit))))))
+            (-'  (n-sum (*' a b) limit))))))
 
 
   (and
