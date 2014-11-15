@@ -2945,8 +2945,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                   (loop [acc [a b c] primes more]
                     (if (> (last acc) n)
                       acc
-                      (recur (conj (vec (rest acc)) (first primes)) (rest primes))))))]
-
+                      (recur (conj (vec (rest acc)) (first primes))
+                             (rest primes))))))]
         (let [ [a b c] (primes-interval n)]
           (and (= n b) (= n (/ (+ a c) 2))))))
 
@@ -3217,35 +3217,30 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; of variable names to their values.
 
     (defn uce [expr]
-      (letfn [(walk-list [li mapping]
-                (seq
-                 (reduce (fn [acc x]
-                           (if (coll? x)
-                             (conj acc (walk-list x mapping))
-                             (conj acc (or (mapping x) x))))
-                         '[] li)))
+      (letfn [(map-args [st mappings]
+                (map (fn [sym]
+                       (if (coll? sym)
+                         (map-args sym mappings)
+                         (mappings sym sym)))
+                     st))
 
-              (augment-args [args]
-                (conj args ['+ +] ['- -] ['* *] ['/ /]))
+              (has-subseqs? [st]
+                (some coll? st))
 
-              (all-seq? [expr]
-                (and (coll? expr) (every? coll? expr)))
+              (augment-fns [mappings]
+                (assoc mappings ['+ +] ['- -] ['/ /] ['* *]))
 
-              (do-apply [op arguments]
-                (println "op:" op "arguments:" arguments "all-seq?:" (all-seq? arguments))
-                (if (empty? arguments)
-                  (recur (first op) (rest op))
-                  (if-not (all-seq? arguments)
-                    (apply op arguments)
-                    (let [p (first arguments)
-                          r (reduce op (first p) (rest p))]
-                      r
-                    ))))]
+              (visit [[op & arguments]]
+                (println "arguments:" arguments)
+                (if-not (has-subseqs? arguments)
+                  (apply op arguments)
+                  (reduce op (map visit arguments))))]
+
         (fn [& args]
-          (let [r (reduce (fn [acc x]
-                            (conj acc (walk-list expr (augment-args x))))
-                          [] args)]
-            (do-apply (first r) (rest r))))))
+          (->> (augment-fns (first args))
+               (map-args expr)
+               visit
+               ))))
 
     (and
      (= 2 ((uce '(/ a b))
@@ -3314,32 +3309,33 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; <p>Board coordinates should be as in calls to get-in.
   ;; For example, <code>[0 1]</code> is the topmost row, second column from the left.
 
-  (defn reversi [board color]
+  (defn reversi
+    [board color])
 
-    )
-  (= {[1 3] #{[1 2]}, [0 2] #{[1 2]}, [3 1] #{[2 1]}, [2 0] #{[2 1]}}
-     (__ '[[e e e e]
-           [e w b e]
-           [e b w e]
-           [e e e e]] 'w))
+  (and
+   (= {[1 3] #{[1 2]}, [0 2] #{[1 2]}, [3 1] #{[2 1]}, [2 0] #{[2 1]}}
+      (reversi '[[e e e e]
+                 [e w b e]
+                 [e b w e]
+                 [e e e e]] 'w))
 
-  (= {[3 2] #{[2 2]}, [3 0] #{[2 1]}, [1 0] #{[1 1]}}
-     (__ '[[e e e e]
-           [e w b e]
-           [w w w e]
-           [e e e e]] 'b))
+   (= {[3 2] #{[2 2]}, [3 0] #{[2 1]}, [1 0] #{[1 1]}}
+      (reversi '[[e e e e]
+                 [e w b e]
+                 [w w w e]
+                 [e e e e]] 'b))
 
-  (= {[0 3] #{[1 2]}, [1 3] #{[1 2]}, [3 3] #{[2 2]}, [2 3] #{[2 2]}}
-     (__ '[[e e e e]
-           [e w b e]
-           [w w b e]
-           [e e b e]] 'w))
+   (= {[0 3] #{[1 2]}, [1 3] #{[1 2]}, [3 3] #{[2 2]}, [2 3] #{[2 2]}}
+      (reversi '[[e e e e]
+                 [e w b e]
+                 [w w b e]
+                 [e e b e]] 'w))
 
-  (= {[0 3] #{[2 1] [1 2]}, [1 3] #{[1 2]}, [2 3] #{[2 1] [2 2]}}
-     (__ '[[e e w e]
-           [b b w e]
-           [b w w e]
-           [b w w w]] 'b))
+   (= {[0 3] #{[2 1] [1 2]}, [1 3] #{[1 2]}, [2 3] #{[2 1] [2 2]}}
+      (reversi '[[e e w e]
+                 [b b w e]
+                 [b w w e]
+                 [b w w w]] 'b)))
 
 #+END_SRC
 
@@ -3376,29 +3372,43 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *Love Triangle-TODO*
 
   #+BEGIN_SRC clojure
-    ;; Everyone loves triangles, and it's easy to understand why&mdash;they're so wonderfully symmetric (except scalenes, they suck).
+    ;; Everyone loves triangles, and it's easy to understand why&mdash;
+    ;; they're so wonderfully symmetric (except scalenes, they suck).
+
+    ;; Your passion for triangles has led you to become a miner
+    ;; (and part-time Clojure programmer) where you work all day to
+    ;; chip out isosceles-shaped minerals from rocks gathered in a
+    ;; nearby open-pit mine.
+
+    ;; There are too many rocks coming from the mine to harvest them
+    ;; all so you've been tasked with writing a program to analyze
+    ;; the mineral patterns of each rock, and determine which rocks
+    ;; have the biggest minerals.
+
+    ;; Someone has already written a
+    ;; <a href="http://en.wikipedia.org/wiki/Computer_vision">computer-vision</a>
+    ;; system for the mine.
+    ;; It images each rock as it comes into the processing centre and
+    ;; creates a cross-sectional
+    ;; <a href="http://en.wikipedia.org/wiki/Bit_array">bitmap</a>
+    ;; of mineral (1) and rock (0) concentrations for each one.
+
+    ;; You must now create a function which accepts a collection of integers,
+    ;; each integer when read in base-2 gives the bit-representation of the
+    ;; rock (again, 1s are mineral and 0s are worthless scalene-like rock).
+    ;; You must return the cross-sectional area of the largest harvestable
+    ;; mineral from the input rock, as follows:
+
+    ;; <li>The minerals only have smooth faces when sheared vertically
+    ;; or horizontally from the rock's cross-section</li>
     ;;
-    ;; <br/><br/>
+    ;; <li>The mine is only concerned with harvesting isosceles triangles
+    ;; (such that one or two sides can be sheared)</li>
     ;;
-    ;; Your passion for triangles has led you to become a miner (and part-time Clojure programmer) where you work all day to chip out isosceles-shaped minerals from rocks gathered in a nearby open-pit mine.  There are too many rocks coming from the mine to harvest them all so you've been tasked with writing a program to analyze the mineral patterns of each rock, and determine which rocks have the biggest minerals.
-    ;;
-    ;; <br/><br/>
-    ;;
-    ;; Someone has already written a <a href="http://en.wikipedia.org/wiki/Computer_vision">computer-vision</a> system for the mine.  It images each rock as it comes into the processing centre and creates a cross-sectional <a href="http://en.wikipedia.org/wiki/Bit_array">bitmap</a> of mineral (1) and rock (0) concentrations for each one.
-    ;;
-    ;; <br/><br/>
-    ;;
-    ;; You must now create a function which accepts a collection of integers, each integer when read in base-2 gives the bit-representation of the rock (again, 1s are mineral and 0s are worthless scalene-like rock).  You must return the cross-sectional area of the largest harvestable mineral from the input rock, as follows:
-    ;;
-    ;; <br>
-    ;;
-    ;; <ul>
-    ;;
-    ;; <li>The minerals only have smooth faces when sheared vertically or horizontally from the rock's cross-section</li>
-    ;;
-    ;; <li>The mine is only concerned with harvesting isosceles triangles (such that one or two sides can be sheared)</li>
-    ;;
-    ;; <li>If only one face of the mineral is sheared, its opposing vertex must be a point (ie. the smooth face must be of odd length), and its two equal-length sides must intersect the shear face at 45&deg; (ie. those sides must cut even-diagonally)</li>
+    ;; <li>If only one face of the mineral is sheared, its opposing vertex
+    ;; must be a point (ie. the smooth face must be of odd length), and
+    ;; its two equal-length sides must intersect the shear face at 45&deg;
+    ;; (ie. those sides must cut even-diagonally)</li>
     ;;
     ;; <li>The harvested mineral may not contain any traces of rock</li>
     ;;
@@ -3411,58 +3421,80 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; <li>If no minerals can be harvested from the rock, your function should return nil</li>
     ;;
     ;; </ul>
-    ;;
-    ;; Use M-x 4clojure-check-answers when you're done!
 
-    (= 10 (__ [15 15 15 15 15]))
-    ; 1111      1111
-    ; 1111      *111
-    ; 1111  ->  **11
-    ; 1111      ***1
-    ; 1111      ****
+    (defn love-triangle [xs]
+      (let [mk-digits     (fn [xs]
+                            (->> (map #(Integer/toBinaryString %1) xs)
+                                 (mapv (fn [x]
+                                         (mapv #(Character/getNumericValue %1) x)))))
 
-    (= 15 (__ [1 3 7 15 31]))
-    ; 00001      0000*
-    ; 00011      000**
-    ; 00111  ->  00***
-    ; 01111      0****
-    ; 11111      *****
+            get-triangles (fn [tree]
+                            
+                            )
 
-    (= 3 (__ [3 3]))
-    ; 11      *1
-    ; 11  ->  **
+            
 
-    (= 4 (__ [7 3]))
-    ; 111      ***
-    ; 011  ->  0*1
 
-    (= 6 (__ [17 22 6 14 22]))
-    ; 10001      10001
-    ; 10110      101*0
-    ; 00110  ->  00**0
-    ; 01110      0***0
-    ; 10110      10110
+                           
 
-    (= 9 (__ [18 7 14 14 6 3]))
-    ; 10010      10010
-    ; 00111      001*0
-    ; 01110      01**0
-    ; 01110  ->  0***0
-    ; 00110      00**0
-    ; 00011      000*1
+                           
+                           ]
+            (mk-digits xs)
 
-    (= nil (__ [21 10 21 10]))
-    ; 10101      10101
-    ; 01010      01010
-    ; 10101  ->  10101
-    ; 01010      01010
+        ))
 
-    (= nil (__ [0 31 0 31 0]))
-    ; 00000      00000
-    ; 11111      11111
-    ; 00000  ->  00000
-    ; 11111      11111
-    ; 00000      00000
+
+    (and
+     (= 10 (love-triangle [15 15 15 15 15]))
+                                            ; 1111      1111
+                                            ; 1111      *111
+                                            ; 1111  ->  **11
+                                            ; 1111      ***1
+                                            ; 1111      ****
+
+     (= 15 (love-triangle [1 3 7 15 31]))
+                                            ; 00001      0000*
+                                            ; 00011      000**
+                                            ; 00111  ->  00***
+                                            ; 01111      0****
+                                            ; 11111      *****
+
+     (= 3 (love-triangle [3 3]))
+                                            ; 11      *1
+                                            ; 11  ->  **
+
+     (= 4 (love-triangle [7 3]))
+                                            ; 111      ***
+                                            ; 011  ->  0*1
+
+     (= 6 (love-triangle [17 22 6 14 22]))
+                                            ; 10001      10001
+                                            ; 10110      101*0
+                                            ; 00110  ->  00**0
+                                            ; 01110      0***0
+                                            ; 10110      10110
+
+     (= 9 (love-triangle [18 7 14 14 6 3]))
+                                            ; 10010      10010
+                                            ; 00111      001*0
+                                            ; 01110      01**0
+                                            ; 01110  ->  0***0
+                                            ; 00110      00**0
+                                            ; 00011      000*1
+
+     (= nil (love-triangle [21 10 21 10]))
+                                            ; 10101      10101
+                                            ; 01010      01010
+                                            ; 10101  ->  10101
+                                            ; 01010      01010
+
+     (= nil (love-triangle [0 31 0 31 0]))
+                                            ; 00000      00000
+                                            ; 11111      11111
+                                            ; 00000  ->  00000
+                                            ; 11111      11111
+                                            ; 00000      00000
+     )
   #+END_SRC
 
 * Problem 128
@@ -3820,33 +3852,51 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; The direction of the drawing should be clockwise, starting from the center
   ;; of the shape and working outwards, with the initial direction being down and to the right.
 
-  (= (__ 2 2) ["2"])
+  (defn squares-squared [start end]
+    (let [build-seq   (fn [start end]
+                        (loop [i start j end acc []]
+                          (if (> i j)
+                            acc
+                            (let [next-i (Math/pow i 2)]
+                              (recur next-i j (conj acc (long i)))))))
 
-  (= (__ 2 4) [" 2 "
-               "* 4"
-               " * "])
+          rotate-45   (fn [xs] xs)
 
-  (= (__ 3 81) [" 3 "
-                "1 9"
-                " 8 "])
+          make-matrix (fn [nums]
+                        (mapv #(str %1) nums))]
 
-  (= (__ 4 20) [" 4 "
-                "* 1"
-                " 6 "])
+      (->> (build-seq start end)
+           (make-matrix)
+           (rotate-45))))
 
-  (= (__ 2 256) ["  6  "
-                 " 5 * "
-                 "2 2 *"
-                 " 6 4 "
-                 "  1  "])
+  (and
+   (= (squares-squared 2 2) ["2"])
 
-  (= (__ 10 10000) ["   0   "
-                    "  1 0  "
-                    " 0 1 0 "
-                    "* 0 0 0"
-                    " * 1 * "
-                    "  * *  "
-                    "   *   "])
+   (= (squares-squared 2 4) [" 2 "
+                             "* 4"
+                             " * "])
+
+   (= (squares-squared 3 81) [" 3 "
+                              "1 9"
+                              " 8 "])
+
+   (= (squares-squared 4 20) [" 4 "
+                              "* 1"
+                              " 6 "])
+
+   (= (squares-squared 2 256) ["  6  "
+                               " 5 * "
+                               "2 2 *"
+                               " 6 4 "
+                               "  1  "])
+
+   (= (squares-squared 10 10000) ["   0   "
+                                  "  1 0  "
+                                  " 0 1 0 "
+                                  "* 0 0 0"
+                                  " * 1 * "
+                                  "  * *  "
+                                  "   *   "]))
 #+END_SRC
 
 * Problem 139
@@ -4244,9 +4294,20 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; The most simple solution will exceed the time limit!
 
   (defn palindromic-sieve [n]
-    (letfn [(num->digits [n] (mapv #(Character/getNumericValue %1) (str n)))
+    (letfn [(num->digits [n]
+              (into []
+                    (loop [x n r '()]
+                      (if (< x 10) (cons x r)
+                          (recur (quot x 10) (cons (mod x 10) r))))))
 
-            (digits->num [digits] (bigint (apply str digits)))
+            (digits->num [xs]
+              (let [ln       (count xs)
+                    last-idx (dec ln)]
+                (reduce (fn [r idx]
+                          (let [elem (xs (-' last-idx idx))
+                                res  (bigint (*' (Math/pow 10N idx) elem))]
+                            (+' r res)))
+                        0N (range ln))))
 
             (get-mid-index [digits]
               (let [ln (count digits)]
@@ -4259,12 +4320,12 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                 ;; only 1 digit
                 left-digits
                 ;; Take up to the number of digits to replicate and reverse
-                (reduce conj left-digits (reverse (take to-replicate left-digits)))))
+                (into left-digits (reverse (take to-replicate left-digits)))))
 
             (inc-digits [digits pos]
               (if (neg? pos)
                 ;; we have to grow the left side
-                (reduce conj [1] (repeat (count digits) 0))
+                (into [1] (repeat (count digits) 0))
                 (let [num-at-pos (digits pos)]
                   (if (< num-at-pos 9)
                     (assoc digits pos (inc num-at-pos))
@@ -4276,14 +4337,15 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                 digits))
 
             (cur-palindrome [pal-number inc-left-side?]
-              (let [pal (num->digits pal-number)
-                    mid-index (get-mid-index pal)
-                    left-digits (if (neg? mid-index) pal (subvec pal 0 mid-index))
+              (let [pal              (num->digits pal-number)
+                    mid-index        (get-mid-index pal)
+                    left-digits      (if (neg? mid-index) pal (subvec pal 0 mid-index))
                     next-left-digits (if inc-left-side?
                                        (inc-digits left-digits (dec (count left-digits)))
                                        left-digits)
-                    to-replicate (bigint (Math/floor (/ (count pal) 2)))
-                    diff (- (count next-left-digits) (count left-digits))]
+                    to-replicate     (bigint (Math/floor (/ (count pal) 2)))
+                    diff             (- (count next-left-digits) (count left-digits))]
+                
                 (-> (mirror-digits next-left-digits mid-index to-replicate)
                     (maybe-match-first-last-digits diff)
                     digits->num)))
@@ -4300,32 +4362,32 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
       (iterate next-palindrome (ensure-palindrome n n))))
 
-  (and
-   (= (take 26 (palindromic-sieve 0))
-      [0 1 2 3 4 5 6 7 8 9
-       11 22 33 44 55 66 77 88 99
-       101 111 121 131 141 151 161])
+  (time (and
+         (= (take 26 (palindromic-sieve 0))
+            [0 1 2 3 4 5 6 7 8 9
+             11 22 33 44 55 66 77 88 99
+             101 111 121 131 141 151 161])
 
-   (= (take 16 (palindromic-sieve 162))
-      [171 181 191 202
-       212 222 232 242
-       252 262 272 282
-       292 303 313 323])
+         (= (take 16 (palindromic-sieve 162))
+            [171 181 191 202
+             212 222 232 242
+             252 262 272 282
+             292 303 313 323])
 
-   ;;
-   (= (take 6 (palindromic-sieve 1234550000))
-      [1234554321 1234664321 1234774321
-       1234884321 1234994321 1235005321])
+         ;;
+         (= (take 6 (palindromic-sieve 1234550000))
+            [1234554321 1234664321 1234774321
+             1234884321 1234994321 1235005321])
 
-   (= (first (palindromic-sieve (* 111111111 111111111)))
-      (* 111111111 111111111))
+         (= (first (palindromic-sieve (* 111111111 111111111)))
+            (* 111111111 111111111))
 
-   (= (set (take 199 (palindromic-sieve 0)))
-      (set (map #(first (palindromic-sieve %)) (range 0 10000))))
+         (= (set (take 199 (palindromic-sieve 0)))
+            (set (map #(first (palindromic-sieve %)) (range 0 10000))))
 
-   (= true
-      (apply < (take 6666 (palindromic-sieve 9999999))))
+         (= true
+            (apply < (take 6666 (palindromic-sieve 9999999))))
 
-   (= (nth (palindromic-sieve 0) 10101)
-      9102019))
+         (= (nth (palindromic-sieve 0) 10101)
+            9102019)))
 #+end_src
