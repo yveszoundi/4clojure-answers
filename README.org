@@ -1249,7 +1249,7 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                   (let [next-prime (add-prime? candidate acc)]
                     (cons next-prime
                           (gen-primes (next-prime-candidate next-prime)
-                                      (conj acc next-prime))))))]       
+                                      (conj acc next-prime))))))]
          (cons 2 (gen-primes 3 [2]))))
     ([n]
        (take n (prime-sieve))))
@@ -2902,14 +2902,14 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; and returns true iff n is balanced.
 
     (defn balanced-num? [n]
-      (let [digits (mapv (fn [x] (read-string (str x))) (str n))
-            mid (fn [xs] (let [ln (/ (count xs) 2)]
-                           (if (odd? (count xs))
-                             [(int ln) (inc (int ln))]
-                             [(int ln) (int ln)])))
+      (let [digits (mapv #(Character/getNumericValue %1) (str n))
+            mid    (fn [xs] (let [middle (bigint (/ (count xs) 2))]
+                              (if (odd? (count xs))
+                                [middle (inc middle)]
+                                [middle middle])))
             bounds (mid digits)]
-        (= (reduce + (subvec digits 0 (first bounds)))
-           (reduce + (subvec digits (last bounds))))))
+        (= (reduce +' (subvec digits 0 (first bounds)))
+           (reduce +' (subvec digits (last bounds))))))
 
     (and
      (= true (balanced-num? 11))
@@ -2985,44 +2985,49 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; (only up/down/left/right), nor can he escape the edge
     ;; of the maze.  Your function must return true iff
     ;; the maze is solvable by the mouse.
-    ;;
 
-    (defn cheese-reachable? [m]
-      (letfn [(traversable? [m [row-idx col-idx]]
-                (let [r (nth (m row-idx) col-idx)]
-                  (or (Character/isWhitespace r) (= \C r))))
+    ;; Notes:
+    ;; Use graph concepts explicitly for training purposes
+    ;; 1. Make a labelled graph of coordinates and keep only navigable paths.
+    ;; 2. Find the mouse position.
+    ;; 3. Jump to adjacent edges (coordinates) and check the label.
+    ;; 4. Could have written 10-15 less lines of code without formalities.
+    (defn cheese-reachable? [maze]
+      (letfn [(unsigned-int [n] (if (>= n 0) n (* n -1)))
 
-              (is-cheese? [m [row-idx col-idx]] (= \C (nth (m row-idx) col-idx)))
+              (make-labelled-graph [maze]
+                (->> (for [i (range (count maze))]
+                       (for [j (range (count (first maze)))
+                             :let [label (get-in maze [i j])]
+                             :when (not= label \#)]
+                         [i j label]))
+                     (reduce concat)
+                     set))
 
-              (try-move [m [row-idx col-idx]]
-                ;; left, right, up, down
-                (-> (moves [] m row-idx       (dec col-idx))
-                    (moves    m row-idx       (inc col-idx))
-                    (moves    m (dec row-idx) col-idx)
-                    (moves    m (inc row-idx) col-idx)))
+              (adjacent-edges [[u v _] g]
+                (filter (fn [[a b _]]
+                          (and (or (= a u) (= b v))
+                               (= 1 (unsigned-int (- (or (first (reduce disj (set [u v]) [a b])) u)
+                                                     (or (first (reduce disj (set [a b]) [u v])) a))))))
+                        g))
 
-              (moves [acc m row-idx col-idx]
-                (if (and (and (>= row-idx 0) (< row-idx (count m)))
-                         (and (>= col-idx 0) (< col-idx (count (first m)))))
-                  (conj acc [row-idx col-idx])
-                  acc))
-
-              (mouse-position [m]
-                (flatten (for [i (range (count m))]
-                           (for [j (range (count (first m))) :when (= \M (nth (m i) j))]
-                             [i j]))))]
-
-        (let [start (mouse-position m), visited [start]]
-          (loop [init-paths visited, marked (set visited)]
-            (if (empty? init-paths)
-              false
-              (if (some #(is-cheese? m %1) init-paths)
-                true
-                (let [new-init-paths  (into #{} (mapcat #(try-move m %1) init-paths))
-                      unvisited-paths (filter #(not (contains? marked %1)) new-init-paths)
-                      new-visits      (reduce conj marked unvisited-paths)
-                      navigable-paths (filter #(traversable? m %1) unvisited-paths)]
-                  (recur navigable-paths new-visits))))))))
+              (bfs-iter-match? [maze]
+                (let [graph (make-labelled-graph maze)
+                      start (first (filter (fn [[i j label]] (= label \M)) graph))]
+                  (loop [visits (-> (clojure.lang.PersistentQueue/EMPTY) (conj start))
+                         seen   #{start}]
+                    (if (empty? visits)
+                      false
+                      (let [cur        (peek visits)
+                            cur-visits (pop visits)]
+                        (if (= (last cur) \C)
+                          true
+                          (let [next-steps  (->> (adjacent-edges cur (disj graph cur))
+                                                 (filter #(not (contains? seen %1))))
+                                next-visits (reduce conj cur-visits next-steps)
+                                next-seen   (reduce conj seen next-steps)]
+                            (recur next-visits next-seen))))))))]
+        (bfs-iter-match? maze)))
 
     (and
      (= true  (cheese-reachable? ["M   C"]))
@@ -4304,9 +4309,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
               (let [ln       (count xs)
                     last-idx (dec ln)]
                 (reduce (fn [r idx]
-                          (let [elem (xs (-' last-idx idx))
-                                res  (bigint (*' (Math/pow 10N idx) elem))]
-                            (+' r res)))
+                          (+' r (bigint (*' (Math/pow 10N idx) (xs (-' last-idx idx))))))
                         0N (range ln))))
 
             (get-mid-index [digits]
@@ -4345,7 +4348,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                                        left-digits)
                     to-replicate     (bigint (Math/floor (/ (count pal) 2)))
                     diff             (- (count next-left-digits) (count left-digits))]
-                
+
                 (-> (mirror-digits next-left-digits mid-index to-replicate)
                     (maybe-match-first-last-digits diff)
                     digits->num)))
