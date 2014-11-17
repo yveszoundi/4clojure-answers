@@ -4317,12 +4317,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; that are not less than n.
   ;; The most simple solution will exceed the time limit!
 
-  (defn palindromic-sieve [n]
+  (defn palindromic-num-sieve [n]
     (letfn [(num->digits [n]
-              (into []
-                    (loop [x n r '()]
-                      (if (< x 10) (cons x r)
-                          (recur (quot x 10) (cons (mod x 10) r))))))
+              (loop [x n r []]
+                (if (< x 10) (into [x] r)
+                    (recur (quot x 10) (into [(mod x 10)] r)))))
 
             (digits->num [xs]
               (let [ln       (count xs)
@@ -4331,17 +4330,12 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                           (+' r (bigint (*' (Math/pow 10N idx) (xs (-' last-idx idx))))))
                         0N (range ln))))
 
-            (get-mid-index [digits]
-              (let [ln (count digits)]
-                (if (= 1 ln)
-                  -1 ;; marker, we do not want to replicate for 1 digit
-                  (bigint (Math/ceil (/ ln 2))))))
+            (get-mid-idx [digits]
+              (bigint (Math/ceil (/ (count digits) 2))))
 
-            (mirror-digits [left-digits mid-index to-replicate]
-              (if (neg? mid-index)
-                ;; only 1 digit
+            (mirror-digits [left-digits mid-idx to-replicate]
+              (if (zero? mid-idx)
                 left-digits
-                ;; Take up to the number of digits to replicate and reverse
                 (into left-digits (reverse (take to-replicate left-digits)))))
 
             (inc-digits [digits pos]
@@ -4353,23 +4347,23 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                     (assoc digits pos (inc num-at-pos))
                     (recur (assoc digits pos 0) (dec pos) )))))
 
-            (maybe-match-first-last-digits [digits diff-count-previous-left-side]
-              (if (pos? diff-count-previous-left-side)
+            (maybe-match-first-last-digits [digits left-side-grown?]
+              (if left-side-grown?
                 (assoc digits (dec (count digits)) (first digits))
                 digits))
 
             (cur-palindrome [pal-number inc-left-side?]
               (let [pal              (num->digits pal-number)
-                    mid-index        (get-mid-index pal)
-                    left-digits      (if (neg? mid-index) pal (subvec pal 0 mid-index))
+                    mid-idx          (get-mid-idx pal)
+                    left-digits      (if (neg? mid-idx) pal (subvec pal 0 mid-idx))
                     next-left-digits (if inc-left-side?
                                        (inc-digits left-digits (dec (count left-digits)))
                                        left-digits)
                     to-replicate     (bigint (Math/floor (/ (count pal) 2)))
-                    diff             (- (count next-left-digits) (count left-digits))]
+                    left-side-grown? (pos? (- (count next-left-digits) (count left-digits)))]
 
-                (-> (mirror-digits next-left-digits mid-index to-replicate)
-                    (maybe-match-first-last-digits diff)
+                (-> (mirror-digits next-left-digits mid-idx to-replicate)
+                    (maybe-match-first-last-digits left-side-grown?)
                     digits->num)))
 
             (next-palindrome [pal-number] (cur-palindrome pal-number true))
@@ -4385,31 +4379,31 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
       (iterate next-palindrome (ensure-palindrome n n))))
 
   (time (and
-         (= (take 26 (palindromic-sieve 0))
+         (= (take 26 (palindromic-num-sieve 0))
             [0 1 2 3 4 5 6 7 8 9
              11 22 33 44 55 66 77 88 99
              101 111 121 131 141 151 161])
 
-         (= (take 16 (palindromic-sieve 162))
+         (= (take 16 (palindromic-num-sieve 162))
             [171 181 191 202
              212 222 232 242
              252 262 272 282
              292 303 313 323])
 
          ;;
-         (= (take 6 (palindromic-sieve 1234550000))
+         (= (take 6 (palindromic-num-sieve 1234550000))
             [1234554321 1234664321 1234774321
              1234884321 1234994321 1235005321])
 
-         (= (first (palindromic-sieve (* 111111111 111111111)))
+         (= (first (palindromic-num-sieve (* 111111111 111111111)))
             (* 111111111 111111111))
 
-         (= (set (take 199 (palindromic-sieve 0)))
-            (set (map #(first (palindromic-sieve %)) (range 0 10000))))
+         (= (set (take 199 (palindromic-num-sieve 0)))
+            (set (map #(first (palindromic-num-sieve %)) (range 0 10000))))
 
          (= true
-            (apply < (take 6666 (palindromic-sieve 9999999))))
+            (apply < (take 6666 (palindromic-num-sieve 9999999))))
 
-         (= (nth (palindromic-sieve 0) 10101)
+         (= (nth (palindromic-num-sieve 0) 10101)
             9102019)))
 #+end_src
