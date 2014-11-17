@@ -1856,7 +1856,9 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   ;; http://www.mathsisfun.com/sets/power-set.html
 
   (defn powerset [xs]
-    (let [ln (count xs), col (into [] xs), set-size (Math/pow 2 ln)]
+    (let [ln       (count xs)
+          col      (into [] xs)
+          set-size (Math/pow 2 ln)]
       (->> (for [i (range set-size)]
              (->> (for [j (range ln)
                         :when (pos? (bit-and i (bit-shift-left 1 j)))]
@@ -1918,7 +1920,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   ;; but not both of the two sets.
 
   (defn symetric-set-diff [s1 s2]
-    (let [not-in-s1 (filter #(not (s1 %1)) s2), not-in-s2 (filter #(not (s2 %1)) s1)]
+    (let [not-in-s1 (filter #(not (s1 %1)) s2)
+          not-in-s2 (filter #(not (s2 %1)) s1)]
       (set (concat not-in-s1 not-in-s2))))
 
   (and
@@ -3014,19 +3017,19 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
               (bfs-iter-match? [maze]
                 (let [graph (make-labelled-graph maze)
                       start (first (filter (fn [[i j label]] (= label \M)) graph))]
-                  (loop [visits (-> (clojure.lang.PersistentQueue/EMPTY) (conj start))
-                         seen   #{start}]
+                  (loop [visits       (-> (clojure.lang.PersistentQueue/EMPTY) (conj start))
+                         seen         #{start}]
                     (if (empty? visits)
                       false
                       (let [cur        (peek visits)
                             cur-visits (pop visits)]
                         (if (= (last cur) \C)
                           true
-                          (let [next-steps  (->> (adjacent-edges cur (disj graph cur))
-                                                 (filter #(not (contains? seen %1))))
-                                next-visits (reduce conj cur-visits next-steps)
-                                next-seen   (reduce conj seen next-steps)]
-                            (recur next-visits next-seen))))))))]
+                          (let [next-steps        (->> (adjacent-edges cur (disj graph cur))
+                                                       (filter #(not (contains? seen %1))))
+                                next-visits       (reduce conj cur-visits next-steps)
+                                next-seen         (reduce conj seen next-steps)]
+                            (recur next-visits next-predecessors next-seen))))))))]
         (bfs-iter-match? maze)))
 
     (and
