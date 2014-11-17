@@ -4360,7 +4360,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                                        (inc-digits left-digits (dec (count left-digits)))
                                        left-digits)
                     to-replicate     (bigint (Math/floor (/ (count pal) 2)))
-                    left-grown?      (pos? (- (count next-left-digits) (count left-digits)))]
+                    left-grown?      (> (count next-left-digits) (count left-digits))]
 
                 (-> (mirror-digits next-left-digits mid-idx to-replicate)
                     (maybe-match-first-last-digits left-grown?)
@@ -4379,31 +4379,31 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
       (iterate next-palindrome (ensure-palindrome n n))))
 
   (and
-         (= (take 26 (palindromic-num-sieve 0))
-            [0 1 2 3 4 5 6 7 8 9
-             11 22 33 44 55 66 77 88 99
-             101 111 121 131 141 151 161])
+   (= (take 26 (palindromic-num-sieve 0))
+      [0 1 2 3 4 5 6 7 8 9
+       11 22 33 44 55 66 77 88 99
+       101 111 121 131 141 151 161])
 
-         (= (take 16 (palindromic-num-sieve 162))
-            [171 181 191 202
-             212 222 232 242
-             252 262 272 282
-             292 303 313 323])
+   (= (take 16 (palindromic-num-sieve 162))
+      [171 181 191 202
+       212 222 232 242
+       252 262 272 282
+       292 303 313 323])
 
-         ;;
-         (= (take 6 (palindromic-num-sieve 1234550000))
-            [1234554321 1234664321 1234774321
-             1234884321 1234994321 1235005321])
+   ;;
+   (= (take 6 (palindromic-num-sieve 1234550000))
+      [1234554321 1234664321 1234774321
+       1234884321 1234994321 1235005321])
 
-         (= (first (palindromic-num-sieve (* 111111111 111111111)))
-            (* 111111111 111111111))
+   (= (first (palindromic-num-sieve (* 111111111 111111111)))
+      (* 111111111 111111111))
 
-         (= (set (take 199 (palindromic-num-sieve 0)))
-            (set (map #(first (palindromic-num-sieve %)) (range 0 10000))))
+   (= (set (take 199 (palindromic-num-sieve 0)))
+      (set (map #(first (palindromic-num-sieve %)) (range 0 10000))))
 
-         (= true
-            (apply < (take 6666 (palindromic-num-sieve 9999999))))
+   (= true
+      (apply < (take 6666 (palindromic-num-sieve 9999999))))
 
-         (= (nth (palindromic-num-sieve 0) 10101)
-            9102019))
+   (= (nth (palindromic-num-sieve 0) 10101)
+      9102019))
 #+end_src
