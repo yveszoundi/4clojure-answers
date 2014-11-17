@@ -2122,7 +2122,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 94
 
-*Game of Life* - INPROGRESS
+*Game of Life*
 
   #+BEGIN_SRC clojure
     ;; The <a href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">game of life</a>
@@ -2144,7 +2144,27 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; Write a function that accepts a board, and returns a board representing
     ;; the next generation of cells.
 
-    (defn game-of-life [m])
+    (defn game-of-life [board]
+      (letfn [(find-cells [board]
+                (map-indexed (fn [i row]
+                               (map-indexed (fn [j ch]
+                                              (let [ln (count (live-neighbors board [i j]))]
+                                                (if (= ch \#)
+                                                  (if (or (< ln 2) (> ln 3)) \space ch)
+                                                  (if (= ln 3)                \#    ch))))
+                                            row))
+                             board))
+
+              (valid-live-cell? [board [i j] max-i max-j]
+                (and (>= i 0) (>= j 0) (< i max-i) (< j max-j) (= (get-in board [i j]) \#)))
+
+              (live-neighbors [board [i j]]
+                (let [max-i (count board)
+                      max-j (count (first board))]
+                  (->> [[(dec i) j] [(dec i) (dec j)] [i (dec j)] [(inc i) (dec j)]
+                        [(inc i) j] [(inc i) (inc j)] [i (inc j)] [(dec i) (inc j)]]
+                       (filter #(valid-live-cell? board %1 max-i max-j)))))]
+        (mapv #(apply str %1) (find-cells board))))
 
     (and
      (= (game-of-life ["      "
@@ -2998,7 +3018,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                      (reduce concat)
                      set))
 
-              (adjacent-edges [[u v _] g]
+              (next-edges [[u v _] g]
                 (filter (fn [[a b _]]
                           (and (or (= a u) (= b v))
                                (= 1 (unsigned-int (- (or (first (reduce disj (set [u v]) [a b])) u)
@@ -3016,11 +3036,11 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                             cur-visits (pop visits)]
                         (if (= (last cur) \C)
                           true
-                          (let [next-steps        (->> (adjacent-edges cur (disj graph cur))
+                          (let [next-steps        (->> (next-edges cur (disj graph cur))
                                                        (filter #(not (contains? seen %1))))
                                 next-visits       (reduce conj cur-visits next-steps)
                                 next-seen         (reduce conj seen next-steps)]
-                            (recur next-visits next-predecessors next-seen))))))))]
+                            (recur next-visits next-seen))))))))]
         (bfs-iter-match? maze)))
 
     (and
