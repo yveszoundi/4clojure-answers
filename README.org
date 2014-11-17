@@ -31,8 +31,10 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 *Nothing but the Truth*
 
 #+begin_src clojure
-  ;; This is a clojure form.  Enter a value which will make the form evaluate to true.
-  ;; Don't over think it!  If you are confused, see the <a href='/directions'>getting started</a> page.
+  ;; This is a clojure form.
+  ;; Enter a value which will make the form evaluate to true.
+  ;; Don't over think it!  If you are confused, see the
+  ;; <a href='/directions'>getting started</a> page.
   ;; Hint: true is equal to true.
   ;; (= __ true)
   (= true true)
@@ -57,8 +59,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 *Intro to Strings*
 
 #+begin_src clojure
-  ;; Clojure strings are Java strings.  This means that you can use any of the Java string methods
-  ;; on Clojure strings.
+  ;; Clojure strings are Java strings.  
+  ;; This means that you can use any of the Java string methods on Clojure strings.
   ;; (= __ (.toUpperCase "hello world"))
   (= "HELLO WORLD" (.toUpperCase "hello world"))
 #+end_src
@@ -78,8 +80,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 *Lists: conj*
 
 #+begin_src clojure
-  ;; When operating on a list, the conj function will return a new list with one or more items
-  ;; "added" to the front.
+  ;; When operating on a list, the conj function will return 
+  ;; a new list with one or more items "added" to the front.
   ;; (= __ (conj '(2 3 4) 1))
   (= '(1 2 3 4) (conj '(2 3 4) 1))
 #+end_src
@@ -594,7 +596,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 *Maximum value*
 
 #+begin_src clojure
-  ;; Write a function which takes a variable number of parameters and returns the maximum value.
+  ;; Write a function which takes a variable number of parameters
+  ;; and returns the maximum value.
   ;; Restrictions (please don't use these function(s)): max, max-key
 
   (defn max-value [x & xs]
@@ -751,7 +754,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 *Flipping out*
 
 #+begin_src clojure
-  ;; Write a higher-order function which flips the order of the arguments of an input function.
+  ;; Write a higher-order function which flips the order 
+  ;; of the arguments of an input function.
 
   (defn flip-args [f]
     (fn [& args]
@@ -1102,7 +1106,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 #+begin_src clojure
   ;; Given a function f and a sequence s, write a function which returns a map.
   ;; The keys should be the values of f applied to each item in s.
-  ;; The value at each key should be a vector of corresponding items in the order they appear in s.
+  ;; The value at each key should be a vector of corresponding items
+  ;; in the order they appear in s.
 
   (defn do-group-by [f s]
     (reduce (fn [m i]
@@ -1112,17 +1117,12 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
             {}
             s))
 
-  (clojure.test/testing
-      "Given a function f and a sequence s, write a function which returns a map.
-       The keys should be the values of f applied to each item in s.
-       The value at each key should be a vector of corresponding items in the order they appear in s."
-      (clojure.test/is
-       (and
-        (= (do-group-by #(> % 5) [1 3 6 8]) {false [1 3], true [6 8]})
-        (= (do-group-by #(apply / %) [[1 2] [2 4] [4 6] [3 6]])
-           {1/2 [[1 2] [2 4] [3 6]], 2/3 [[4 6]]})
-        (= (do-group-by count [[1] [1 2] [3] [1 2 3] [2 3]])
-           {1 [[1] [3]], 2 [[1 2] [2 3]], 3 [[1 2 3]]}))))
+  (and
+   (= (do-group-by #(> % 5) [1 3 6 8]) {false [1 3], true [6 8]})
+   (= (do-group-by #(apply / %) [[1 2] [2 4] [4 6] [3 6]])
+      {1/2 [[1 2] [2 4] [3 6]], 2/3 [[4 6]]})
+   (= (do-group-by count [[1] [1 2] [3] [1 2 3] [2 3]])
+      {1 [[1] [3]], 2 [[1 2] [2 3]], 3 [[1 2 3]]}))
 #+end_src
 
 * Problem 64
@@ -1164,7 +1164,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   ;; vector?, sequential?, list?, seq?, map?, set?, instance?, getClass"
 
   (defn lookup-type [obj]
-    (let [a [1 1], result (conj obj a)]
+    (let [a      [1 1]
+          result (conj obj a)]
       (cond
        (and (not (associative? obj)) (= (conj result a) result)) :set
        (and (associative? obj) (identical? (conj result a) result)) :map
@@ -1214,18 +1215,6 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 #+begin_src clojure
   ;; Write a function which returns the first x
   ;; number of prime numbers.
-  ;;
-  ;; Takes about 1 minute for the first 1 000 000 primes.
-  ;; Have not yet seen an implementation that doesn't run out of memory
-  ;; for such a huge number...
-  ;;
-  ;; A really fast implementation can be found at this address:
-  ;; https://gist.github.com/tnoda/3028665#file-primes-clj
-  ;; Check the primes' version of it... blazing fast...
-  ;;
-  ;; Typical approach where you mark non primes
-  ;; http://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
-  ;; http://stackoverflow.com/questions/960980/fast-prime-number-generation-in-clojure#answer-22668959
 
   (defn prime-sieve
     "Prime sieve"
@@ -1712,14 +1701,18 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 *Test continuous word chain*
 
 #+begin_src clojure
-  ;; A word chain consists of a set of words ordered so that each word differs by only one
-  ;; letter from the words directly before and after it.
-  ;; The one letter difference can be either an insertion, a deletion, or a substitution.
+  ;; A word chain consists of a set of words ordered so that each word
+  ;; differs by only one letter from the words directly before and after it.
+
+  ;; The one letter difference can be either an insertion, a deletion,
+  ;; or a substitution.
+
   ;;  Here is an example word chain:
-  ;; <br/><br/>cat -> cot -> coat -> oat -> hat -> hot -> hog -> dog<br/><br/>
-  ;;
+  ;; cat -> cot -> coat -> oat -> hat -> hot -> hog -> dog
+
   ;; Write a function which takes a sequence of words,
-  ;; and returns true if they can be arranged into one continous word chain, and false if they cannot.
+  ;; and returns true if they can be arranged into one continous word chain,
+  ;; and false if they cannot.
 
   (defn continuous-word-chain?
     [xs]
@@ -1748,7 +1741,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
       "Word chain"
     (clojure.test/is
      (and
-      (= true  (continuous-word-chain? #{"hat" "coat" "dog" "cat" "oat" "cot" "hot" "hog"}) )
+      (= true  (continuous-word-chain? #{"hat" "coat" "dog" "cat"
+                                         "oat" "cot" "hot" "hog"}))
       (= false (continuous-word-chain? #{"cot" "hot" "bat" "fat"}))
       (= false (continuous-word-chain? #{"to" "top" "stop" "tops" "toss"}))
       (= true  (continuous-word-chain? #{"spout" "do" "pot" "pout" "spot" "dot"}))
@@ -1871,10 +1865,12 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
 
 #+begin_src clojure
   ;; Happy numbers are positive integers that follow a particular formula:
-  ;; - take each individual digit, square it, and then sum the squares to get a new number.
-  ;; - Repeat with the new number and eventually, you might get to a number whose squared sum is 1.
+  ;; - Take each individual digit, square it,
+  ;;   and then sum the squares to get a new number.
+  ;; - Repeat with the new number and eventually,
+  ;;   you might get to a number whose squared sum is 1.
   ;; - This is a happy number.
-  ;;
+
   ;; An unhappy number (or sad number) is one that loops endlessly.
   ;; Write a function that determines if a number is happy or not.
 
@@ -1882,13 +1878,13 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
     {:pre [(pos? n)]}
     (letfn [(digits [n] (map #(Character/getNumericValue %1) (str n)))
             (square-sum [xs] (long (reduce  #(+ %1 (Math/pow %2 2)) 0 xs)))]
-      (loop [loop-detection #{}, i n]
+      (loop [loop-detection #{}
+             i              n]
         (let [sum (square-sum (digits i))]
           (cond
            (= 1 sum) true
            (contains? loop-detection sum) false
            :else (recur (conj loop-detection sum) sum))))))
-
 
   (and
    (= (happy-num? 7) true)
@@ -1959,7 +1955,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                                                            (conj q %1)))
                                edges)
                        (map seq)))))]
-      (let [nodes (vertices g), node (first nodes)
+      (let [nodes           (vertices g)
+            node            (first nodes)
             eulerian-trail? (->> (get-paths node g (clojure.lang.PersistentQueue/EMPTY))
                                  (some #(= (count g) (count %1))))]
         (or eulerian-trail? false))))
@@ -1991,8 +1988,8 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   ;; Write a function which calculates the Cartesian product of two sets.
   ;; http://en.wikipedia.org/wiki/Cartesian_product
 
-  (defn cartesian-product [s1 s2]
-    (set (for [x-s1 s1, x-s2 s2] [x-s1 x-s2])))
+  (defn cartesian-product [xs1 xs2]
+    (set (for [x1 xs1 x2 xs2] [x1 x2])))
 
   (and
    (= (cartesian-product #{"ace" "king" "queen"} #{"&#9824;" "&#9829;" "&#9830;" "&#9827;"})
@@ -2214,7 +2211,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; 4Clojure Question 95
     ;;
     ;; Write a predicate which checks whether or not a given
-    ;; sequence represents a <a href="http://en.wikipedia.org/wiki/Binary_tree">binary tree</a>.
+    ;; sequence represents a 
+    ;; <a href="http://en.wikipedia.org/wiki/Binary_tree">binary tree</a>.
     ;; Each node in the tree must have a value, a left child, and a right child.
 
     (defn binary-tree? [xs]
@@ -2494,8 +2492,9 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
    (= (k-distinct-combos 4 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a "abc" "efg"}})
 
-   (= (k-distinct-combos 2 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a} #{[1 2 3] "abc"} #{[1 2 3] "efg"}
-                                                        #{:a "abc"} #{:a "efg"} #{"abc" "efg"}}))
+   (= (k-distinct-combos 2 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a} #{[1 2 3] "abc"}
+                                                        #{[1 2 3] "efg"} #{:a "abc"}
+                                                        #{:a "efg"} #{"abc" "efg"}}))
 #+END_SRC
 
 * Problem 104
@@ -2504,27 +2503,28 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 #+begin_src clojure
   ;; This is the inverse of Problem 92, but much easier.
-  ;; Given an integer smaller than 4000, return the corresponding roman numeral in uppercase,
-  ;; adhering to the subtractive principle.
+  ;; Given an integer smaller than 4000, return the corresponding roman numeral
+  ;; in uppercase, adhering to the subtractive principle.
 
   ;; The trick here is to select carefully
   ;; the symbol table so that you don't need to check for repetition
-  ;; 4 = IV vs XXXX (without storing such cases, it is more difficult for the recursion...)
+  ;; 4 = IV vs XXXX (without storing such cases,
+  ;; it is more difficult for the recursion...)
   ;; I couldn't make it work with a basic table as in problem 92.
   (defn number-to-roman-numeral [n]
-    (let [sym-table { 1    "I", 4    "IV", 5   "V", 9   "IX",
-                     10   "X", 40   "XL", 50  "L", 90  "XC",
-                     100  "C", 400  "CD", 500 "D", 900 "CM"
-                     1000 "M"}
+    (let [sym-table {1     "I", 4    "IV", 5   "V", 9   "IX",
+                     10    "X", 40   "XL", 50  "L", 90  "XC",
+                     100   "C", 400  "CD", 500 "D", 900 "CM"
+                     1000  "M"}
           sym-keys (keys sym-table)]
 
-      (loop [remainder n, result []]
+      (loop [remainder n
+             result   []]
         (if (zero? remainder)
           (apply str result)
           (let [min-num-sym (reduce max (filter #(<= %1 remainder) sym-keys))
                 min-sym     (sym-table min-num-sym)]
             (recur (- remainder min-num-sym) (conj result min-sym)))))))
-
 
   (and
    (= "I" (number-to-roman-numeral 1))
@@ -2566,40 +2566,41 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *Number Maze*
 
 #+begin_src clojure
-  ;; Given a pair of numbers, the start and end point,
-  ;; find a path between the two using only three possible operations:<ul>
-  ;;
-  ;; <li>double</li>
-  ;; <li>halve (odd numbers cannot be halved)</li>
-  ;; <li>add 2</li></ul>
-  ;;
-  ;; Find the shortest path through the "maze".
-  ;; Because there are multiple shortest paths, you must return the
-  ;; length of the shortest path, not the path itself.
+    ;; Given a pair of numbers, the start and end point,
+    ;; find a path between the two using only three possible operations:<ul>
+    ;;
+    ;; <li>double</li>
+    ;; <li>halve (odd numbers cannot be halved)</li>
+    ;; <li>add 2</li></ul>
+    ;;
+    ;; Find the shortest path through the "maze".
+    ;; Because there are multiple shortest paths, you must return the
+    ;; length of the shortest path, not the path itself.
 
-  (defn num-maze-steps [start end]
-    (letfn [(possible-operations [n]
-              (let [ops [#(+ %1 2), #(* %1 2)]]
-                (if (even? n)
-                  (conj ops #(/ %1 2))
-                  ops)))
+    (defn num-maze-steps [start end]
+      (letfn [(possible-operations [n]
+                (let [ops [#(+ %1 2), #(* %1 2)]]
+                  (if (even? n)
+                    (conj ops #(/ %1 2))
+                    ops)))
 
-            (apply-operations [nums]
-              (mapcat (fn [n] (map #(%1 n) (possible-operations n))) nums))]
+              (apply-operations [nums]
+                (mapcat (fn [n] (map #(%1 n) (possible-operations n))) nums))]
 
-      (loop [nodes [start], step 1]
-        (if (some #(= end %) nodes)
-          step
-          (recur (apply-operations nodes), (inc step))))))
+        (loop [nodes [start]
+               step  1]
+          (if (some #(= end %) nodes)
+            step
+            (recur (apply-operations nodes), (inc step))))))
 
-  (and
-   (= 1 (num-maze-steps 1 1))  ; 1
-   (= 3 (num-maze-steps 3 12)) ; 3 6 12
-   (= 3 (num-maze-steps 12 3)) ; 12 6 3
-   (= 3 (num-maze-steps 5 9))  ; 5 7 9
-   (= 9 (num-maze-steps 9 2))  ; 9 18 20 10 12 6 8 4 2
-   (= 5 (num-maze-steps 9 12)) ; 9 11 22 24 12
-   )
+    (and
+     (= 1 (num-maze-steps 1 1))  ; 1
+     (= 3 (num-maze-steps 3 12)) ; 3 6 12
+     (= 3 (num-maze-steps 12 3)) ; 12 6 3
+     (= 3 (num-maze-steps 5 9))  ; 5 7 9
+     (= 9 (num-maze-steps 9 2))  ; 9 18 20 10 12 6 8 4 2
+     (= 5 (num-maze-steps 9 12)) ; 9 11 22 24 12
+     )
 #+end_src
 * Problem 107
 
@@ -2647,7 +2648,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
               (if (>= (first col) num)
                 col
                 (recur (rest col) num)))]
-      (let [firsts (map first cols), max-first (reduce max firsts)]
+      (let [firsts    (map first cols)
+            max-first (reduce max firsts)]
         (if (apply = firsts)
           (first firsts)
           (recur (map #(move-cursor %1 max-first) cols))))))
@@ -2734,13 +2736,17 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                         (valid-position? puzzle i (dec j))
                         (valid-position? puzzle i (+ j wc))
                         (not (some #(= \# %1)
-                                   (transform (subvec (puzzle i) j (+ j wc))))))
+                                   (transform (subvec (puzzle i)
+                                                      j
+                                                      (+ j wc))))))
                    ;; down
                    (and (>= (- max-i i wc) 0)
                         (valid-position? puzzle (dec i) j)
                         (valid-position? puzzle (+ i wc) j)
                         (not (some #(= \# %1)
-                                   (transform (subvec (mapv (fn [m] (nth m j)) puzzle) i (+ i wc)))))))))
+                                   (transform (subvec (mapv (fn [m] (nth m j)) puzzle)
+                                                      i
+                                                      (+ i wc)))))))))
 
               (valid-position? [puzzle i j]
                 (if (or (neg? i) (neg? j) (>= j max-j) (>= i max-i))
@@ -2751,7 +2757,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                 (map-indexed #(if (and (not= %2 \_) (not= (nth word %1) %2)) \# %2) view))
 
               (next-move [puzzle i j]
-                (let [next-i (mod (inc i) max-i), next-j (if (>= (inc i) max-i) (inc j) j)]
+                (let [next-i (mod (inc i) max-i)
+                      next-j (if (>= (inc i) max-i) (inc j) j)]
                   [next-i next-j]))
 
               (solve-puzzle [puzzle [i j] cur-iter max-iter]
@@ -2808,7 +2815,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
             (enqueue [q xs sum limit]
               (if (or (empty? xs) (> sum limit))
                 q
-                (let [cur (first xs), ctx (mk-ctx q cur sum limit)]
+                (let [cur (first xs)
+                      ctx (mk-ctx q cur sum limit)]
                   (recur (:queue ctx) (next xs) (:sum ctx) limit))))]
       (enqueue [] xs 0 n)))
 
@@ -3022,8 +3030,14 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
               (next-edges [[u v _] g]
                 (filter (fn [[a b _]]
                           (and (or (= a u) (= b v))
-                               (= 1 (unsigned-int (- (or (first (reduce disj (set [u v]) [a b])) u)
-                                                     (or (first (reduce disj (set [a b]) [u v])) a))))))
+                               (= 1 (unsigned-int (- (or (first (reduce disj
+                                                                        (set [u v])
+                                                                        [a b]))
+                                                         u)
+                                                     (or (first (reduce disj
+                                                                        (set [a b])
+                                                                        [u v]))
+                                                         a))))))
                         g))
 
               (bfs-iter-match? [maze]
@@ -3150,7 +3164,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                         #{} cell-groups))
 
               (make-groups [board]
-                (let [max-col (count board), max-row (count (first board))]
+                (let [max-col (count board)
+                      max-row (count (first board))]
                   (concat
                    (for [i (range max-col)] (for [j (range max-row)] [i j]))
                    (for [j (range max-row)] (for [i (range max-col)] [i j]))
@@ -3226,7 +3241,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 121
 
-*Universal Computation Engine-TODO*
+*Universal Computation Engine-INPROGRESS*
 
   #+BEGIN_SRC clojure
     ;; Given a mathematical formula in prefix notation, return a function that calculates
@@ -3524,15 +3539,16 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 #+begin_src clojure
   ;; A standard American deck of playing cards has four suits
   ;; - spades, hearts, diamonds, and clubs - and thirteen cards in each suit.
-  ;; Two is the lowest rank, followed by other integers up to ten; then the jack, queen, king, and ace.
-  ;;
+  ;; Two is the lowest rank, followed by other integers up to ten;
+  ;; then the jack, queen, king, and ace.
+
   ;; It's convenient for humans to represent these cards as suit/rank pairs,
   ;; such as H5 or DQ: the heart five and diamond queen respectively.
   ;; But these forms are not convenient for programmers,
   ;; so to write a card game you need some way to parse an input string
   ;; into meaningful components. For purposes of determining rank,
   ;; we will define the cards to be valued from 0 (the two) to 12 (the ace).
-  ;;
+
   ;; Write a function which converts (for example) the string "SJ" into a map
   ;; of <code>{:suit :spade, :rank 9}</code>. A ten will always be represented
   ;; with the single character "T", rather than the two characters "10".
@@ -3705,7 +3721,9 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     (and
      (= true  (common-subset-sum? #{-1 1 99}
                                   #{-2 2 888}
-                                  #{-3 3 7777})) ; ex. all sets have a subset which sums to zero
+                                  #{-3 3 7777}))
+                                            ; ex. all sets have a
+                                            ; subset which sums to zero
 
      (= false (common-subset-sum? #{1}
                                   #{2}
@@ -3844,7 +3862,8 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     (defn seq-digits [num radix]
       ((fn step [r n base]
          (if (pos? n)
-           (let [d (mod n base), q (quot n base)]
+           (let [d (mod n base)
+                 q (quot n base)]
              (recur (cons d r) q base))
            (if (empty? r) '(0) r)))
        '() num radix))
@@ -3862,15 +3881,19 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 #+BEGIN_SRC clojure
   ;; Create a function of two integer arguments: the start and end,
-  ;;  respectively.
+  ;; respectively.
+
   ;; You must create a vector of strings which renders a 45&deg; rotated square
-  ;; of integers which are successive squares from the start point up to and including the end point.
+  ;; of integers which are successive squares from the start point up to and
+  ;; including the end point.
 
   ;; If a number comprises multiple digits, wrap them around the shape individually.
-  ;; If there are not enough digits to complete the shape, fill in the rest with asterisk characters.
+  ;; If there are not enough digits to complete the shape, fill in the rest with
+  ;; asterisk characters.
 
   ;; The direction of the drawing should be clockwise, starting from the center
-  ;; of the shape and working outwards, with the initial direction being down and to the right.
+  ;; of the shape and working outwards, with the initial direction being down
+  ;; and to the right.
 
   (defn squares-squared [start end]
     (let [build-seq   (fn [start end]
@@ -4026,51 +4049,30 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 *Tricky card games*
 
 #+BEGIN_SRC clojure
-  ;; <p>
-  ;;
   ;; In <a href="http://en.wikipedia.org/wiki/Trick-taking_game">trick-taking
-  ;;
   ;; card games</a> such as bridge, spades, or hearts, cards are played
-  ;;
   ;; in groups known as "tricks" - each player plays a single card, in
-  ;;
   ;; order; the first player is said to "lead" to the trick. After all
-  ;;
   ;; players have played, one card is said to have "won" the trick. How
-  ;;
   ;; the winner is determined will vary by game, but generally the winner
-  ;;
   ;; is the highest card played <i>in the suit that was
-  ;;
-  ;; led</i>. Sometimes (again varying by game), a particular suit will
-  ;;
+  ;; led</i>. 
+
+  ;; Sometimes (again varying by game), a particular suit will
   ;; be designated "trump", meaning that its cards are more powerful than
-  ;;
   ;; any others: if there is a trump suit, and any trumps are played,
-  ;;
   ;; then the highest trump wins regardless of what was led.
-  ;;
-  ;; </p>
-  ;;
-  ;; <p>
-  ;;
+
   ;; Your goal is to devise a function that can determine which of a
-  ;;
   ;; number of cards has won a trick. You should accept a trump suit, and
-  ;;
   ;; return a function <code>winner</code>. Winner will be called on a
-  ;;
   ;; sequence of cards, and should return the one which wins the
-  ;;
-  ;; trick. Cards will be represented in the format returned
-  ;;
+  ;; trick. 
+
+  ;; Cards will be represented in the format returned
   ;; by <a href="/problem/128/">Problem 128, Recognize Playing Cards</a>:
-  ;;
   ;; a hash-map of <code>:suit</code> and a
-  ;;
   ;; numeric <code>:rank</code>. Cards with a larger rank are stronger.
-  ;;
-  ;; </p>
 
   (defn tricky-card-game-winner [trump-suit]
     (fn [args]
@@ -4089,8 +4091,10 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
                                                                {:suit :club :rank 10}]))
 
    (= {:suit :heart :rank 8}
-      ((tricky-card-game-winner :heart) [{:suit :heart :rank 6} {:suit :heart :rank 8}
-                                         {:suit :diamond :rank 10} {:suit :heart :rank 4}])))
+      ((tricky-card-game-winner :heart) [{:suit :heart :rank 6}
+                                         {:suit :heart :rank 8}
+                                         {:suit :diamond :rank 10}
+                                         {:suit :heart :rank 4}])))
 #+END_SRC
 
 * Problem 142
