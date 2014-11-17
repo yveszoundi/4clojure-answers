@@ -1721,23 +1721,14 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
   ;; Write a function which takes a sequence of words,
   ;; and returns true if they can be arranged into one continous word chain, and false if they cannot.
 
-  ;; Remove use of edit distance here to shorten the code
-  ;; Now using only a dummy words-diff function,
-  ;; There's a question about the levenshtein distance later anyway.
   (defn continuous-word-chain?
-    "Check if words can be arranged into a continuous chain.
-    Build a tree of elements combinations for which the words diff is 1.
-    As we compare elements there might be multiple possibilities, thus a tree.
-    If the tree height is equal to the number of elements we have a word chain."
     [xs]
     (letfn [(combinations-tree [elem xs]
               (cons elem
                     (when-not (empty? xs)
                       (let [r (filter #(= 1 (words-diff elem %1)) xs)]
                         (when-not (empty? r)
-                          (loop [items r]
-                            (when-not (empty? items)
-                              (map #(combinations-tree %1 (disj xs %1)) items))))))))
+                          (map #(combinations-tree %1 (disj xs %1)) r))))))
 
             (max-tree-height [tree]
               (if (not (seq? tree)) 0
@@ -1749,7 +1740,7 @@ I've been looking at it about once a month for a while... (Compojure, Korma, Jav
                     diff (if (neg? letters-diff) (* -1 letters-diff) letters-diff)]
                 (+ diff r)))]
 
-      (->> (map (fn [x] (max-tree-height (combinations-tree x (disj xs x)))) xs)
+      (->> (map #(max-tree-height (combinations-tree %1 (disj xs %1))) xs)
            (reduce max)
            (= (count xs)))))
 
