@@ -3241,7 +3241,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 121
 
-*Universal Computation Engine-INPROGRESS*
+*Universal Computation Engine*
 
   #+BEGIN_SRC clojure
     ;; Given a mathematical formula in prefix notation, return a function that calculates
@@ -3252,30 +3252,29 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
     ;; of variable names to their values.
 
     (defn uce [expr]
-      (letfn [(map-args [st mappings]
-                (map (fn [sym]
-                       (if (coll? sym)
-                         (map-args sym mappings)
-                         (mappings sym sym)))
-                     st))
+      (let [fn-mappings (apply hash-map ['+ + '- - '* * '/ /])]
 
-              (has-subseqs? [st]
-                (some coll? st))
+        (letfn [(map-args [st mappings]
+                  (map (fn [sym]
+                         (if (coll? sym)
+                           (map-args sym mappings)
+                           (get mappings sym sym)))
+                       st))
 
-              (augment-fns [mappings]
-                (assoc mappings ['+ +] ['- -] ['/ /] ['* *]))
+                (visit [[op & arguments]]
+                  (if (nil? arguments)
+                    (recur op)
+                    (if-not (some coll? arguments)
+                      (apply (fn-mappings op) arguments)
+                      (visit
+                       (cons op (map (fn [x]
+                                       (if (coll? x)
+                                         (visit x)
+                                         x))
+                                     arguments))))))]
 
-              (visit [[op & arguments]]
-                (println "arguments:" arguments)
-                (if-not (has-subseqs? arguments)
-                  (apply op arguments)
-                  (reduce op (map visit arguments))))]
-
-        (fn [& args]
-          (->> (augment-fns (first args))
-               (map-args expr)
-               visit
-               ))))
+          (fn [& args]
+            (->> (map-args expr (first args)) visit)))))
 
     (and
      (= 2 ((uce '(/ a b))
