@@ -2325,7 +2325,7 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
 
 * Problem 98
 
-*Equivalence Classes-TODO*
+*Equivalence Classes*
 
 #+BEGIN_SRC clojure
   ;; A function f defined on a domain D induces an
@@ -2337,17 +2337,23 @@ Also read about the [[href="http://en.wikipedia.org/wiki/Roman_numerals#Subtract
   ;; <a href="http://en.wikipedia.org/wiki/Equivalence_class">equivalence classes</a>
   ;; of D with respect to f.
 
-  (= (__ #(* % %) #{-2 -1 0 1 2})
-     #{#{0} #{1 -1} #{2 -2}})
+  (defn equiv-classes [f xs]
+    (->> (vals (group-by f xs))
+         (map set)
+         (into #{})))
 
-  (= (__ #(rem % 3) #{0 1 2 3 4 5 })
-     #{#{0 3} #{1 4} #{2 5}})
+  (and
+   (= (equiv-classes #(* % %) #{-2 -1 0 1 2})
+      #{#{0} #{1 -1} #{2 -2}})
 
-  (= (__ identity #{0 1 2 3 4})
-     #{#{0} #{1} #{2} #{3} #{4}})
+   (= (equiv-classes #(rem % 3) #{0 1 2 3 4 5 })
+      #{#{0 3} #{1 4} #{2 5}})
 
-  (= (__ (constantly true) #{0 1 2 3 4})
-     #{#{0 1 2 3 4}})
+   (= (equiv-classes identity #{0 1 2 3 4})
+      #{#{0} #{1} #{2} #{3} #{4}})
+
+   (= (equiv-classes (constantly true) #{0 1 2 3 4})
+      #{#{0 1 2 3 4}}))
 
 #+END_SRC
 
