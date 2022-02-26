@@ -6,7 +6,7 @@
 #+INFOJS_OPT: view:nil toc:t ltoc:t mouse:underline buttons:0 path:http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.0.3/bootstrap.min.js
 
 * Overview
-  Answers to some of [[http://4clojure.com/][4clojure.com]] questions.
+  Answers to some of [[https://groups.google.com/g/clojure/c/ZWmDEzvn-Js][4clojure]] questions.
   
   It looks like there are some broken questions or gaps between questions sometimes.
 
