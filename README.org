@@ -6,16 +6,13 @@
 #+INFOJS_OPT: view:nil toc:t ltoc:t mouse:underline buttons:0 path:http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.0.3/bootstrap.min.js
 
 * Overview
-  Answers to some of [[https://groups.google.com/g/clojure/c/ZWmDEzvn-Js][4clojure]] questions.
+  Answers to some of 4clojure questions. Please note that the original /4clojure.com/ website has [[https://groups.google.com/g/clojure/c/ZWmDEzvn-Js][been discontinued]], apparently [[https://4clojure.oxal.org/][4clojure.oxal.org]] is the new site to check-out.
   
-  It looks like there are some broken questions or gaps between questions sometimes.
+  It looks like there are some broken questions or gaps between questions sometimes (/for the original 4clojure.com site/).
 
-  I did couple of problems and I believe that most of my current basic issues
-
-  are related to :
-
-- writing non idiomatic code (tendency to think in Java)
-- Graph manipulations/traversal in a pure functional way.
+  I did couple of problems and I believe that most of my current basic issues are related to:
+  - writing non-idiomatic code (tendency to think in Java)
+  - Graph manipulations/traversal in a pure functional way.
 
 * TBD to move forward
 
